@@ -2,6 +2,7 @@ platform: Agent-Platform
 version: 0.1.0
 
 environment_contract_repo: AGenNext/Agent-Environment
+secrets_contract_repo: AGenNext/Agent-Secrets
 default_environment: dev
 
 environments:
@@ -40,17 +41,24 @@ contracts:
   agent_objective: AGenNext/Agent-Objective
   agent_blueprint: AGenNext/Agent-Blueprint
   agent_constraints: AGenNext/Agent-Constraints
+  agent_secrets: AGenNext/Agent-Secrets
   agent_skills: AGenNext/Agent-Skills
   model_router: AGenNext/Model-Router
   agent_bench: AGenNext/Agent-Bench
   agent_eval: AGenNext/Agent-Eval
   agent_trust: AGenNext/Agent-Trust
+  agent_traces: AGenNext/Agent-Traces
   agent_analytics: AGenNext/Agent-Analytics
+  agent_finops: AGenNext/Agent-FinOps
   agent_research: AGenNext/Agent-Research
   agent_maturity: AGenNext/Agent-Maturity
+  agent_deploy: AGenNext/Agent-deploy
 
 runtime:
   database: surrealdb
   object_storage: s3_compatible
   queue: local_queue_initially
   model_policy: local_open_source_preferred
+  traces: opentelemetry_aligned
+  cost_governance: finops_required
+  secrets: environment_scoped
