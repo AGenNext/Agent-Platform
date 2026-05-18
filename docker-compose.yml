@@ -22,6 +22,20 @@ services:
     volumes:
       - minio_data:/data
 
+  agent-knowledge-api:
+    image: python:3.11-slim
+    working_dir: /workspace
+    command: bash -lc "pip install --upgrade pip && pip install git+https://github.com/AGenNext/Agent-Team.git git+https://github.com/AGenNext/Agent-Frameworks.git git+https://github.com/AGenNext/Agent-Knowledge.git && uvicorn app.main:app --host 0.0.0.0 --port 8001"
+    environment:
+      SURREALDB_URL: ws://surrealdb:8000/rpc
+      SURREALDB_NAMESPACE: agent_platform
+      SURREALDB_DATABASE: agent_platform
+    ports:
+      - "8001:8001"
+    depends_on:
+      - surrealdb
+      - minio
+
   ollama:
     image: ollama/ollama:latest
     profiles:
