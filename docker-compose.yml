@@ -36,6 +36,17 @@ services:
       - surrealdb
       - minio
 
+  agent-dashboard:
+    image: node:20-slim
+    working_dir: /workspace
+    command: bash -lc "apt-get update && apt-get install -y git && git clone https://github.com/AGenNext/Agent-Dashboard.git . && npm install && npm run dev"
+    environment:
+      VITE_AGENT_KNOWLEDGE_API_URL: http://localhost:8001
+    ports:
+      - "3000:3000"
+    depends_on:
+      - agent-knowledge-api
+
   ollama:
     image: ollama/ollama:latest
     profiles:
