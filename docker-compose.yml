@@ -30,6 +30,9 @@ services:
       SURREALDB_URL: ws://surrealdb:8000/rpc
       SURREALDB_NAMESPACE: agent_platform
       SURREALDB_DATABASE: agent_platform
+      SURREALDB_USERNAME: root
+      SURREALDB_PASSWORD: root
+      SURREALDB_PERSIST_ENABLED: "true"
     ports:
       - "8001:8001"
     depends_on:
