@@ -1,0 +1,56 @@
+platform: Agent-Platform
+version: 0.1.0
+
+environment_contract_repo: AGenNext/Agent-Environment
+default_environment: dev
+
+environments:
+  dev:
+    contract: Agent-Environment/environments/dev.yaml
+  test:
+    contract: Agent-Environment/environments/test.yaml
+  staging:
+    contract: Agent-Environment/environments/staging.yaml
+  prod:
+    contract: Agent-Environment/environments/prod.yaml
+
+services:
+  agent_knowledge:
+    repo: AGenNext/Agent-Knowledge
+    role: core_enterprise_saas_product
+  agent_dashboard:
+    repo: AGenNext/Agent-Dashboard
+    role: authenticated_visibility_control_ui
+  agent_site:
+    repo: AGenNext/Agent-Site
+    role: public_website_docs_marketing
+
+packages:
+  agent_team:
+    repo: AGenNext/Agent-Team
+    role: reusable_goal_oriented_agents
+  agent_frameworks:
+    repo: AGenNext/Agent-Frameworks
+    role: langgraph_runtime_adapters
+  agent_graph:
+    repo: AGenNext/Agent-Graph
+    role: artifact_schemas
+
+contracts:
+  agent_objective: AGenNext/Agent-Objective
+  agent_blueprint: AGenNext/Agent-Blueprint
+  agent_constraints: AGenNext/Agent-Constraints
+  agent_skills: AGenNext/Agent-Skills
+  model_router: AGenNext/Model-Router
+  agent_bench: AGenNext/Agent-Bench
+  agent_eval: AGenNext/Agent-Eval
+  agent_trust: AGenNext/Agent-Trust
+  agent_analytics: AGenNext/Agent-Analytics
+  agent_research: AGenNext/Agent-Research
+  agent_maturity: AGenNext/Agent-Maturity
+
+runtime:
+  database: surrealdb
+  object_storage: s3_compatible
+  queue: local_queue_initially
+  model_policy: local_open_source_preferred
