@@ -6,7 +6,7 @@ from surrealdb import AsyncSurreal
 
 class SurrealDB:
     def __init__(self) -> None:
-        self._client: AsyncSurreal | None = None
+        self._client: Any = None
         self._url = os.getenv("SURREALDB_URL", "ws://localhost:8000/rpc")
         self._ns = os.getenv("SURREALDB_NAMESPACE", "agent_platform")
         self._db = os.getenv("SURREALDB_DATABASE", "agent_platform")
