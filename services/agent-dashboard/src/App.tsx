@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import { Sidebar } from "./components/Sidebar";
+import { AgentsPage } from "./pages/AgentsPage";
 import { HealthPage } from "./pages/HealthPage";
 import { ObjectivesPage } from "./pages/ObjectivesPage";
 import { RuntimePage } from "./pages/RuntimePage";
@@ -18,6 +19,7 @@ export default function App() {
       >
         <Routes>
           <Route path="/" element={<HealthPage />} />
+          <Route path="/agents" element={<AgentsPage />} />
           <Route path="/objectives" element={<ObjectivesPage />} />
           <Route path="/runtime" element={<RuntimePage />} />
         </Routes>

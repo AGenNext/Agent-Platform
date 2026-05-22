@@ -19,6 +19,31 @@ export interface HealthResponse {
   db: string;
 }
 
+export interface AgentRegistration {
+  name: string;
+  tenant_id: string;
+  description?: string;
+  version?: string;
+  goal_types?: string[];
+  skill_ids?: string[];
+  capabilities: Record<string, boolean>;
+}
+
+export interface AgentRecord {
+  id: string;
+  agent_id: string;
+  name: string;
+  description?: string;
+  version: string;
+  tenant_id: string;
+  status: string;
+  capabilities: Record<string, boolean>;
+  goal_types: string[];
+  skill_ids: string[];
+  registered_at: string;
+  last_seen_at: string;
+}
+
 export interface ObjectiveRequest {
   goal: string;
   context?: Record<string, unknown>;
@@ -64,6 +89,16 @@ export interface ObjectiveResponse {
 export const api = {
   health(): Promise<HealthResponse> {
     return request<HealthResponse>("/health");
+  },
+  registerAgent(body: AgentRegistration): Promise<AgentRecord> {
+    return request<AgentRecord>("/agents/register", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  },
+  listAgents(params?: { tenant_id?: string; status?: string }): Promise<AgentRecord[]> {
+    const q = new URLSearchParams(params as Record<string, string>).toString();
+    return request<AgentRecord[]>(`/agents/${q ? `?${q}` : ""}`);
   },
   runObjective(body: ObjectiveRequest): Promise<ObjectiveResponse> {
     return request<ObjectiveResponse>("/objectives/run", {

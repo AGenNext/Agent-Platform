@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 
 const links = [
   { to: "/", label: "Platform Health" },
+  { to: "/agents", label: "Agents" },
   { to: "/objectives", label: "Objectives" },
   { to: "/runtime", label: "Runtime" },
 ];
