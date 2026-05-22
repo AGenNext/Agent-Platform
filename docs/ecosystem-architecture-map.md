@@ -132,21 +132,20 @@ Agent-Mind
 
 Agent-Context  [CORE IP — proprietary to AGenNext]
   → dynamic, agent-driven context management
-  → the agent decides what to keep in its active context — not the system
+  → context has no fixed definition or schema — the agent decides entirely
+  → context can be anything: a world war, a child crying, a smell, a past trip,
+    a line of code, a market shift, an emotion — no predefined boundary
+  → the agent autonomously determines what is relevant and what enters context
   → context size expands and contracts based on task complexity and type:
       code task    → larger context: repo state, secrets, file history, dependencies
       travel task  → temporal context: a year-old trip to the same place is now current
-      analysis     → domain-specific depth: pull in only relevant domain knowledge
-  → context is not a fixed window — it is a living, task-aware working surface
+      emotional    → situational context: environmental and relational signals
+  → context is not a fixed window — it is a living, open-ended, task-aware surface
   → temporal relevance: dormant memories activate when task conditions match
-  → context lifecycle: what enters, what stays, what gets evicted, when old becomes current
-  → context switch detection: agent detects when task domain shifts and auto-clears
-    stale context to free token budget and reduce cost (Agent-FinOps integration)
-  → cost-aware context: context size is a cost lever — trim aggressively on simple tasks,
-    expand only when task complexity justifies the token spend
-  → privacy boundary: context is not visible to end users
-    only the agent and the platform provider (AGenNext) can access context contents
-    context inspection for debugging and cost optimization is a platform-provider privilege
+  → context switch detection: agent detects domain shifts and auto-clears stale context
+  → cost-aware: context size is a cost lever integrated with Agent-FinOps
+  → privacy boundary: context visible only to the agent and AGenNext (platform provider)
+    not accessible to end users — this is core proprietary IP
   → connects to:
       Agent-Framework → context feeds the execution engine's working memory
       Agent-Belief    → belief state informs what the agent deems contextually relevant
