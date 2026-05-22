@@ -140,6 +140,10 @@ Agent-Context
   → context is not a fixed window — it is a living, task-aware working surface
   → temporal relevance: dormant memories activate when task conditions match
   → context lifecycle: what enters, what stays, what gets evicted, when old becomes current
+  → context switch detection: agent detects when task domain shifts and auto-clears
+    stale context to free token budget and reduce cost (Agent-FinOps integration)
+  → cost-aware context: context size is a cost lever — trim aggressively on simple tasks,
+    expand only when task complexity justifies the token spend
   → connects to:
       Agent-Framework → context feeds the execution engine's working memory
       Agent-Belief    → belief state informs what the agent deems contextually relevant
