@@ -58,6 +58,8 @@ contracts:
   agent_constraints: AGenNext/Agent-Constraints
   aagfe: AGenNext/AAGFE
   agent_policies: AGenNext/Agent-Policies
+  agent_guard: AGenNext/Agent-Guard
+  agent_cognitive_guard: AGenNext/Agent-Cognitive-Guard
   agent_secrets: AGenNext/Agent-Secrets
   agent_skills: AGenNext/Agent-Skills
   model_router: AGenNext/Model-Router
@@ -78,8 +80,6 @@ contracts:
   agent_connect: AGenNext/Agent-Connect
   agent_fabric: AGenNext/Agent-Fabric
   agent_letters: AGenNext/Agent-Letters
-  agent_cognitive_guard: AGenNext/Agent-Cognitive-Guard
-
 # Research and future repos — not currently part of the platform
 research:
   agent_world:

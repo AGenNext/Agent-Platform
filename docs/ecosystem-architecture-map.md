@@ -146,6 +146,32 @@ Agent-Insights
   → evidence-backed, evaluated, sourced intelligence reports
 ```
 
+## Security and Runtime Protection
+
+```text
+Agent-Guard
+  → runtime protection layer: antivirus-equivalent for agent execution
+  → prompt injection detection and blocking
+  → malicious input scanning and sanitization
+  → runtime threat detection (code execution, data exfiltration attempts)
+  → active protection at the execution boundary, not just policy evaluation
+
+Agent-Cognitive-Guard
+  → cognitive safety layer: protects agent reasoning quality
+  → hallucination detection and flagging
+  → reasoning bias detection
+  → adversarial prompt resistance
+  → confidence threshold enforcement
+
+AAGFE
+  → governance enforcement (see Governance section)
+
+Note on boundaries:
+  Agent-Guard     → runtime threats from outside (what tries to harm the system)
+  Agent-Cognitive-Guard → reasoning failures from inside (what degrades output quality)
+  AAGFE           → governance violations (what breaks policy)
+```
+
 ## Review, Trust, and Community
 
 ```text
