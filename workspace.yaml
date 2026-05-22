@@ -67,6 +67,7 @@ contracts:
   agent_drive: AGenNext/Agent-Drive
   agent_channel: AGenNext/Agent-Channel
   agent_hooks: AGenNext/Agent-Hooks
+  agent_commit: AGenNext/Agent-Commit
   agent_optimize: AGenNext/Agent-Optimize
   agent_input: AGenNext/Agent-Input
   agent_output: AGenNext/Agent-Output

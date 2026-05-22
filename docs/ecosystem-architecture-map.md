@@ -337,6 +337,20 @@ Agent-Data
   → distinct from Agent-Graph (artifact schemas) and Agent-Knowledge (product domain)
 ```
 
+## State Commitment
+
+```text
+Agent-Commit
+  → atomic state commitment layer for agent work
+  → wraps SurrealDB COMMIT transaction semantics: all-or-nothing writes
+  → an agent's work is not final until committed — partial results are never exposed
+  → commit triggers: task completion, checkpoint, human approval, eval pass
+  → on commit failure: full rollback, no partial state persisted
+  → connects to: Agent-Framework (execution), Agent-Trust (provenance record on commit),
+    AAGFE (governance gate must pass before commit), Agent-Eval (eval must pass)
+  → reference: SurrealDB COMMIT statement
+```
+
 ## Agent Behavior Principles
 
 ```text
