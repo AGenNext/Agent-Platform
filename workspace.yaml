@@ -76,6 +76,7 @@ contracts:
   agent_connect: AGenNext/Agent-Connect
   agent_fabric: AGenNext/Agent-Fabric
   agent_letters: AGenNext/Agent-Letters
+  agent_cognitive_guard: AGenNext/Agent-Cognitive-Guard
 
 runtime:
   database: surrealdb

@@ -53,9 +53,6 @@ Agent-Team
 Agent-Graph
   → artifact schemas and graph-shaped artifact contracts
 
-Agent-Speech
-  → speech-to-text and text-to-speech
-  → voice input/output for agent interactions
 ```
 
 ## Governance and Operating Contracts
@@ -96,7 +93,8 @@ model-repository
   → model storage, versioning, and registry
 
 Agent-Speech
-  → speech I/O capability (also listed under Runtime)
+  → speech-to-text and text-to-speech capability
+  → voice input and output for any agent interaction surface
 
 Agent-Research
   → evidence gathering and research-to-decision traceability
