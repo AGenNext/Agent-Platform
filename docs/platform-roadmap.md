@@ -33,7 +33,8 @@ Deliverables:
 - SurrealDB
 - MinIO
 - Agent-Knowledge API
-- Agent-Frameworks runtime
+- Agent-Framework runtime (core execution engine)
+- Agent-Frameworks adapters (external framework integration)
 - Agent-Team execution
 - `/health`
 - `/objectives/run`

@@ -49,7 +49,8 @@ AGenNext owns:
 
 - Agent-Platform assembly
 - Agent-Knowledge product backend
-- Agent-Frameworks runtime adapters
+- Agent-Framework core runtime (AGenNext-owned execution engine)
+- Agent-Frameworks adapters (external framework integration layer)
 - Agent-Team behavior and A2A handoffs
 - Agent-Traces semantic trace model
 - SurrealDB product/run state

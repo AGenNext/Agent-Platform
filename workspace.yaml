@@ -30,9 +30,12 @@ packages:
   agent_team:
     repo: AGenNext/Agent-Team
     role: reusable_goal_oriented_agents
+  agent_framework:
+    repo: AGenNext/Agent-Framework
+    role: agennext_core_runtime_framework
   agent_frameworks:
     repo: AGenNext/Agent-Frameworks
-    role: langgraph_runtime_adapters
+    role: external_framework_adapters
   agent_graph:
     repo: AGenNext/Agent-Graph
     role: artifact_schemas

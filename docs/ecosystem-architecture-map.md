@@ -28,8 +28,12 @@ Agent-Knowledge
 Agent-Team
   → reusable goal-oriented agents and A2A handoff behavior
 
+Agent-Framework
+  → AGenNext's core runtime framework: execution engine, run model, state lifecycle
+
 Agent-Frameworks
-  → LangGraph/runtime adapters and SurrealDB-backed runtime state
+  → adapters to external frameworks (LangGraph, CrewAI, AutoGen, etc.)
+  → Agent-Framework consumes these adapters; does not depend on external frameworks directly
 
 Agent-Graph
   → artifact schemas and graph-shaped artifact contracts
@@ -114,7 +118,7 @@ Later scale path
 ```text
 User / Dashboard
   → Agent-Knowledge API
-  → Agent-Frameworks Runtime
+  → Agent-Framework Runtime
   → Agent-Team
   → SurrealDB runtime state
   → Agent-Analytics / Agent-Traces / Agent-Trust / Agent-FinOps
@@ -146,7 +150,8 @@ source material
 Agent-Platform assembles.
 Agent-Knowledge delivers product value.
 Agent-Team executes objectives.
-Agent-Frameworks runs workflows.
+Agent-Framework runs the core runtime.
+Agent-Frameworks adapts to external frameworks.
 Agent-Environment defines where.
 Agent-Secrets protects credentials.
 Agent-deploy deploys and operates.
