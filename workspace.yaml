@@ -71,6 +71,7 @@ contracts:
   agent_standard: AGenNext/Agent-Standard
   agent_handoff: AGenNext/Agent-Handoff
   agent_health: AGenNext/Agent-Health
+  agent_iga: AGenNext/Agent-IGA
   agent_optimize: AGenNext/Agent-Optimize
   agent_input: AGenNext/Agent-Input
   agent_output: AGenNext/Agent-Output

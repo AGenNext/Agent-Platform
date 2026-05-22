@@ -521,6 +521,32 @@ Agent-Hooks
     Agent-Framework (runtime interruption), Agent-Channel (external webhooks)
 ```
 
+## Identity and Access
+
+```text
+Agent-IGA
+  → integration layer for any organisation's Identity Governance and Administration tool
+  → agents are treated as software identities — same as any other application or
+    service account in the organisation, not as special cases or exceptions
+  → enterprises already have IGA tools — agents must plug into them, not bypass them
+  → covers:
+      identity lifecycle  → agents respect joiner/mover/leaver policies from the org IGA
+      access governance   → agent access rights are governed and certified by the org
+      role management     → agent roles derived from or aligned to org RBAC model
+      provisioning        → agent onboarding/offboarding follows org provisioning workflows
+      access certification → agent access reviewed on org-defined cadence
+      audit trail         → all agent identity and access events flow into org IGA audit
+      segregation of duties (SOD) → SOD rules apply to agents exactly as to humans
+                            an agent cannot hold conflicting roles or access rights
+                            an agent that requests and approves cannot be the same agent
+                            SOD violations are blocked by AAGFE at runtime
+  → adapter pattern: connects to any IGA tool
+      SailPoint, Saviynt, IBM Security, Microsoft Entra ID Governance,
+      One Identity, or any org-standard IGA via adapter
+  → connects to: Agent-Policies (access policies), AAGFE (enforcement),
+    Agent-Secrets (credential governance), Agent-Trust (identity provenance)
+```
+
 ## Integrations and Data Fabric
 
 ```text
