@@ -74,6 +74,29 @@ Agent-Graph
 
 ```
 
+## Standards
+
+```text
+Agent-Standard
+  → global best practices reference for AGenNext agent systems
+  → a living repo — starts sparse, enriched gradually as the field matures
+  → standard categories:
+      governance standards   → how agents should be governed, audited, controlled
+      performance standards  → what good agent performance looks like (metrics, thresholds)
+      safety standards       → cognitive safety, runtime protection, hallucination norms
+      interoperability       → how agents communicate, hand off, and integrate
+      data standards         → data quality, provenance, privacy, retention
+      eval standards         → evaluation rubrics, scoring norms, benchmark criteria
+  → relationship to other repos:
+      Agent-Standard  → defines what good looks like (the reference)
+      Agent-Policies  → orgs configure their own policies from this reference
+      Agent-Constraints → internal guardrails derived from these standards
+      AAGFE           → enforces the standards and policies at runtime
+  → currently: few standards exist globally — AGenNext will contribute to and
+    draw from emerging international standards (ISO, IEEE, NIST, industry bodies)
+  → goal: become the canonical standards reference for enterprise agent systems
+```
+
 ## Governance and Operating Contracts
 
 ```text
