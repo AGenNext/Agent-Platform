@@ -130,7 +130,7 @@ Agent-Mind
       Agent-Team   → consumes Agent-Mind's mind-aware coordination for multi-agent handoffs
       Agent-Fabric → Agent-Mind can reason over any data source via Agent-Fabric
 
-Agent-Context
+Agent-Context  [CORE IP — proprietary to AGenNext]
   → dynamic, agent-driven context management
   → the agent decides what to keep in its active context — not the system
   → context size expands and contracts based on task complexity and type:
@@ -144,6 +144,9 @@ Agent-Context
     stale context to free token budget and reduce cost (Agent-FinOps integration)
   → cost-aware context: context size is a cost lever — trim aggressively on simple tasks,
     expand only when task complexity justifies the token spend
+  → privacy boundary: context is not visible to end users
+    only the agent and the platform provider (AGenNext) can access context contents
+    context inspection for debugging and cost optimization is a platform-provider privilege
   → connects to:
       Agent-Framework → context feeds the execution engine's working memory
       Agent-Belief    → belief state informs what the agent deems contextually relevant
