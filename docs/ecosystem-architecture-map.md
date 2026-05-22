@@ -246,6 +246,7 @@ Agent-Eval
 
   → CLEAR scoring applies across all eval modes as the common quality rubric
   → eval metrics will be published (AGenNext will define and release the metric set)
+  → reference: arXiv 2511.14136 (foundational reference for eval framework — TBD)
   → all eval results stored in SurrealDB and surfaced via Agent-Dashboard
 ```
 
