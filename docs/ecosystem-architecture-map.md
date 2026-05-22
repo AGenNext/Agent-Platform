@@ -572,8 +572,28 @@ Agent-Health
   → heartbeat: continuous signal emitted by every agent at regular intervals
       missed heartbeats → agent flagged as unhealthy
       three missed heartbeats → automatic recovery attempt or HITL alert
+  → heartbeat unreachable (platform cannot contact the agent at all):
+      step 1 → retry connection up to 3 times with backoff
+      step 2 → if still unreachable → mark agent status as OFFLINE (not just unhealthy)
+      step 3 → immediately remove from handoff eligibility
+      step 4 → if agent had active work in progress → trigger recovery:
+                reassign work to a capable healthy agent,
+                or checkpoint and queue for when agent recovers
+      step 5 → emit alert to Agent-Monitor and Agent-Dashboard
+      step 6 → if work was critical or cannot be reassigned → HITL escalation
+      an unreachable agent is treated as a harder failure than an unhealthy one —
+      unknown state is more dangerous than known degraded state
   → health score per agent (0.0 → 1.0) updated continuously
-  → unhealthy agents are not eligible to receive handoffs (Agent-Handoff gate)
+  → HARD RULE: no transaction without an active heartbeat
+      no handoff → cannot send or receive work without confirmed live heartbeat
+      no commit  → Agent-Commit will not finalise work from an agent without heartbeat
+      no new task assignment → scheduler will not assign work without live heartbeat
+      active heartbeat is a prerequisite for any agent participation in the platform
+      without this rule: an agent could falsely claim it communicated with,
+      handed off to, or received from another agent that was never reachable —
+      heartbeat is the proof of life that makes all inter-agent claims verifiable
+      specifically prevents phantom communication: agent A cannot claim it worked
+      with agent B if agent B was never on the network and never emitted a heartbeat
   → connects to: Agent-Monitor (observability), Agent-Optimize (performance health),
     Agent-Handoff (capability gate), Agent-Dashboard (health status view)
 ```
