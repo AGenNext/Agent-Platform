@@ -48,7 +48,9 @@ Agent-Kernel
   → Agent-Framework delegates native execution to Agent-Kernel
 
 Agent-Team
-  → reusable goal-oriented agents and A2A handoff behavior
+  → multi-agent teams: reusable, goal-oriented, composable
+  → team types: product team, project team, event team, domain-specific team
+  → owns A2A handoff behavior and team composition contracts
 
 Agent-Graph
   → artifact schemas and graph-shaped artifact contracts
