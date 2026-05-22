@@ -223,11 +223,13 @@ Agent-Input
     text, voice, file, image, video, structured data, IoT signal, API payload,
     form, sensor reading, database query, email, webhook — not limited to any one type
   → speech-to-text is one input method among many, not the defining use case
-  → each agent has a different proficiency score per input method (0.0 → 1.0)
-  → no two agents share the same input profile — proficiency is agent-specific
-      example: document-agent  → PDF=0.95, speech=0.20, image=0.60
-               voice-agent     → speech=0.95, text=0.70, PDF=0.10
-               iot-agent       → sensor=0.99, text=0.40, image=0.30
+  → proficiency scored (0.0 → 1.0) across multiple dimensions per agent:
+      method    → PDF, speech, image, sensor, text, video...
+      mode      → real-time, batch, streaming, interactive...
+      style     → formal, casual, technical, conversational...
+      language  → English, French, Hindi, code, domain-specific terminology...
+      format    → structured, unstructured, semi-structured, tabular...
+  → no two agents share the same input profile — proficiency is fully agent-specific
 
 Agent-Output
   → output methods and data formats for agents
