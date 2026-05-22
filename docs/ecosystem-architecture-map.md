@@ -424,10 +424,18 @@ Agent-Handoff
   → RULE 5: never let quality suffer
             degrading output silently to meet a deadline or avoid escalation is forbidden
             quality is non-negotiable — if quality cannot be met, escalate
-  → RULE 6: acknowledgement is mandatory
-            the receiving agent must explicitly acknowledge receipt of the handoff
-            no acknowledgement = handoff did not happen — it is not assumed complete
-            unacknowledged handoffs are retried, then escalated if still unconfirmed
+  → RULE 6: acknowledgement is mandatory — three-part declaration
+            when agent B receives a handoff it must explicitly declare:
+              1. "I have received" → confirms receipt of the work and context
+              2. "I understand what needs to be done" → confirms comprehension
+              3. "I will be able to do it" → confirms capability and readiness
+            all three must be stated — a partial acknowledgement is not accepted
+            no acknowledgement = handoff did not happen — never assumed complete
+            unacknowledged handoffs are retried by the runtime, then escalated
+  → ENFORCEMENT: the runtime (Agent-Framework) enforces the handoff protocol
+            neither agent A nor agent B is responsible for enforcing the handoff
+            the runtime is the arbiter — it cannot happen at the agents' discretion
+            agents participate; the runtime guarantees the contract is upheld
   → no silent handoffs: every rejection is logged, reasoned, and fed back
   → connects to: Agent-Eval (quality check), Agent-Trust (provenance),
     Agent-Framework (A2A protocol), AAGFE (governance gate on handoff)
