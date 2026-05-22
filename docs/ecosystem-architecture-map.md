@@ -132,17 +132,18 @@ Agent-Mind
 
 Agent-Context  [CORE IP — proprietary to AGenNext]
   → dynamic, agent-driven context management
-  → context has no fixed definition or schema — the agent decides entirely
-  → context can be anything: a world war, a child crying, a smell, a past trip,
-    a line of code, a market shift, an emotion — no predefined boundary
-  → the agent autonomously determines what is relevant and what enters context
+  → context has no fixed definition or schema
+  → context is decided by common sense only — the agent reasons like a human would
+  → no rules, no scoring formulas, no predefined relevance criteria
+  → context can be anything: a world war, a child crying, a past trip, a line of code
   → context size expands and contracts based on task complexity and type:
       code task    → larger context: repo state, secrets, file history, dependencies
       travel task  → temporal context: a year-old trip to the same place is now current
       emotional    → situational context: environmental and relational signals
   → context is not a fixed window — it is a living, open-ended, task-aware surface
   → temporal relevance: dormant memories activate when task conditions match
-  → context switch detection: agent detects domain shifts and auto-clears stale context
+  → context switch detection: agent detects domain shifts, asks for confirmation before
+    clearing stale context — never clears silently, always confirms to be sure
   → cost-aware: context size is a cost lever integrated with Agent-FinOps
   → privacy boundary: context visible only to the agent and AGenNext (platform provider)
     not accessible to end users — this is core proprietary IP
