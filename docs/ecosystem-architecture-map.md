@@ -385,8 +385,12 @@ Agent-Handoff
                         incomplete context = handoff rejected, same as poor quality
       receiving agent capability — producing agent verifies the receiving agent has
                         the necessary skills and tools to handle the next task
-                        if receiving agent lacks capability → handoff blocked,
-                        find a capable agent or escalate
+                        if receiving agent lacks capability:
+                          step 1 → producing agent attempts to impart the missing
+                                   skills or tools to the receiving agent
+                          step 2 → if imparting fails → HITL escalation
+                                   human decides: train the agent, swap agent, or
+                                   restructure the task
   → no silent handoffs: every rejection is logged, reasoned, and fed back
   → connects to: Agent-Eval (quality check), Agent-Trust (provenance),
     Agent-Framework (A2A protocol), AAGFE (governance gate on handoff)
