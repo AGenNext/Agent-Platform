@@ -360,6 +360,34 @@ Agent-Data
   → distinct from Agent-Graph (artifact schemas) and Agent-Knowledge (product domain)
 ```
 
+## Handoff
+
+```text
+Agent-Handoff
+  → pre-handoff quality gate between agents
+  → THE RULE: an agent must never accept poor quality work — no exceptions
+  → quality is verified BEFORE the handoff completes, never after
+  → handoff lifecycle:
+      producing agent completes work
+        ↓
+      pre-handoff quality check runs (via Agent-Eval)
+        ↓
+      quality passes → handoff accepted → receiving agent takes over
+      quality fails  → handoff rejected → producing agent must fix and resubmit
+        ↓
+      receiving agent also checks on receipt — second line of defence
+  → what is checked:
+      output quality score (must meet threshold defined in Agent-Standard)
+      completeness — is the work actually done, not partially done?
+      trust/provenance — is evidence attached? (Agent-Trust)
+      context package — MANDATORY: complete context must transfer with every handoff
+                        the receiving agent must have everything needed to continue
+                        incomplete context = handoff rejected, same as poor quality
+  → no silent handoffs: every rejection is logged, reasoned, and fed back
+  → connects to: Agent-Eval (quality check), Agent-Trust (provenance),
+    Agent-Framework (A2A protocol), AAGFE (governance gate on handoff)
+```
+
 ## State Commitment
 
 ```text
