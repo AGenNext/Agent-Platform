@@ -266,6 +266,22 @@ Agent-Data
   → distinct from Agent-Graph (artifact schemas) and Agent-Knowledge (product domain)
 ```
 
+## Agent Behavior Principles
+
+```text
+Agent-Optimize
+  → optimization is intrinsic agent behavior, not a feature — every agent optimizes
+    by nature across three dimensions at all times:
+      cost    → minimize token spend, compute, API calls, resource usage
+      time    → minimize latency, complete tasks in the least steps possible
+      effort  → avoid redundant work, reuse results, don't redo what is already known
+  → continuous: optimization runs throughout the entire agent lifecycle, not once
+  → self-aware: when the agent cannot optimize further on its own, it seeks help
+    (escalates to human, delegates to specialist agent, or requests more resources)
+  → connects to: Agent-FinOps (cost), Agent-Context (context = cost lever),
+    Model-Router (model = cost/quality tradeoff), Agent-Framework (execution)
+```
+
 ## Hooks and Middleware
 
 ```text
