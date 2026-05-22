@@ -266,6 +266,27 @@ Agent-Data
   → distinct from Agent-Graph (artifact schemas) and Agent-Knowledge (product domain)
 ```
 
+## Hooks and Middleware
+
+```text
+Agent-Hooks
+  → event hooks, webhooks, and middleware for the platform
+  → use cases:
+      external webhooks       → receive signals from any external system at runtime
+      runtime interruption    → pause, redirect, or modify agent execution mid-run
+      middleware              → intercept and transform data flowing through the pipeline
+      data extraction         → extract data at defined points in the execution flow
+      safeguard ingestion     → inject safety and governance instructions at runtime
+  → hook types:
+      before_run   → fires before an objective or task starts
+      on_event     → fires on any external or internal event signal
+      on_interrupt → fires when runtime receives an interruption signal
+      after_step   → fires after each agent step (middleware pattern)
+      on_output    → fires before output is delivered (intercept/transform)
+  → connects to: Agent-Guard (safeguards), AAGFE (governance gates),
+    Agent-Framework (runtime interruption), Agent-Channel (external webhooks)
+```
+
 ## Integrations and Data Fabric
 
 ```text
