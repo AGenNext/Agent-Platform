@@ -278,8 +278,17 @@ Agent-Optimize
   → continuous: optimization runs throughout the entire agent lifecycle, not once
   → self-aware: when the agent cannot optimize further on its own, it seeks help
     (escalates to human, delegates to specialist agent, or requests more resources)
+  → self-benchmarking on repeat tasks:
+      on every repeated task the agent asks:
+        "did I use less time than last time?"
+        "did I use less effort than last time?"
+        "did I use fewer tokens than last time?"
+      if yes on all three → record improvement, reinforce the approach
+      if no on any → evaluate what changed, adjust strategy before next run
+      over time each agent builds its own performance history per task type
   → connects to: Agent-FinOps (cost), Agent-Context (context = cost lever),
-    Model-Router (model = cost/quality tradeoff), Agent-Framework (execution)
+    Model-Router (model = cost/quality tradeoff), Agent-Analytics (improvement loop),
+    Agent-Framework (execution history in SurrealDB)
 ```
 
 ## Hooks and Middleware
