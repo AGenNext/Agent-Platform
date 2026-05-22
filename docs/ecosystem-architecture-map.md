@@ -246,7 +246,41 @@ Agent-Eval
 
   → CLEAR scoring applies across all eval modes as the common quality rubric
   → eval metrics will be published (AGenNext will define and release the metric set)
-  → reference: arXiv 2511.14136 (foundational reference for eval framework — TBD)
+  → four measurement layers (Google Cloud Agent Factory):
+      final outcome     → quality, accuracy, safety, hallucination avoidance
+      chain of thought  → logical reasoning steps, consistency, coherence
+      tool utilization  → correct tool selection, parameter passing, no costly loops
+      memory/context    → information recall, conflict resolution, context retention
+
+  → three measurement methods:
+      ground truth      → fast, cheap, objective — cannot capture nuance
+      LLM-as-judge      → scalable, scores subjective qualities — bias risk
+      human-in-the-loop → gold standard, captures nuance — slow and expensive
+      best practice: calibrate LLM-judge against human golden dataset
+
+  → three-pillar output eval (Microsoft / HBR):
+      Understand → input capture, intent recognition, emotional cues
+      Reason     → right action, admits uncertainty, escalates when needed
+      Respond    → clear, direct, efficient — speed over emotional validation (HBR)
+
+  → three-tier testing strategy:
+      tier 1: unit tests — individual components in isolation
+      tier 2: integration — complete multi-step agent journey
+      tier 3: end-to-end human review — complex tasks, continuous calibration
+
+  → multi-agent evaluation: never evaluate agents in isolation
+    system success = smooth handoffs + context sharing + collaborative goal achievement
+    an agent that perfectly hands off may score zero on task completion alone
+
+  → composite score: balance all layers into one unified quality score
+    rather than isolated metrics that can be gamed independently
+  → eval metrics will be published by AGenNext
+  → references:
+      arXiv 2511.14136
+      Google Cloud: Agent Factory — Agent Evaluation, Practical Tooling, Multi-Agent Systems
+      Microsoft Dynamics 365: AI Agent Performance Measurement (2026)
+      Harvard Business Review: customer effort and problem-solving speed
+      LangSmith evaluation, fin.ai enterprise KPI framework, Microsoft AI Agents for Beginners
   → all eval results stored in SurrealDB and surfaced via Agent-Dashboard
 ```
 
