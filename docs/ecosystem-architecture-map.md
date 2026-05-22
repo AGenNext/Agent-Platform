@@ -431,7 +431,22 @@ Agent-Handoff
               3. "I will be able to do it" → confirms capability and readiness
             all three must be stated — a partial acknowledgement is not accepted
             no acknowledgement = handoff did not happen — never assumed complete
-            unacknowledged handoffs are retried by the runtime, then escalated
+            if agent B cannot give any part of the three-part acknowledgement
+            or cannot assure it will be able to complete the work:
+              tier 1 → orchestrator intervention
+                        Agent-Framework re-routes, retries, or reassigns automatically
+              tier 2 → peer agent intervention
+                        a peer agent assists agent B — imparts missing context,
+                        skills, or tools to make acknowledgement possible
+              tier 3 → senior agent / team lead intervention
+                        a higher-authority agent in the team reviews and decides
+              tier 4 → human (HITL)
+                        last resort only — human decides: fix, swap, restructure
+                        do not escalate to human unless all prior tiers have failed
+                        humans are expensive and slow — exhaust agent-level resolution first
+            each tier is attempted before moving to the next
+            escalation is automatic and runtime-driven — agents do not self-escalate
+            goal: resolve at the lowest tier possible — human is the exception, not the default
   → ENFORCEMENT: the runtime (Agent-Framework) enforces the handoff protocol
             neither agent A nor agent B is responsible for enforcing the handoff
             the runtime is the arbiter — it cannot happen at the agents' discretion
