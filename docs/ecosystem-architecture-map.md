@@ -67,7 +67,21 @@ Agent-Blueprint
   → versioned team/system blueprints
 
 Agent-Constraints
-  → reusable policy constraints and guardrails
+  → reusable policy constraint definitions and guardrail specifications
+
+AAGFE (AGenNext Agent Governance and Framework Enforcement)
+  → runtime governance enforcement engine
+  → the most important governance component: nothing runs without passing AAGFE
+  → evaluates Agent-Constraints (internal guardrails) and Agent-Policies (org policies)
+  → writes enforcement decisions and audit trail to SurrealDB
+
+Agent-Policies
+  → OPA-compatible (Open Policy Agent / Rego) policy definitions
+  → set by enterprise organizations for their own governance rules
+  → current: evaluated by OPA engine, enforcement and audit records go to SurrealDB via AAGFE
+  → planned migration: move policy evaluation to SurrealQL-native
+    (SurrealDB DEFINE TABLE PERMISSIONS, DEFINE FUNCTION, native rule evaluation)
+  → goal: all policy evaluation runs inside SurrealDB, eliminating OPA dependency
 
 Agent-Secrets
   → secrets, keys, credential ownership, rotation, and environment-specific handling
@@ -225,6 +239,8 @@ Agent-Team executes objectives.
 Agent-Framework runs the core runtime and memory.
 Agent-Kernel handles native execution.
 Agent-Frameworks adapts to external frameworks.
+AAGFE enforces governance at runtime.
+Agent-Constraints defines the policies.
 Agent-Environment defines where.
 Agent-Secrets protects credentials.
 Agent-deploy deploys and operates.
@@ -238,6 +254,8 @@ Agent-Decisions records all decisions.
 Agent-Analytics improves over time.
 Agent-Community connects the ecosystem.
 Agent-Speech enables voice interaction.
+Agent-Connect integrates everything external.
+Agent-Fabric unifies data, identity, skills, and tools.
 ```
 
 ## Research and Future Repos (Not Currently Part of Platform)
