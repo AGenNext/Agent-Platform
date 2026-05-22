@@ -22,6 +22,9 @@ services:
   agent_dashboard:
     repo: AGenNext/Agent-Dashboard
     role: authenticated_visibility_control_ui
+  agent_chat:
+    repo: AGenNext/Agent-Chat
+    role: conversational_chat_ui_surface
   agent_site:
     repo: AGenNext/Agent-Site
     role: public_website_docs_marketing
@@ -36,9 +39,18 @@ packages:
   agent_frameworks:
     repo: AGenNext/Agent-Frameworks
     role: external_framework_adapters
+  agent_kernel:
+    repo: AGenNext/Agent-Kernel
+    role: native_low_level_execution_and_sandboxing
   agent_graph:
     repo: AGenNext/Agent-Graph
     role: artifact_schemas
+  agent_speech:
+    repo: AGenNext/Agent-Speech
+    role: speech_to_text_and_text_to_speech
+  model_repository:
+    repo: AGenNext/model-repository
+    role: model_storage_versioning_and_registry
 
 contracts:
   agent_objective: AGenNext/Agent-Objective
@@ -51,11 +63,19 @@ contracts:
   agent_eval: AGenNext/Agent-Eval
   agent_trust: AGenNext/Agent-Trust
   agent_traces: AGenNext/Agent-Traces
+  agent_monitor: AGenNext/Agent-Monitor
   agent_analytics: AGenNext/Agent-Analytics
   agent_finops: AGenNext/Agent-FinOps
   agent_research: AGenNext/Agent-Research
   agent_maturity: AGenNext/Agent-Maturity
   agent_deploy: AGenNext/Agent-deploy
+  agent_review: AGenNext/Agent-Review
+  agent_decisions: AGenNext/Agent-Decisions
+  agent_community: AGenNext/Agent-Community
+  agent_insights: AGenNext/Agent-Insights
+  agent_connect: AGenNext/Agent-Connect
+  agent_fabric: AGenNext/Agent-Fabric
+  agent_letters: AGenNext/Agent-Letters
 
 runtime:
   database: surrealdb

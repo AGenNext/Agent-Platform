@@ -18,25 +18,44 @@ Agent-Site
 Agent-Dashboard
   → authenticated control plane, status, approvals, observability views
 
+Agent-Chat
+  → conversational chat UI: real-time agent interaction, multi-turn dialogue
+
 Agent-Knowledge
   → enterprise source-to-artifact intelligence product API and domain logic
+
+Agent-Insights
+  → trusted, actionable business insights (Gartner-style intelligence output)
+  → evidence-backed, evaluated, sourced intelligence reports and recommendations
 ```
 
 ## Agent Runtime and Execution
 
 ```text
-Agent-Team
-  → reusable goal-oriented agents and A2A handoff behavior
-
 Agent-Framework
-  → AGenNext's core runtime framework: execution engine, run model, state lifecycle
+  → AGenNext's core runtime framework
+  → execution engine, memory system, state lifecycle, tool coordination
+  → multi-tier memory: working, episodic, semantic (GraphRAG + RAG), procedural
+  → A2A handoff protocol, human-in-the-loop gates, checkpointing
 
 Agent-Frameworks
   → adapters to external frameworks (LangGraph, CrewAI, AutoGen, etc.)
-  → Agent-Framework consumes these adapters; does not depend on external frameworks directly
+  → Agent-Framework consumes these adapters; never depends on them directly
+
+Agent-Kernel
+  → native and low-level execution layer
+  → sandboxed process management, kernel-level agent execution
+  → Agent-Framework delegates native execution to Agent-Kernel
+
+Agent-Team
+  → reusable goal-oriented agents and A2A handoff behavior
 
 Agent-Graph
   → artifact schemas and graph-shaped artifact contracts
+
+Agent-Speech
+  → speech-to-text and text-to-speech
+  → voice input/output for agent interactions
 ```
 
 ## Governance and Operating Contracts
@@ -57,11 +76,14 @@ Agent-Secrets
 Agent-Environment
   → dev/test/staging/prod environment contracts
 
+Agent-Decisions
+  → complete decision log: architectural and operational decisions with rationale
+
 Agent-Maturity
   → maturity and production/enterprise readiness model
 ```
 
-## Capability, Model, Research, and Evaluation
+## Capability, Model, and Research
 
 ```text
 Agent-Skills
@@ -70,24 +92,69 @@ Agent-Skills
 Model-Router
   → model/provider routing under constraints and budgets
 
+model-repository
+  → model storage, versioning, and registry
+
+Agent-Speech
+  → speech I/O capability (also listed under Runtime)
+
 Agent-Research
   → evidence gathering and research-to-decision traceability
 
 Agent-Bench
-  → reproducible benchmark task definitions
+  → reproducible benchmark task definitions and benchmarking runs
 
 Agent-Eval
   → evaluation rubrics, CLEAR scoring, and quality gates
 ```
 
-## Trust, Telemetry, Analytics, Cost, and Operations
+## Integrations and Data Fabric
 
 ```text
+Agent-Connect
+  → integration layer: connects agents to any external system
+  → CRMs, ERPs, databases, APIs, webhooks, data sources
+
+Agent-Fabric
+  → data fabric, identity fabric, skills and tools fabric
+  → unified fabric layer: weaves data sources, identities, skills, and tools
+    into a coherent surface agents can traverse
+```
+
+## Product Output Surfaces
+
+```text
+Agent-Letters
+  → personalized newsletters: agent-generated, personalized content delivery
+
+Agent-Insights
+  → trusted, actionable business intelligence (Gartner-style)
+  → evidence-backed, evaluated, sourced intelligence reports
+```
+
+## Review, Trust, and Community
+
+```text
+Agent-Review
+  → review mechanics, findings, and recommendations
+  → does not own final platform accept/reject (Agent-Platform owns that)
+
 Agent-Trust
   → provenance, evidence, traceability, and trust contracts
 
+Agent-Community
+  → community influence: open source community, contributor workflows,
+    community signals, feedback loops
+```
+
+## Telemetry, Analytics, Cost, and Operations
+
+```text
+Agent-Monitor
+  → real-time monitoring, traces, logs, correlation IDs, observability tooling
+
 Agent-Traces
-  → traces, telemetry, logs, correlation IDs, and observability contracts
+  → semantic trace contracts and trace schema ownership
 
 Agent-Analytics
   → events, metrics, trends, and improvement loops
@@ -116,13 +183,15 @@ Later scale path
 ## Runtime Flow
 
 ```text
-User / Dashboard
+User / Agent-Chat / Agent-Dashboard
   → Agent-Knowledge API
-  → Agent-Framework Runtime
-  → Agent-Team
+  → Agent-Framework (execution engine + memory)
+  → Agent-Kernel (native execution where needed)
+  → Agent-Team (agents)
+  → Agent-Frameworks (external runtime adapters if used)
   → SurrealDB runtime state
-  → Agent-Analytics / Agent-Traces / Agent-Trust / Agent-FinOps
-  → Dashboard visibility
+  → Agent-Monitor / Agent-Traces / Agent-Trust / Agent-FinOps
+  → Agent-Dashboard / Agent-Chat visibility
   → Human approval
 ```
 
@@ -133,14 +202,16 @@ source material
   → ingestion / freshness check
   → lossless storage in SurrealDB where possible
   → extraction and indexing
+  → GraphRAG: entity/relationship extraction, knowledge graph build
   → objective creation
-  → agent team execution
-  → model routing under constraints and budgets
+  → agent team execution (Agent-Framework orchestrates)
+  → model routing under constraints and budgets (Model-Router)
   → artifact generation
-  → evaluation
-  → trust/provenance report
+  → evaluation (Agent-Eval)
+  → trust/provenance report (Agent-Trust)
   → analytics and FinOps attribution
-  → dashboard review
+  → Agent-Insights: distill into actionable intelligence
+  → dashboard review (Agent-Dashboard)
   → human approval
 ```
 
@@ -149,21 +220,28 @@ source material
 ```text
 Agent-Platform assembles.
 Agent-Knowledge delivers product value.
+Agent-Insights delivers trusted intelligence.
 Agent-Team executes objectives.
-Agent-Framework runs the core runtime.
+Agent-Framework runs the core runtime and memory.
+Agent-Kernel handles native execution.
 Agent-Frameworks adapts to external frameworks.
 Agent-Environment defines where.
 Agent-Secrets protects credentials.
 Agent-deploy deploys and operates.
-Agent-Traces observes.
+Agent-Monitor observes in real time.
+Agent-Traces owns the semantic trace model.
 Agent-FinOps controls cost.
 Agent-Trust proves evidence.
 Agent-Eval proves quality.
+Agent-Review provides review findings.
+Agent-Decisions records all decisions.
 Agent-Analytics improves over time.
+Agent-Community connects the ecosystem.
+Agent-Speech enables voice interaction.
 ```
 
 ## Final Rule
 
-Each repository should own exactly one major responsibility.
+Each repository owns exactly one major responsibility.
 
 If a responsibility is shared, define the boundary explicitly before implementation.
