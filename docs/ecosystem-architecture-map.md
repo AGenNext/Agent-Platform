@@ -287,6 +287,9 @@ Agent-Optimize
       if no on any → self-reflect: why did this not improve?
                      produce concrete action items for the next run
                      action items are stored and applied on the next attempt
+  → escalation rule: 5 consecutive runs with no improvement on the same task
+    → automatically trigger Human-in-the-Loop (HITL)
+    → agent cannot keep self-optimizing indefinitely — 5 strikes and seek human help
       over time each agent builds its own performance history per task type
   → connects to: Agent-FinOps (cost), Agent-Context (context = cost lever),
     Model-Router (model = cost/quality tradeoff), Agent-Analytics (improvement loop),
