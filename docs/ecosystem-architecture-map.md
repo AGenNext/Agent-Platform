@@ -365,7 +365,11 @@ Agent-Data
 ```text
 Agent-Handoff
   → pre-handoff quality gate between agents
-  → THE RULE: an agent must never accept poor quality work — no exceptions
+  → RULE 1: an agent must never accept poor quality work — no exceptions
+  → RULE 2: never hand off work to an agent that is not capable of doing it
+            or does not have the required tools
+            do not hand off randomly or to whoever is available
+            both capability AND tools must be verified before any handoff is initiated
   → quality is verified BEFORE the handoff completes, never after
   → handoff lifecycle:
       producing agent completes work
