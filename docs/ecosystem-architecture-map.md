@@ -196,6 +196,16 @@ Agent-Eval
   → evaluation rubrics, CLEAR scoring, and quality gates
 ```
 
+## Storage
+
+```text
+Agent-Drive
+  → cloud file storage: uploaded files, documents, images, binaries, media
+  → adapts to any provider: Google Drive, AWS S3, Azure Blob, or any S3-compatible store
+  → agents store and retrieve files here — not plain text (that is Agent-Data)
+  → user-uploaded files land here; agents keep working files here across sessions
+```
+
 ## Data
 
 ```text
