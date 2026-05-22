@@ -9,6 +9,22 @@ Agent-Platform
   → assembles, configures, deploys, and launches the customer-facing platform
 ```
 
+## Communication
+
+```text
+Agent-Channel
+  → communication abstraction layer between humans and agents
+  → any channel: chat, email, SMS, IoT device, voice, webhook, API
+  → channel-agnostic: agents send and receive through Agent-Channel regardless
+    of the underlying transport
+  → implementations:
+      Agent-Chat  → chat UI channel (browser/mobile)
+      email       → email channel adapter
+      IoT         → device/sensor channel adapter
+      voice       → Agent-Speech integration channel
+      any future channel connects here without changing agent logic
+```
+
 ## Customer-Facing Surfaces
 
 ```text
@@ -19,7 +35,8 @@ Agent-Dashboard
   → authenticated control plane, status, approvals, observability views
 
 Agent-Chat
-  → conversational chat UI: real-time agent interaction, multi-turn dialogue
+  → chat UI channel: real-time conversational interface (browser/mobile)
+  → one implementation of Agent-Channel
 
 Agent-Knowledge
   → enterprise source-to-artifact intelligence product API and domain logic

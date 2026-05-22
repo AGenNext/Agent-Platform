@@ -65,6 +65,7 @@ contracts:
   agent_context: AGenNext/Agent-Context
   agent_data: AGenNext/Agent-Data
   agent_drive: AGenNext/Agent-Drive
+  agent_channel: AGenNext/Agent-Channel
   agent_secrets: AGenNext/Agent-Secrets
   agent_skills: AGenNext/Agent-Skills
   model_router: AGenNext/Model-Router
