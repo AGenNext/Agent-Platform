@@ -240,6 +240,18 @@ Agent-Community connects the ecosystem.
 Agent-Speech enables voice interaction.
 ```
 
+## Research and Future Repos (Not Currently Part of Platform)
+
+```text
+Agent-World
+  → autonomous multi-agent evolution for open-ended discovery
+  → based on Microsoft Research CORAL theory
+  → agents evolve, self-organize, and discover emergent knowledge without
+    predefined objectives
+  → status: research — not integrated into Agent-Platform
+  → reference: CORAL: Towards Autonomous Multi-Agent Evolution for Open-Ended Discovery
+```
+
 ## Final Rule
 
 Each repository owns exactly one major responsibility.

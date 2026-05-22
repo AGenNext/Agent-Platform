@@ -78,6 +78,14 @@ contracts:
   agent_letters: AGenNext/Agent-Letters
   agent_cognitive_guard: AGenNext/Agent-Cognitive-Guard
 
+# Research and future repos — not currently part of the platform
+research:
+  agent_world:
+    repo: AGenNext/Agent-World
+    role: autonomous_multi_agent_evolution_open_ended_discovery
+    status: research_not_in_platform
+    reference: https://www.microsoft.com/en-us/research/publication/coral-towards-autonomous-multi-agent-evolution-for-open-ended-discovery/
+
 runtime:
   database: surrealdb
   object_storage: s3_compatible
