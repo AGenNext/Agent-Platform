@@ -213,6 +213,28 @@ Agent-Eval
   → evaluation rubrics, CLEAR scoring, and quality gates
 ```
 
+## Input and Output
+
+```text
+Agent-Input
+  → input methods and formats for agents
+  → every agent can declare its own input capabilities and proficiency
+  → input methods: text, speech-to-text, file upload, structured data, IoT signal,
+    image, video, API payload, form — any way data enters an agent
+  → proficiency expressed as absolute numbers (0.0 → 1.0) per input method per agent
+      example: document-agent: PDF=0.95, speech=0.20, image=0.60
+  → speech-to-text is an input method here, not a standalone service
+
+Agent-Output
+  → output methods and data formats for agents
+  → every agent declares its own output capabilities with absolute proficiency scores
+  → output formats: text, markdown, JSON, CSV, PDF, HTML, speech/TTS,
+    structured report, dashboard data, API response — any way results leave an agent
+  → proficiency expressed as absolute numbers (0.0 → 1.0) per output format per agent
+      example: insight-agent: PDF=0.90, JSON=1.0, speech=0.10
+  → Agent-Channel delivers the output through the right communication channel
+```
+
 ## Storage
 
 ```text
