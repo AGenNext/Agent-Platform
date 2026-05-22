@@ -111,6 +111,15 @@ Agent-Belief
       - arXiv 2412.07981
       - O'Reilly: The Next Leap for AI: Why Agents Need to Learn to Believe
 
+Agent-Mind
+  → agent cognitive architecture: the full mental model of an agent
+  → integrates belief state (Agent-Belief), working memory, reasoning, and intent
+  → the "mind" as a unified cognitive object: what the agent knows, thinks, and intends
+  → reference: arXiv 2508.00401
+  → relationship to Agent-Belief:
+      Agent-Belief → epistemic state (what the agent holds as true)
+      Agent-Mind   → full cognitive architecture (belief + desire + intention + reasoning)
+
 Agent-Cognitive-Guard
   → cognitive safety layer (see Security section)
 ```
