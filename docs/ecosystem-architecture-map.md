@@ -130,6 +130,22 @@ Agent-Mind
       Agent-Team   → consumes Agent-Mind's mind-aware coordination for multi-agent handoffs
       Agent-Fabric → Agent-Mind can reason over any data source via Agent-Fabric
 
+Agent-Context
+  → dynamic, agent-driven context management
+  → the agent decides what to keep in its active context — not the system
+  → context size expands and contracts based on task complexity and type:
+      code task    → larger context: repo state, secrets, file history, dependencies
+      travel task  → temporal context: a year-old trip to the same place is now current
+      analysis     → domain-specific depth: pull in only relevant domain knowledge
+  → context is not a fixed window — it is a living, task-aware working surface
+  → temporal relevance: dormant memories activate when task conditions match
+  → context lifecycle: what enters, what stays, what gets evicted, when old becomes current
+  → connects to:
+      Agent-Framework → context feeds the execution engine's working memory
+      Agent-Belief    → belief state informs what the agent deems contextually relevant
+      Agent-Mind      → the cognitive layer that decides context composition
+      Agent-Memory    → retrieval source for context candidates
+
 Agent-Cognitive-Guard
   → cognitive safety layer (see Security section)
 ```

@@ -62,6 +62,7 @@ contracts:
   agent_cognitive_guard: AGenNext/Agent-Cognitive-Guard
   agent_belief: AGenNext/Agent-Belief
   agent_mind: AGenNext/Agent-Mind
+  agent_context: AGenNext/Agent-Context
   agent_secrets: AGenNext/Agent-Secrets
   agent_skills: AGenNext/Agent-Skills
   model_router: AGenNext/Model-Router
