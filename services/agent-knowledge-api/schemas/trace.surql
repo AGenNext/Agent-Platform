@@ -19,7 +19,7 @@ DEFINE FIELD to_agent      ON TABLE trace TYPE option<string>;
 DEFINE FIELD objective_id  ON TABLE trace TYPE option<record<objective>>;
 DEFINE FIELD task_id       ON TABLE trace TYPE option<record<task>>;
 
-DEFINE FIELD event_type    ON TABLE trace TYPE string;
+DEFINE FIELD event_type    ON TABLE trace TYPE string DEFAULT 'event';
 DEFINE FIELD payload       ON TABLE trace TYPE option<object>;
 DEFINE FIELD timestamp     ON TABLE trace TYPE datetime DEFAULT time::now();
 

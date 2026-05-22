@@ -8,7 +8,7 @@ DEFINE FIELD `@context`    ON TABLE artifact TYPE string DEFAULT 'https://schema
 DEFINE FIELD `@type`       ON TABLE artifact TYPE string DEFAULT 'CreativeWork';
 
 -- schema:CreativeWork fields
-DEFINE FIELD name          ON TABLE artifact TYPE string;
+DEFINE FIELD name          ON TABLE artifact TYPE option<string>;
 DEFINE FIELD description   ON TABLE artifact TYPE option<string>;
 DEFINE FIELD text          ON TABLE artifact TYPE option<string>;
 DEFINE FIELD url           ON TABLE artifact TYPE option<string>;

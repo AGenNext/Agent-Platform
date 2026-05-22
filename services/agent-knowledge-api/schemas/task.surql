@@ -7,8 +7,8 @@ DEFINE TABLE task SCHEMAFULL;
 DEFINE FIELD `@context`    ON TABLE task TYPE string DEFAULT 'https://schema.org';
 DEFINE FIELD `@type`       ON TABLE task TYPE string DEFAULT 'Action';
 
-DEFINE FIELD name          ON TABLE task TYPE string;
-DEFINE FIELD description   ON TABLE task TYPE string;
+DEFINE FIELD name          ON TABLE task TYPE option<string>;
+DEFINE FIELD description   ON TABLE task TYPE option<string>;
 
 -- Relationship back to parent objective
 DEFINE FIELD objective_id  ON TABLE task TYPE record<objective> ASSERT $value != NONE;
