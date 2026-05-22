@@ -14,4 +14,19 @@ export default defineConfig({
       },
     },
   },
+  define: {
+    // Expose env vars to browser at build time
+    "import.meta.env.VITE_API_URL": JSON.stringify(
+      process.env.VITE_API_URL ?? "http://localhost:8001"
+    ),
+    "import.meta.env.VITE_SURREALDB_URL": JSON.stringify(
+      process.env.VITE_SURREALDB_URL ?? "ws://localhost:8000/rpc"
+    ),
+    "import.meta.env.VITE_SURREALDB_NS": JSON.stringify(
+      process.env.VITE_SURREALDB_NS ?? "agent_platform"
+    ),
+    "import.meta.env.VITE_SURREALDB_DB": JSON.stringify(
+      process.env.VITE_SURREALDB_DB ?? "agent_platform"
+    ),
+  },
 });

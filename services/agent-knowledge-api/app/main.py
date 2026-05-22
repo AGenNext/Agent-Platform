@@ -4,7 +4,7 @@ from fastapi import FastAPI
 
 from app.db.schema_loader import apply_schemas
 from app.db.surrealdb import db
-from app.routers import health, objectives
+from app.routers import agents, health, memory, objectives
 
 
 @asynccontextmanager
@@ -20,9 +20,16 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Agent Knowledge API",
     version="0.1.0",
-    description="Thin orchestration layer over SurrealDB. Data and decisions at same layer.",
+    description=(
+        "Thin orchestration layer over SurrealDB. "
+        "Data and decisions at same layer. "
+        "Schema.org JSON-LD is the graph data model. "
+        "SurrealDB is the runtime, context layer, and digital twin backbone."
+    ),
     lifespan=lifespan,
 )
 
 app.include_router(health.router)
 app.include_router(objectives.router)
+app.include_router(agents.router)
+app.include_router(memory.router)
