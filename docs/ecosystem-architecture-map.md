@@ -115,10 +115,20 @@ Agent-Mind
   → agent cognitive architecture: the full mental model of an agent
   → integrates belief state (Agent-Belief), working memory, reasoning, and intent
   → the "mind" as a unified cognitive object: what the agent knows, thinks, and intends
-  → reference: arXiv 2508.00401
-  → relationship to Agent-Belief:
+  → mind-aware multi-agent coordination: agents model each other's minds
+    to improve team-level decision-making (Meta M3RL)
+  → minds as AI entities that reason over any connected data source (MindsDB Minds pattern)
+  → supports real-world autonomous agent applications end-to-end
+  → references:
+      - arXiv 2508.00401
+      - Agent Mind: Autonomous Real-World Applications (Amazon ebook)
+      - MindsDB Minds: https://docs.mindsdb.com/minds
+      - Meta M3RL: Mind-Aware Multi-Agent Management Reinforcement Learning
+  → relationship to other repos:
       Agent-Belief → epistemic state (what the agent holds as true)
       Agent-Mind   → full cognitive architecture (belief + desire + intention + reasoning)
+      Agent-Team   → consumes Agent-Mind's mind-aware coordination for multi-agent handoffs
+      Agent-Fabric → Agent-Mind can reason over any data source via Agent-Fabric
 
 Agent-Cognitive-Guard
   → cognitive safety layer (see Security section)
