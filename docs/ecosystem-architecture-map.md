@@ -559,6 +559,25 @@ Agent-Community
     community signals, feedback loops
 ```
 
+## Agent Health
+
+```text
+Agent-Health
+  → health checks and heartbeat for every agent and platform service
+  → health check: is the agent alive, ready, and functioning correctly?
+      liveness     → is the agent running? (heartbeat)
+      readiness    → is the agent ready to accept work?
+      capability   → are the agent's tools and skills available and operational?
+      performance  → is the agent within acceptable response and quality thresholds?
+  → heartbeat: continuous signal emitted by every agent at regular intervals
+      missed heartbeats → agent flagged as unhealthy
+      three missed heartbeats → automatic recovery attempt or HITL alert
+  → health score per agent (0.0 → 1.0) updated continuously
+  → unhealthy agents are not eligible to receive handoffs (Agent-Handoff gate)
+  → connects to: Agent-Monitor (observability), Agent-Optimize (performance health),
+    Agent-Handoff (capability gate), Agent-Dashboard (health status view)
+```
+
 ## Telemetry, Analytics, Cost, and Operations
 
 ```text

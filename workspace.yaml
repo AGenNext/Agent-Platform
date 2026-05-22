@@ -70,6 +70,7 @@ contracts:
   agent_commit: AGenNext/Agent-Commit
   agent_standard: AGenNext/Agent-Standard
   agent_handoff: AGenNext/Agent-Handoff
+  agent_health: AGenNext/Agent-Health
   agent_optimize: AGenNext/Agent-Optimize
   agent_input: AGenNext/Agent-Input
   agent_output: AGenNext/Agent-Output
