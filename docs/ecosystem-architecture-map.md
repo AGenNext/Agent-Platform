@@ -538,8 +538,13 @@ Agent-IGA
       audit trail         → all agent identity and access events flow into org IGA audit
       segregation of duties (SOD) → SOD rules apply to agents exactly as to humans
                             an agent cannot hold conflicting roles or access rights
-                            an agent that requests and approves cannot be the same agent
-                            SOD violations are blocked by AAGFE at runtime
+                            an agent cannot approve its own work — ever
+                            an agent cannot write and publish its own work — ever
+                            the producer, the approver, and the publisher must be
+                            different agents or roles — no single agent controls the
+                            full chain from creation to publication
+                            self-approval and self-publication are hard platform
+                            violations blocked by AAGFE
   → adapter pattern: connects to any IGA tool
       SailPoint, Saviynt, IBM Security, Microsoft Entra ID Governance,
       One Identity, or any org-standard IGA via adapter
