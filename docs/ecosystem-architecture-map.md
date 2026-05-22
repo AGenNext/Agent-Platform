@@ -376,13 +376,17 @@ Agent-Handoff
       quality fails  → handoff rejected → producing agent must fix and resubmit
         ↓
       receiving agent also checks on receipt — second line of defence
-  → what is checked:
+  → what is checked before handoff:
       output quality score (must meet threshold defined in Agent-Standard)
       completeness — is the work actually done, not partially done?
       trust/provenance — is evidence attached? (Agent-Trust)
       context package — MANDATORY: complete context must transfer with every handoff
                         the receiving agent must have everything needed to continue
                         incomplete context = handoff rejected, same as poor quality
+      receiving agent capability — producing agent verifies the receiving agent has
+                        the necessary skills and tools to handle the next task
+                        if receiving agent lacks capability → handoff blocked,
+                        find a capable agent or escalate
   → no silent handoffs: every rejection is logged, reasoned, and fed back
   → connects to: Agent-Eval (quality check), Agent-Trust (provenance),
     Agent-Framework (A2A protocol), AAGFE (governance gate on handoff)
