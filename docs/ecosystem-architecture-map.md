@@ -140,7 +140,7 @@ Agent-Context  [CORE IP — proprietary to AGenNext]
       0.5  = tangentially related, worth keeping
       0.0  = no connection to current discussion → evict
   → score is dynamic: updates continuously as the conversation evolves
-  → scoring techniques:
+  → scoring techniques (candidates — best method to be determined through research):
       cosine similarity   → embed context item and current topic, measure vector distance
       clustering          → group context items, keep items in the active cluster
       LLM judgment        → for edge cases, ask the model directly
