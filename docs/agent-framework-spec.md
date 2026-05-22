@@ -225,6 +225,10 @@ Agent-Trust    → provenance and trust records
 Agent-FinOps   → cost governance and billing
 Agent-Monitor  → trace storage and observability tooling
 Agent-Kernel   → native/low-level execution and sandboxing
+Agent-Belief   → agent belief state, BDI epistemic model, belief revision
+                 (Agent-Framework reads belief state; Agent-Belief owns it)
+AAGFE          → governance enforcement (Agent-Framework calls AAGFE gates)
+Agent-Guard    → runtime threat protection (Agent-Framework passes through Agent-Guard)
 ```
 
 Agent-Framework calls into these systems via contracts; it does not own them.

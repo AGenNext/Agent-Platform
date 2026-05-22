@@ -96,6 +96,25 @@ Agent-Maturity
   → maturity and production/enterprise readiness model
 ```
 
+## Agent Cognition and Epistemic Systems
+
+```text
+Agent-Belief
+  → epistemic layer: the agent's maintained world model and belief state
+  → based on BDI (Belief-Desire-Intention) architecture
+  → agents form, hold, update, and revise beliefs based on evidence and observation
+  → enables reasoning under uncertainty, not just reactive pattern matching
+  → belief updating: Bayesian revision, evidence integration, conflict resolution
+  → connects to Agent-Framework memory (semantic/episodic) and Agent-Trust (evidence)
+  → theoretical foundations:
+      - Rao & Georgeff: BDI Agents: From Theory to Practice (IEEE 565454)
+      - arXiv 2412.07981
+      - O'Reilly: The Next Leap for AI: Why Agents Need to Learn to Believe
+
+Agent-Cognitive-Guard
+  → cognitive safety layer (see Security section)
+```
+
 ## Capability, Model, and Research
 
 ```text

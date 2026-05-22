@@ -60,6 +60,7 @@ contracts:
   agent_policies: AGenNext/Agent-Policies
   agent_guard: AGenNext/Agent-Guard
   agent_cognitive_guard: AGenNext/Agent-Cognitive-Guard
+  agent_belief: AGenNext/Agent-Belief
   agent_secrets: AGenNext/Agent-Secrets
   agent_skills: AGenNext/Agent-Skills
   model_router: AGenNext/Model-Router
