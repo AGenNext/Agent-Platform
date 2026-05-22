@@ -528,13 +528,22 @@ Agent-IGA
   → integration layer for any organisation's Identity Governance and Administration tool
   → agents are treated as software identities — same as any other application or
     service account in the organisation, not as special cases or exceptions
+  → all standard IGA controls apply to agents without exception:
+    access request, access review, access audit, access certification,
+    role management, SOD, provisioning, deprovisioning — everything
   → enterprises already have IGA tools — agents must plug into them, not bypass them
   → covers:
       identity lifecycle  → agents respect joiner/mover/leaver policies from the org IGA
       access governance   → agent access rights are governed and certified by the org
       role management     → agent roles derived from or aligned to org RBAC model
       provisioning        → agent onboarding/offboarding follows org provisioning workflows
-      access certification → agent access reviewed on org-defined cadence
+      access request      → agents must formally request access — no self-provisioning
+                            requests flow through the org IGA approval workflow
+      access review       → agent access is reviewed periodically by a human or
+                            designated reviewer — unused or excessive access is revoked
+      access audit        → full audit trail of all agent access grants, usage,
+                            changes, and revocations — queryable and immutable
+      access certification → agent access reviewed and certified on org-defined cadence
       audit trail         → all agent identity and access events flow into org IGA audit
       segregation of duties (SOD) → SOD rules apply to agents exactly as to humans
                             an agent cannot hold conflicting roles or access rights
