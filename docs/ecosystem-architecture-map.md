@@ -133,8 +133,9 @@ Agent-Mind
 Agent-Context  [CORE IP — proprietary to AGenNext]
   → dynamic, agent-driven context management
   → context has no fixed definition or schema
-  → context is decided by common sense only — the agent reasons like a human would
-  → no rules, no scoring formulas, no predefined relevance criteria
+  → context decided by one test: "is this relevant to what we are discussing?"
+    if relevant → keep; if not → discard or evict
+  → relevance is the only metric — not reasonability, not confidence, not recency
   → context can be anything: a world war, a child crying, a past trip, a line of code
   → context size expands and contracts based on task complexity and type:
       code task    → larger context: repo state, secrets, file history, dependencies
