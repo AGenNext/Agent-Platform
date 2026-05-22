@@ -196,6 +196,21 @@ Agent-Eval
   → evaluation rubrics, CLEAR scoring, and quality gates
 ```
 
+## Data
+
+```text
+Agent-Data
+  → structured data layer: all structured data flowing through the platform
+  → any piece of structured data flowing through the platform:
+      input data      → structured data ingested from external sources
+      output data     → structured artifacts and results produced by agents
+      training data   → datasets for model training and fine-tuning
+      synthetic data  → agent-generated synthetic datasets for training or testing
+      or any other structured data form the platform touches
+  → owns data schemas, storage contracts, data lifecycle, versioning
+  → distinct from Agent-Graph (artifact schemas) and Agent-Knowledge (product domain)
+```
+
 ## Integrations and Data Fabric
 
 ```text
