@@ -284,7 +284,9 @@ Agent-Optimize
         "did I use less effort than last time?"
         "did I use fewer tokens than last time?"
       if yes on all three → record improvement, reinforce the approach
-      if no on any → evaluate what changed, adjust strategy before next run
+      if no on any → self-reflect: why did this not improve?
+                     produce concrete action items for the next run
+                     action items are stored and applied on the next attempt
       over time each agent builds its own performance history per task type
   → connects to: Agent-FinOps (cost), Agent-Context (context = cost lever),
     Model-Router (model = cost/quality tradeoff), Agent-Analytics (improvement loop),
