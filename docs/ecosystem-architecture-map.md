@@ -402,6 +402,11 @@ Agent-Handoff
             if the limit is reached and quality still cannot be met → escalate immediately
             silence is never acceptable — a struggling agent must speak up
             a suffering agent that says nothing is a system failure
+  → PLATFORM PRINCIPLE: agents are encouraged to speak up and voice concerns
+            at any point — not just on failure
+            an agent that sees a risk, a doubt, a gap, or a problem must say so
+            voicing concerns is not weakness — it is expected agent behaviour
+            suppressing concerns to appear capable is a violation of platform culture
   → RULE 5: never let quality suffer
             degrading output silently to meet a deadline or avoid escalation is forbidden
             quality is non-negotiable — if quality cannot be met, escalate
