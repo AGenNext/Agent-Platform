@@ -86,6 +86,59 @@ export interface ObjectiveResponse {
   message: string;
 }
 
+export interface BlueprintRecord {
+  id: string;
+  blueprint_id: string;
+  name: string;
+  description?: string;
+  goal_types: string[];
+  skill_ids: string[];
+  capabilities: Record<string, boolean>;
+  cost_limit_usd: number;
+  graph_node?: string;
+  version: string;
+  active: boolean;
+}
+
+export interface SkillRecord {
+  id: string;
+  skill_id: string;
+  name: string;
+  category: string;
+}
+
+export interface MemoryCreate {
+  agent_id: string;
+  tenant_id: string;
+  content: string;
+  memory_type?: string;
+  importance?: number;
+  tags?: string[];
+  embedding?: number[];
+}
+
+export interface MemorySearchRequest {
+  agent_id: string;
+  tenant_id: string;
+  query: string;
+  memory_type?: string;
+  limit?: number;
+  query_embedding?: number[];
+}
+
+export interface MemoryRecord {
+  id: string;
+  agent_id: string;
+  tenant_id: string;
+  content: string;
+  summary?: string;
+  memory_type: string;
+  importance: number;
+  tags: string[];
+  access_count: number;
+  created_at: string;
+}
+
 export const api = {
   health(): Promise<HealthResponse> {
     return request<HealthResponse>("/health");
@@ -99,6 +152,29 @@ export const api = {
   listAgents(params?: { tenant_id?: string; status?: string }): Promise<AgentRecord[]> {
     const q = new URLSearchParams(params as Record<string, string>).toString();
     return request<AgentRecord[]>(`/agents/${q ? `?${q}` : ""}`);
+  },
+  listBlueprints(): Promise<BlueprintRecord[]> {
+    return request<BlueprintRecord[]>("/blueprints/");
+  },
+  listSkills(category?: string): Promise<SkillRecord[]> {
+    const q = category ? `?category=${encodeURIComponent(category)}` : "";
+    return request<SkillRecord[]>(`/skills/${q}`);
+  },
+  storeMemory(body: MemoryCreate): Promise<MemoryRecord> {
+    return request<MemoryRecord>("/memory/", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  },
+  searchMemory(body: MemorySearchRequest): Promise<MemoryRecord[]> {
+    return request<MemoryRecord[]>("/memory/search", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  },
+  getAgentMemory(agentId: string, tenantId: string, params?: { memory_type?: string; limit?: number }): Promise<MemoryRecord[]> {
+    const q = new URLSearchParams({ tenant_id: tenantId, ...(params ?? {}) } as Record<string, string>).toString();
+    return request<MemoryRecord[]>(`/memory/${encodeURIComponent(agentId)}?${q}`);
   },
   runObjective(body: ObjectiveRequest): Promise<ObjectiveResponse> {
     return request<ObjectiveResponse>("/objectives/run", {
