@@ -521,6 +521,28 @@ Agent-Hooks
     Agent-Framework (runtime interruption), Agent-Channel (external webhooks)
 ```
 
+## Agent Lifecycle and Identity
+
+```text
+Agent-LCM (Lifecycle Management)
+  → complete lifecycle management for agents — treated like human employees
+  → integrates with any HRMS (Workday, SAP SuccessFactors, Oracle HCM) or
+    IAM tool (Okta, Azure AD, Ping Identity) via adapter
+  → lifecycle stages mirror human employee lifecycle:
+      onboarding     → agent created, identity provisioned, roles assigned,
+                       tools granted, initial training/orientation complete
+      active         → agent operational, access maintained, performance tracked
+      role change    → agent capability updated, access adjusted, re-certified
+      leave/suspend  → agent temporarily deactivated, access suspended
+      offboarding    → agent retired, access revoked, audit trail finalised,
+                       work handed off, knowledge transferred
+  → lifecycle events trigger IGA workflows in Agent-IGA automatically
+  → no agent operates without completing onboarding — no shortcuts
+  → no agent continues operating after offboarding is triggered
+  → connects to: Agent-IGA (access governance), Agent-Health (liveness),
+    Agent-Trust (identity provenance), AAGFE (lifecycle gate enforcement)
+```
+
 ## Identity and Access
 
 ```text
