@@ -218,12 +218,16 @@ Agent-Eval
 ```text
 Agent-Input
   → input methods and formats for agents
-  → every agent can declare its own input capabilities and proficiency
-  → input methods: text, speech-to-text, file upload, structured data, IoT signal,
-    image, video, API payload, form — any way data enters an agent
-  → proficiency expressed as absolute numbers (0.0 → 1.0) per input method per agent
-      example: document-agent: PDF=0.95, speech=0.20, image=0.60
-  → speech-to-text is an input method here, not a standalone service
+  → every agent must declare at least one input — input is mandatory, not optional
+  → any method by which data, signals, or commands enter an agent:
+    text, voice, file, image, video, structured data, IoT signal, API payload,
+    form, sensor reading, database query, email, webhook — not limited to any one type
+  → speech-to-text is one input method among many, not the defining use case
+  → each agent has a different proficiency score per input method (0.0 → 1.0)
+  → no two agents share the same input profile — proficiency is agent-specific
+      example: document-agent  → PDF=0.95, speech=0.20, image=0.60
+               voice-agent     → speech=0.95, text=0.70, PDF=0.10
+               iot-agent       → sensor=0.99, text=0.40, image=0.30
 
 Agent-Output
   → output methods and data formats for agents
