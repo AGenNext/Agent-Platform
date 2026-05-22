@@ -424,6 +424,10 @@ Agent-Handoff
   → RULE 5: never let quality suffer
             degrading output silently to meet a deadline or avoid escalation is forbidden
             quality is non-negotiable — if quality cannot be met, escalate
+  → RULE 6: acknowledgement is mandatory
+            the receiving agent must explicitly acknowledge receipt of the handoff
+            no acknowledgement = handoff did not happen — it is not assumed complete
+            unacknowledged handoffs are retried, then escalated if still unconfirmed
   → no silent handoffs: every rejection is logged, reasoned, and fed back
   → connects to: Agent-Eval (quality check), Agent-Trust (provenance),
     Agent-Framework (A2A protocol), AAGFE (governance gate on handoff)
