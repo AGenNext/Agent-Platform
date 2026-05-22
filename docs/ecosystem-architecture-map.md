@@ -395,6 +395,16 @@ Agent-Handoff
                           step 2 → if imparting fails → HITL escalation
                                    human decides: train the agent, swap agent, or
                                    restructure the task
+  → RULE 3: push to the limit before giving up
+            an agent must exhaust its full capability before escalating
+            do not give up early — bring effort to the maximum
+  → RULE 4: escalate, never stay silent
+            if the limit is reached and quality still cannot be met → escalate immediately
+            silence is never acceptable — a struggling agent must speak up
+            a suffering agent that says nothing is a system failure
+  → RULE 5: never let quality suffer
+            degrading output silently to meet a deadline or avoid escalation is forbidden
+            quality is non-negotiable — if quality cannot be met, escalate
   → no silent handoffs: every rejection is logged, reasoned, and fed back
   → connects to: Agent-Eval (quality check), Agent-Trust (provenance),
     Agent-Framework (A2A protocol), AAGFE (governance gate on handoff)
