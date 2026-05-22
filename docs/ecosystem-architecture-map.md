@@ -134,8 +134,20 @@ Agent-Context  [CORE IP — proprietary to AGenNext]
   → dynamic, agent-driven context management
   → context has no fixed definition or schema
   → context decided by one test: "is this relevant to what we are discussing?"
-    if relevant → keep; if not → discard or evict
   → relevance is the only metric — not reasonability, not confidence, not recency
+  → relevance score: 0.0 → 1.0
+      1.0  = directly central to current topic
+      0.5  = tangentially related, worth keeping
+      0.0  = no connection to current discussion → evict
+  → score is dynamic: updates continuously as the conversation evolves
+  → scoring techniques:
+      cosine similarity   → embed context item and current topic, measure vector distance
+      clustering          → group context items, keep items in the active cluster
+      LLM judgment        → for edge cases, ask the model directly
+  → score drives all context decisions:
+      eviction threshold  → items below score cutoff are removed
+      token pressure      → when budget is tight, lowest-scored items evicted first
+      context switch      → average score of all items drops → trigger switch detection
   → context can be anything: a world war, a child crying, a past trip, a line of code
   → context size expands and contracts based on task complexity and type:
       code task    → larger context: repo state, secrets, file history, dependencies
