@@ -922,6 +922,54 @@ Agent-Flow
     Agent-Framework (runtime executes the flow), Agent-Team (agents in the flow)
 ```
 
+## Database: Why SurrealDB
+
+```text
+SurrealDB is the canonical database for the entire AGenNext platform.
+reference: https://surrealdb.com/
+
+Why SurrealDB — the core reason:
+  SurrealDB is a multi-model database that replaces the need for multiple
+  specialised databases. The AGenNext platform needs:
+    → graph storage and traversal   (knowledge graph, GraphRAG, entity relationships)
+    → vector embeddings and search  (semantic memory, RAG retrieval)
+    → document and record storage   (agent state, run records, objectives, tasks)
+    → relational queries            (policy evaluation, audit records, joins)
+    → time-series / temporal data   (heartbeat logs, performance history, FinOps)
+    → live queries                  (real-time agent state updates, dashboard refresh)
+    → policy-level permissions      (DEFINE TABLE PERMISSIONS, DEFINE FUNCTION — SurrealQL-native)
+
+  Without SurrealDB, this platform would need:
+    → a separate vector database (Pinecone, Weaviate, Chroma)
+    → a separate graph database (Neo4j, ArangoDB)
+    → a separate relational database (PostgreSQL)
+    → a separate document store (MongoDB)
+    → complex integration across all of them
+
+  SurrealDB collapses all of that into one engine, one query language, one operational
+  surface, one consistency model. This is not a trade-off — it is the right tool
+  for an agent platform that needs all data models simultaneously.
+
+SurrealQL advantages for this platform:
+  → COMMIT / ROLLBACK transaction semantics → Agent-Commit atomic writes
+  → DEFINE TABLE PERMISSIONS → planned replacement for OPA in Agent-Policies
+  → graph traversal queries → GraphRAG knowledge graph in Agent-Rag
+  → vector similarity search → semantic memory in Agent-Memory
+  → LIVE queries → real-time state in Agent-Monitor / Agent-Dashboard
+  → native time-series support → Agent-FinOps cost history, Agent-Health telemetry
+
+SurrealDB use in every layer:
+  Agent-Memory    → working, episodic, semantic, procedural memory tiers
+  Agent-Rag       → vector index and knowledge graph storage
+  Agent-Commit    → COMMIT transaction for atomic agent work
+  Agent-Policies  → planned native SurrealQL policy evaluation
+  Agent-Monitor   → real-time trace and event storage
+  Agent-Runs      → full-fidelity run records for replay and time travel
+  Agent-Trust     → immutable provenance records
+  Agent-FinOps    → cost attribution and spend history
+  Agent-Health    → heartbeat and health event log
+```
+
 ## Deployment Stack
 
 ```text
