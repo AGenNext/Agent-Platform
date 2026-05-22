@@ -210,6 +210,96 @@ Agent-Cognitive-Guard
   → cognitive safety layer (see Security section)
 ```
 
+## Memory
+
+```text
+Agent-Memory
+  → the platform's four-tier agent memory system backed by SurrealDB
+  → Agent-Framework calls Agent-Memory for all memory operations;
+    Agent-Memory owns the implementation, Agent-Framework owns the orchestration
+
+  Working memory
+    → in-context state during active task execution
+    → short-lived, scoped to a single run
+    → stored in SurrealDB run record while active
+
+  Episodic memory
+    → task history, conversation history, prior run outcomes
+    → durable, queryable across runs
+    → SurrealDB: objective records, task records, A2A handoff records
+
+  Semantic memory
+    → knowledge, facts, extracted entities and relationships
+    → vector embeddings for similarity search
+    → knowledge graph for relationship traversal (GraphRAG)
+    → SurrealDB: vector index + graph relations
+    → retrieval via Agent-Rag (standard RAG, GraphRAG, multimodal, hybrid)
+
+  Procedural memory
+    → skills, tool patterns, reusable execution templates
+    → sourced from Agent-Skills registry
+    → SurrealDB: skill and capability records
+
+  → references:
+      SurrealDB for Agent Memory — https://surrealdb.com/use-cases/agent-memory
+      arXiv 2507.02259
+      arXiv 2512.13564
+      arXiv 2601.11653
+      arXiv 2506.06326
+  → all tiers backed by SurrealDB — consistent, queryable, durable storage across
+    the entire memory model
+  → connects to: Agent-Framework (orchestration layer, calls into Agent-Memory),
+    Agent-Rag (retrieval from semantic memory), Agent-Skills (procedural memory source),
+    Agent-Context (context candidates sourced from memory)
+```
+
+## Retrieval
+
+```text
+Agent-Rag
+  → the platform's dedicated retrieval layer — RAG, GraphRAG, and any retrieval method
+  → not limited to vector similarity — owns all retrieval strategies:
+
+  Standard RAG
+    → embed query → vector similarity search → retrieve chunks → augment prompt
+    → fast, cheap, works well for factual recall over flat corpora
+
+  GraphRAG (Microsoft)
+    → extract entities and relationships from source material
+    → build knowledge graph in SurrealDB
+    → detect communities of related nodes
+    → generate community summaries at multiple levels
+    → global queries: summarise across entire corpus via community summaries
+    → local queries: traverse graph neighbourhood from anchor entity
+    → reference: https://microsoft.github.io/graphrag/
+
+  Hybrid retrieval
+    → combine vector recall with graph traversal
+    → use vector recall for initial candidate set, graph traversal to expand and enrich
+
+  Multimodal RAG
+    → retrieval that spans multiple modalities, not just text
+    → retrieve and reason over: text, images, tables, charts, audio transcripts,
+      video segments, structured data, code, diagrams — any modality
+    → multimodal embeddings: encode each modality into a shared embedding space
+    → cross-modal retrieval: a text query retrieves relevant images, a diagram
+      retrieves related text explanations, an audio clip retrieves matching transcripts
+    → visual document understanding: PDFs with charts and tables treated as full
+      multimodal documents, not plain text extracts
+
+  Any future retrieval method
+    → Agent-Rag is the single extension point for all retrieval strategies
+    → new methods (agentic RAG, recursive RAG, speculative retrieval) plug in here
+
+  → Agent-Framework calls Agent-Rag for semantic memory retrieval — it does not
+    implement retrieval logic itself; Agent-Rag owns that layer entirely
+  → Agent-Rag owns: indexing pipelines, embedding models, vector indexes,
+    graph build and query, retrieval evaluation
+  → connects to: Agent-Framework (memory retrieval consumer), Agent-Knowledge
+    (knowledge graph source), SurrealDB (vector index + graph storage),
+    model-repository (embedding models)
+```
+
 ## Capability, Model, and Research
 
 ```text
@@ -526,21 +616,42 @@ Agent-Hooks
 ```text
 Agent-LCM (Lifecycle Management)
   → complete lifecycle management for agents — treated like human employees
+  → the AgentOps lifecycle: from definition and provisioning through operation,
+    optimization, and eventual retirement — fully managed, never ad hoc
   → integrates with any HRMS (Workday, SAP SuccessFactors, Oracle HCM) or
     IAM tool (Okta, Azure AD, Ping Identity) via adapter
   → lifecycle stages mirror human employee lifecycle:
+      definition     → agent role, capabilities, tools, and objectives defined
+                       blueprint authored (Agent-Flow + Agent-Blueprint)
       onboarding     → agent created, identity provisioned, roles assigned,
                        tools granted, initial training/orientation complete
+                       security training completed (Agent-Security mandate)
+                       IGA access request raised and approved (Agent-IGA)
       active         → agent operational, access maintained, performance tracked
+                       continuous evaluation (Agent-Eval), optimization (Agent-Optimize)
+                       heartbeat monitored (Agent-Health)
+                       security training renewals on schedule
       role change    → agent capability updated, access adjusted, re-certified
+                       triggers re-provisioning workflow in Agent-IGA
       leave/suspend  → agent temporarily deactivated, access suspended
+                       active work checkpointed (Agent-Framework), handed off
       offboarding    → agent retired, access revoked, audit trail finalised,
-                       work handed off, knowledge transferred
+                       work handed off, knowledge transferred,
+                       final evaluation and trust summary produced
   → lifecycle events trigger IGA workflows in Agent-IGA automatically
   → no agent operates without completing onboarding — no shortcuts
   → no agent continues operating after offboarding is triggered
   → connects to: Agent-IGA (access governance), Agent-Health (liveness),
-    Agent-Trust (identity provenance), AAGFE (lifecycle gate enforcement)
+    Agent-Trust (identity provenance), AAGFE (lifecycle gate enforcement),
+    Agent-Security (training compliance), Agent-Eval (performance across lifecycle)
+  → references:
+      Microsoft AgentOps: End-to-End Lifecycle Management for Production AI Agents
+        https://techcommunity.microsoft.com/blog/azure-ai-foundry-blog/from-zero-to-hero-agentops---end-to-end-lifecycle-management-for-production-ai-a/4484922
+      Cube.dev: The Agent Lifecycle — How to Manage, Monitor, and Govern AI Teammates
+        https://cube.dev/blog/the-agent-lifecycle-how-to-manage-monitor-and-govern-ai-teammates
+      Salesforce: Agent Lifecycle Management
+        https://www.salesforce.com/platform/agent-lifecycle-management/
+      arXiv 2601.15630
 ```
 
 ## Identity and Access
@@ -610,6 +721,49 @@ Agent-Insights
 ## Security and Runtime Protection
 
 ```text
+Agent-Security
+  → platform cybersecurity framework: security agents and all security protocols
+  → security agents: specialised agents that perform security tasks autonomously
+      vulnerability scanning, penetration test coordination, threat modelling,
+      incident triage, compliance verification, remediation tracking
+  → OWASP alignment:
+      OWASP Top 10 compliance checks at runtime and on build
+      OWASP ASVS (Application Security Verification Standard) mapping
+      OWASP AI/LLM Top 10: prompt injection, insecure output handling,
+      training data poisoning, model DoS, supply chain risks — all covered
+  → SAST (Static Application Security Testing):
+      static analysis of agent definitions, policies, prompt templates, tool configs
+      detects insecure patterns before deployment
+      integrates into CI/CD via Agent-deploy
+  → ITDR (Identity Threat Detection and Response):
+      detects identity-based threats targeting agents and platform identities
+      monitors for credential abuse, privilege escalation, lateral movement
+      responds automatically (revoke, quarantine, alert) or triggers HITL
+      connects to Agent-IGA (identity governance) and Agent-Guard (runtime blocking)
+  → security protocols and frameworks:
+      zero trust architecture — no implicit trust between agents or services
+      least-privilege access enforcement (via Agent-IGA and AAGFE)
+      encryption in transit and at rest
+      certificate management and rotation
+  → security audit:
+      continuous audit of agent actions, access events, and data flows
+      audit records are immutable and queryable
+      feeds into Agent-IGA audit trail and AAGFE enforcement logs
+      external audit export for compliance (SOC 2, ISO 27001, etc.)
+  → security training (recurring mandatory events):
+      agents must complete security awareness training on a regular cadence
+      training is not optional and not one-time — it is a recurring lifecycle event
+      new threat vectors, updated OWASP guidance, and platform policy changes
+      trigger fresh training requirements
+      training completion is tracked, logged, and enforced via Agent-LCM
+      an agent that has not completed current training cannot be assigned
+      sensitive or high-privilege tasks (enforced by AAGFE)
+  → boundaries:
+      Agent-Security    → comprehensive cybersecurity: strategy, agents, audit, frameworks
+      Agent-Guard       → runtime threat blocking (antivirus-equivalent at execution boundary)
+      Agent-Cognitive-Guard → cognitive safety (hallucination, bias, adversarial reasoning)
+      AAGFE             → governance enforcement (policy violations)
+
 Agent-Guard
   → runtime protection layer: antivirus-equivalent for agent execution
   → prompt injection detection and blocking
@@ -628,6 +782,7 @@ AAGFE
   → governance enforcement (see Governance section)
 
 Note on boundaries:
+  Agent-Security  → cybersecurity posture, security agents, OWASP, ITDR, SAST, audit
   Agent-Guard     → runtime threats from outside (what tries to harm the system)
   Agent-Cognitive-Guard → reasoning failures from inside (what degrades output quality)
   AAGFE           → governance violations (what breaks policy)
@@ -694,16 +849,77 @@ Agent-Monitor
   → real-time monitoring, traces, logs, correlation IDs, observability tooling
 
 Agent-Traces
-  → semantic trace contracts and trace schema ownership
+  → platform telemetry layer: semantic trace contracts and trace schema ownership
+  → defines the canonical schema for all traces emitted by agent execution
+  → OpenTelemetry-aligned: spans, traces, events, metrics — all following OTel semantics
+  → every component emits traces against the Agent-Traces schema
+  → Agent-Monitor consumes and stores; external APM tools (SigNoz) read via OTel export
+
+Agent-Runs
+  → complete run log repository — every execution recorded in maximum detail
+  → captures each step, each loop iteration, each state transition of every agent run
+  → per-step record includes:
+      input          → what data entered this step
+      context        → what was in context at this moment (Agent-Context snapshot)
+      variables      → all runtime variables and their values at this state
+      options        → what choices were available and how they were ranked/scored
+      output         → what the agent produced at this step
+      method         → which reasoning method, tool, or strategy was applied
+      metadata       → timestamp, duration, token count, model used, cost
+  → replay: any run can be replayed step-by-step in the exact original sequence
+  → time travel: inspect the full system state at any point in any past run
+      → go back to step N, see exactly what the agent knew, had, and decided
+      → compare states across runs for the same task
+      → diagnose failures by rewinding to the last correct state
+  → this is the platform's black box recorder — nothing is lost, nothing is summarized away
+  → NOT a summary or trace: Agent-Runs stores raw, full-fidelity execution data
+  → boundaries:
+      Agent-Traces  → owns the semantic trace schema and contracts
+      Agent-Monitor → real-time observability and correlation
+      Agent-Runs    → complete historical fidelity, replay, and time travel
+  → consumers: Agent-Eval (replay for re-evaluation), Agent-Optimize (step-by-step
+    analysis), Agent-Analytics (pattern mining), Agent-Dashboard (run inspector view)
+  → storage: SurrealDB — structured, queryable, durable
 
 Agent-Analytics
-  → events, metrics, trends, and improvement loops
+  → product and platform analytics: events, metrics, trends, and improvement loops
+  → adoption: which agents, workflows, and capabilities are being used, by whom,
+    and how adoption curves evolve over time across workspaces and tenants
+  → engagement: how deeply users and agents interact with the platform,
+    session depth, task completion rates, return usage, feature engagement
+  → improvement loop: analytics feed back into Agent-Optimize, Agent-Eval,
+    Model-Router, and platform roadmap decisions
+  → distinct from Agent-Monitor (real-time ops) and Agent-FinOps (cost):
+      Agent-Monitor   → is it running? (operational health)
+      Agent-FinOps    → what did it cost? (financial governance)
+      Agent-Analytics → how is it being used? (product intelligence)
 
 Agent-FinOps
   → cost governance, usage attribution, budgets, and unit economics
 
 Agent-deploy
   → CI/CD, deployment, monitoring, rollback, post-production operations
+```
+
+## Workflow
+
+```text
+Agent-Flow
+  → visual and programmatic workflow builder for agents
+  → the AGenNext-owned tool for designing, editing, and visualising agent workflows
+  → allows composing agents, tools, and data flows into a structured execution graph
+  → supports visual canvas (drag-and-drop flow design) and programmatic flow definition
+  → flows created in Agent-Flow become the source of Agent-Blueprint (versioned design)
+  → supports both:
+      linear workflows    → sequential step-by-step agent flows
+      branching workflows → conditional routing, parallel branches, merge points
+      loop workflows      → iterative agents that refine output across cycles
+      hybrid flows        → combination of above for complex multi-agent scenarios
+  → flow import/export: flows can be exported and re-imported or migrated
+  → distinct from Agent-Frameworks (which adapts external engines like LangGraph) —
+    Agent-Flow is AGenNext's own flow builder UI and DSL
+  → connects to: Agent-Blueprint (output becomes a versioned blueprint),
+    Agent-Framework (runtime executes the flow), Agent-Team (agents in the flow)
 ```
 
 ## Deployment Stack
@@ -713,11 +929,21 @@ Local development
   → Podman Compose preferred
   → Docker Compose compatible fallback
 
+AgentKube
+  → Kubernetes-native deployment layer for agents
+  → owns the Kubernetes manifests, Helm charts, and operators for running agents
+  → agent lifecycle on Kubernetes: scheduling, scaling, resource limits, health probes
+  → integrates with AgentKube-aware health checks (Agent-Health) and observability
+  → deploys platform services to MicroK8s (first always-on environment) and later
+    to managed Kubernetes clusters at scale
+  → connects to: Agent-deploy (CI/CD pipeline delivers to AgentKube),
+    Agent-Health (Kubernetes liveness/readiness probes), Agent-Monitor (pod metrics)
+
 First always-on environment
-  → VPS + MicroK8s
+  → VPS + MicroK8s (via AgentKube)
 
 Later scale path
-  → managed Kubernetes or larger MicroK8s cluster
+  → managed Kubernetes or larger MicroK8s cluster (via AgentKube)
 ```
 
 ## Runtime Flow
@@ -762,26 +988,34 @@ Agent-Platform assembles.
 Agent-Knowledge delivers product value.
 Agent-Insights delivers trusted intelligence.
 Agent-Team executes objectives.
-Agent-Framework runs the core runtime and memory.
+Agent-Framework runs the core runtime.
+Agent-Memory owns the four-tier memory system.
+Agent-Rag owns all retrieval (RAG, GraphRAG, multimodal, hybrid).
 Agent-Kernel handles native execution.
 Agent-Frameworks adapts to external frameworks.
+Agent-Flow builds workflows.
 AAGFE enforces governance at runtime.
 Agent-Constraints defines the policies.
 Agent-Environment defines where.
 Agent-Secrets protects credentials.
 Agent-deploy deploys and operates.
+AgentKube runs agents on Kubernetes.
 Agent-Monitor observes in real time.
-Agent-Traces owns the semantic trace model.
+Agent-Traces owns the telemetry schema.
+Agent-Runs records every step with full fidelity, replay, and time travel.
 Agent-FinOps controls cost.
 Agent-Trust proves evidence.
 Agent-Eval proves quality.
 Agent-Review provides review findings.
 Agent-Decisions records all decisions.
-Agent-Analytics improves over time.
+Agent-Analytics tracks adoption, engagement, and improvement.
 Agent-Community connects the ecosystem.
 Agent-Speech enables voice interaction.
 Agent-Connect integrates everything external.
 Agent-Fabric unifies data, identity, skills, and tools.
+Agent-Security secures the platform: cybersecurity, OWASP, ITDR, SAST, audit.
+Agent-LCM manages the agent lifecycle end to end.
+Agent-IGA governs agent identity and access.
 ```
 
 ## Research and Future Repos (Not Currently Part of Platform)

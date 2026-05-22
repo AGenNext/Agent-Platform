@@ -85,10 +85,16 @@ contracts:
   agent_traces: AGenNext/Agent-Traces
   agent_monitor: AGenNext/Agent-Monitor
   agent_analytics: AGenNext/Agent-Analytics
+  agent_runs: AGenNext/Agent-Runs
   agent_finops: AGenNext/Agent-FinOps
   agent_research: AGenNext/Agent-Research
   agent_maturity: AGenNext/Agent-Maturity
   agent_deploy: AGenNext/Agent-deploy
+  agent_kube: AGenNext/AgentKube
+  agent_flow: AGenNext/Agent-Flow
+  agent_memory: AGenNext/Agent-Memory
+  agent_rag: AGenNext/Agent-Rag
+  agent_security: AGenNext/Agent-Security
   agent_review: AGenNext/Agent-Review
   agent_decisions: AGenNext/Agent-Decisions
   agent_community: AGenNext/Agent-Community
