@@ -210,7 +210,43 @@ Agent-Bench
   → reproducible benchmark task definitions and benchmarking runs
 
 Agent-Eval
-  → evaluation rubrics, CLEAR scoring, and quality gates
+  → multi-modal evaluation framework — not a single evaluator, five distinct modes:
+
+  self-eval
+    → agent evaluates its own output before delivery
+    → continuous: runs after every task, not just at completion
+    → feeds directly into Agent-Optimize self-benchmarking loop
+
+  peer-to-peer eval
+    → one agent evaluates another agent's output
+    → agents check each other's work without human involvement
+    → catches errors and blind spots the producing agent may miss
+
+  colleague eval
+    → evaluation by a designated colleague agent or human colleague
+    → runs at defined intervals (not every task — periodic review)
+    → deeper assessment than peer-to-peer: considers patterns over time
+
+  human eval
+    → human reviews and scores agent output
+    → triggered at key milestones, on escalation, or on request
+    → the highest-authority evaluation — overrides all other scores
+
+  community eval
+    → evaluation by the broader community (users, contributors, stakeholders)
+    → asynchronous and ongoing — not tied to a single run
+    → surfaces aggregate signal: what the community rates highly or flags
+
+  intervals:
+    → self-eval: every task
+    → peer-to-peer: after task completion
+    → colleague: periodic (configurable cadence)
+    → human: milestone-driven or on-demand
+    → community: continuous / async
+
+  → CLEAR scoring applies across all eval modes as the common quality rubric
+  → eval metrics will be published (AGenNext will define and release the metric set)
+  → all eval results stored in SurrealDB and surfaced via Agent-Dashboard
 ```
 
 ## Input and Output
