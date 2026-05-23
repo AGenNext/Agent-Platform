@@ -1,0 +1,16 @@
+.git
+.env
+.env.*
+!.env.example
+*.md
+docs/
+scripts/
+sdk/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+node_modules/
+.DS_Store
+*.log

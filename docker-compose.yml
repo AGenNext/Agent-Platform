@@ -1,64 +1,147 @@
+name: agent-platform
+
+networks:
+  platform:
+    driver: bridge
+
+volumes:
+  surrealdb_data:
+  minio_data:
+  ollama_data:
+
 services:
+
+  # ── Infrastructure ──────────────────────────────────────────────────────
+
   surrealdb:
     image: surrealdb/surrealdb:latest
-    command: start --log trace --user root --pass root memory
+    command: >
+      start
+      --log info
+      --user ${SURREALDB_USERNAME:-root}
+      --pass ${SURREALDB_PASSWORD:-root}
+      file:/data/platform.db
     ports:
-      - "8000:8000"
+      - "${SURREALDB_PORT:-8000}:8000"
+    volumes:
+      - surrealdb_data:/data
+    networks:
+      - platform
     healthcheck:
       test: ["CMD", "surreal", "isready", "--conn", "http://localhost:8000"]
       interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 5s
+    restart: unless-stopped
 
   minio:
     image: minio/minio:latest
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: minio
-      MINIO_ROOT_PASSWORD: minio123
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minio123}
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
     volumes:
       - minio_data:/data
+    networks:
+      - platform
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
 
-  agent-knowledge-api:
-    image: python:3.11-slim
-    working_dir: /workspace
-    command: bash -lc "pip install --upgrade pip && pip install git+https://github.com/AGenNext/Agent-Team.git git+https://github.com/AGenNext/Agent-Frameworks.git git+https://github.com/AGenNext/Agent-Knowledge.git && uvicorn app.main:app --host 0.0.0.0 --port 8001"
+  # One-shot: creates required buckets after MinIO is healthy
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    networks:
+      - platform
+    entrypoint: >
+      /bin/sh -c "
+        mc alias set local http://minio:9000 ${MINIO_ROOT_USER:-minio} ${MINIO_ROOT_PASSWORD:-minio123} &&
+        mc mb --ignore-existing local/agent-artifacts &&
+        mc mb --ignore-existing local/agent-sources &&
+        mc mb --ignore-existing local/agent-traces &&
+        echo 'MinIO buckets ready.'
+      "
+    restart: on-failure
+
+  # ── Platform services ────────────────────────────────────────────────────
+
+  agent-knowledge:
+    build:
+      context: docker/agent-knowledge
+      dockerfile: Dockerfile
     environment:
       SURREALDB_URL: ws://surrealdb:8000/rpc
-      SURREALDB_NAMESPACE: agent_platform
-      SURREALDB_DATABASE: agent_platform
-      SURREALDB_USERNAME: root
-      SURREALDB_PASSWORD: root
-      SURREALDB_PERSIST_ENABLED: "true"
+      SURREALDB_NAMESPACE: ${SURREALDB_NAMESPACE:-agent_platform}
+      SURREALDB_DATABASE: ${SURREALDB_DATABASE:-agent_platform}
+      SURREALDB_USERNAME: ${SURREALDB_USERNAME:-root}
+      SURREALDB_PASSWORD: ${SURREALDB_PASSWORD:-root}
+      OBJECT_STORAGE_ENDPOINT: http://minio:9000
+      OBJECT_STORAGE_ACCESS_KEY: ${MINIO_ROOT_USER:-minio}
+      OBJECT_STORAGE_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minio123}
+      PLATFORM_ENV: ${PLATFORM_ENV:-dev}
     ports:
-      - "8001:8001"
+      - "${AGENT_KNOWLEDGE_PORT:-8001}:8001"
+    networks:
+      - platform
     depends_on:
-      - surrealdb
-      - minio
+      surrealdb:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
 
   agent-dashboard:
-    image: node:20-slim
-    working_dir: /workspace
-    command: bash -lc "apt-get update && apt-get install -y git && git clone https://github.com/AGenNext/Agent-Dashboard.git . && npm install && npm run dev"
+    build:
+      context: docker/agent-dashboard
+      dockerfile: Dockerfile
     environment:
-      VITE_AGENT_KNOWLEDGE_API_URL: http://localhost:8001
+      # Server-side: use the container service name
+      AGENT_KNOWLEDGE_URL: http://agent-knowledge:8001
+      # Browser-side: use the host-mapped port
+      PUBLIC_AGENT_KNOWLEDGE_URL: http://localhost:${AGENT_KNOWLEDGE_PORT:-8001}
+      PLATFORM_ENV: ${PLATFORM_ENV:-dev}
     ports:
-      - "3000:3000"
+      - "${AGENT_DASHBOARD_PORT:-3000}:3000"
+    networks:
+      - platform
     depends_on:
-      - agent-knowledge-api
+      agent-knowledge:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  # ── Optional: local model runtime ────────────────────────────────────────
 
   ollama:
     image: ollama/ollama:latest
     profiles:
       - local-llm
     ports:
-      - "11434:11434"
+      - "${OLLAMA_PORT:-11434}:11434"
     volumes:
       - ollama_data:/root/.ollama
-
-volumes:
-  minio_data:
-  ollama_data:
+    networks:
+      - platform
+    restart: unless-stopped
