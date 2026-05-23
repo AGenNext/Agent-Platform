@@ -21,34 +21,44 @@ services:
       - "9001:9001"
     volumes:
       - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   agent-knowledge-api:
-    image: python:3.11-slim
-    working_dir: /workspace
-    command: bash -lc "pip install --upgrade pip && pip install git+https://github.com/AGenNext/Agent-Team.git git+https://github.com/AGenNext/Agent-Frameworks.git git+https://github.com/AGenNext/Agent-Knowledge.git && uvicorn app.main:app --host 0.0.0.0 --port 8001"
+    build:
+      context: ./services/agent-knowledge-api
+      dockerfile: Dockerfile
     environment:
       SURREALDB_URL: ws://surrealdb:8000/rpc
       SURREALDB_NAMESPACE: agent_platform
       SURREALDB_DATABASE: agent_platform
       SURREALDB_USERNAME: root
       SURREALDB_PASSWORD: root
-      SURREALDB_PERSIST_ENABLED: "true"
     ports:
       - "8001:8001"
     depends_on:
-      - surrealdb
-      - minio
+      surrealdb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   agent-dashboard:
-    image: node:20-slim
-    working_dir: /workspace
-    command: bash -lc "apt-get update && apt-get install -y git && git clone https://github.com/AGenNext/Agent-Dashboard.git . && npm install && npm run dev"
+    build:
+      context: ./services/agent-dashboard
+      dockerfile: Dockerfile
     environment:
-      VITE_AGENT_KNOWLEDGE_API_URL: http://localhost:8001
+      VITE_API_URL: http://localhost:8001
     ports:
       - "3000:3000"
     depends_on:
-      - agent-knowledge-api
+      agent-knowledge-api:
+        condition: service_healthy
 
   ollama:
     image: ollama/ollama:latest
