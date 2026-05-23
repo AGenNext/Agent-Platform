@@ -6,8 +6,12 @@ const links = [
   { to: "/build", label: "Agent Builder" },
   { to: "/agents", label: "Agents" },
   { to: "/memory", label: "Memory" },
-  { to: "/objectives", label: "Objectives" },
+  { to: "/runs", label: "Workflow Runs" },
+  { to: "/artifacts", label: "Artifacts" },
+  { to: "/traces", label: "Trace Logs" },
   { to: "/billing", label: "Billing" },
+  { to: "/integrations", label: "Integrations" },
+  { to: "/objectives", label: "Objectives" },
   { to: "/runtime", label: "Runtime" },
 ];
 
