@@ -4,12 +4,15 @@ import { AgentBuilderPage } from "./pages/AgentBuilderPage";
 import { AgentsPage } from "./pages/AgentsPage";
 import { ArtifactsPage } from "./pages/ArtifactsPage";
 import { BillingPage } from "./pages/BillingPage";
+import { DeploymentsPage } from "./pages/DeploymentsPage";
 import { HealthPage } from "./pages/HealthPage";
 import { IntegrationsPage } from "./pages/IntegrationsPage";
+import { KnowledgeBasePage } from "./pages/KnowledgeBasePage";
 import { MemoryPage } from "./pages/MemoryPage";
 import { ObjectivesPage } from "./pages/ObjectivesPage";
 import { OnboardingPage } from "./pages/OnboardingPage";
 import { RuntimePage } from "./pages/RuntimePage";
+import { SessionsPage } from "./pages/SessionsPage";
 import { TraceLogPage } from "./pages/TraceLogPage";
 import { WorkflowRunPage } from "./pages/WorkflowRunPage";
 
@@ -38,6 +41,9 @@ export default function App() {
           <Route path="/integrations" element={<IntegrationsPage />} />
           <Route path="/objectives" element={<ObjectivesPage />} />
           <Route path="/runtime" element={<RuntimePage />} />
+          <Route path="/sessions" element={<SessionsPage />} />
+          <Route path="/knowledge" element={<KnowledgeBasePage />} />
+          <Route path="/deployments" element={<DeploymentsPage />} />
         </Routes>
       </main>
     </div>
