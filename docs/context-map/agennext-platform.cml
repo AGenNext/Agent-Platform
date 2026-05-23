@@ -1,0 +1,1241 @@
+/**
+ * AGenNext Agent Platform — Context Map
+ *
+ * Domain-Driven Design model for the full AGenNext multi-repo ecosystem.
+ * Generated with Context Mapper DSL (https://contextmapper.org).
+ *
+ * Bounded context owners follow the single-responsibility rule defined in
+ * docs/ecosystem-architecture-map.md.  Each context maps to one AGenNext
+ * repo.  The ContextMap relationships capture the upstream/downstream
+ * integration patterns and the anti-corruption layers that protect each
+ * context from leaking foreign models.
+ */
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Domain decomposition
+ * ───────────────────────────────────────────────────────────────────────── */
+
+Domain AGenNextDomain {
+
+    Subdomain ProductDeliveryDomain {
+        type = CORE_DOMAIN
+        domainVisionStatement = "Convert enterprise source material into trusted, evaluated, governed business artifacts."
+    }
+
+    Subdomain AgentExecutionDomain {
+        type = CORE_DOMAIN
+        domainVisionStatement = "Orchestrate goal-oriented agent teams to execute objectives end-to-end."
+    }
+
+    Subdomain QualityAndTrustDomain {
+        type = SUPPORTING_SUBDOMAIN
+        domainVisionStatement = "Evaluate, score, and prove the quality and provenance of every artifact."
+    }
+
+    Subdomain ObservabilityDomain {
+        type = SUPPORTING_SUBDOMAIN
+        domainVisionStatement = "Capture traces, events, costs, and analytics to enable continuous improvement."
+    }
+
+    Subdomain CapabilityAndRoutingDomain {
+        type = SUPPORTING_SUBDOMAIN
+        domainVisionStatement = "Register skills, route models, and enforce constraints and budgets."
+    }
+
+    Subdomain PlatformOperationsDomain {
+        type = GENERIC_SUBDOMAIN
+        domainVisionStatement = "Define environments, protect secrets, and operate deployments."
+    }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Context Map — relationships across the ecosystem
+ * ───────────────────────────────────────────────────────────────────────── */
+
+ContextMap AGenNextPlatformContextMap {
+    type = SYSTEM_LANDSCAPE
+    state = TO_BE
+
+    contains AgentPlatform
+    contains AgentKnowledge
+    contains AgentDashboard
+    contains AgentSite
+    contains AgentTeam
+    contains AgentFrameworks
+    contains AgentGraph
+    contains AgentObjective
+    contains AgentBlueprint
+    contains AgentConstraints
+    contains AgentSkills
+    contains ModelRouter
+    contains AgentResearch
+    contains AgentBench
+    contains AgentEval
+    contains AgentTrust
+    contains AgentTraces
+    contains AgentAnalytics
+    contains AgentFinOps
+    contains AgentMaturity
+    contains AgentEnvironment
+    contains AgentSecrets
+    contains AgentDeploy
+
+    /* ── Core product flow ── */
+
+    /* Objective contracts define the shape that Knowledge must honour */
+    AgentObjective [U, PL] -> [D, CF] AgentKnowledge {
+        implementationTechnology = "YAML contracts"
+        exposedAggregates = ObjectiveContract
+    }
+
+    /* Knowledge exposes a stable product API; Dashboard consumes via ACL */
+    AgentKnowledge [U, OHS, PL] -> [D, ACL] AgentDashboard {
+        implementationTechnology = "REST/HTTP"
+        exposedAggregates = ObjectiveLifecycle, ArtifactGeneration, WorkspaceManagement
+    }
+
+    /* Frameworks runtime is upstream; Knowledge delegates execution to it */
+    AgentFrameworks [U, OHS, PL] -> [D, ACL] AgentKnowledge {
+        implementationTechnology = "Python SDK / LangGraph"
+        exposedAggregates = WorkflowGraph, RuntimeCheckpoint
+    }
+
+    /* Frameworks orchestrates Team nodes within workflow graphs */
+    AgentFrameworks [U, OHS, PL] -> [D, CF] AgentTeam {
+        implementationTechnology = "LangGraph node protocol"
+        exposedAggregates = WorkflowGraph
+    }
+
+    /* Blueprint governs how Team instances are composed */
+    AgentBlueprint [U, PL] -> [D, CF] AgentTeam {
+        implementationTechnology = "YAML blueprints"
+        exposedAggregates = TeamBlueprint
+    }
+
+    /* Team draws capabilities from the shared Skill registry */
+    AgentSkills [U, OHS, PL] -> [D, CF] AgentTeam {
+        implementationTechnology = "Python skill registry"
+        exposedAggregates = SkillRegistry
+    }
+
+    /* Graph defines the artifact schema language that Frameworks produces */
+    AgentGraph [U, PL] -> [D, CF] AgentFrameworks {
+        implementationTechnology = "Pydantic / JSON Schema"
+        exposedAggregates = ArtifactSchema
+    }
+
+    /* ── Model routing ── */
+
+    /* Constraints define policies that ModelRouter must enforce */
+    AgentConstraints [U, PL] -> [D, CF] ModelRouter {
+        implementationTechnology = "YAML policy files"
+        exposedAggregates = PolicySet
+    }
+
+    /* Team routes all model calls through ModelRouter under policy */
+    ModelRouter [U, OHS, PL] -> [D, ACL] AgentTeam {
+        implementationTechnology = "Python SDK"
+        exposedAggregates = RoutingPolicy, ModelSelection
+    }
+
+    /* ── Research intelligence ── */
+
+    /* Research feeds verified evidence into Knowledge workflows */
+    AgentResearch [U, OHS, PL] -> [D, ACL] AgentKnowledge {
+        implementationTechnology = "REST / Python SDK"
+        exposedAggregates = ResearchIntelligence
+    }
+
+    /* ── Quality gates ── */
+
+    /* Bench provides reproducible task definitions that Eval references */
+    AgentBench [U, PL] -> [D, CF] AgentEval {
+        implementationTechnology = "YAML task definitions"
+        exposedAggregates = BenchmarkSuite
+    }
+
+    /* Eval gates Knowledge artifact output via quality scoring */
+    AgentEval [U, OHS, PL] -> [D, ACL] AgentKnowledge {
+        implementationTechnology = "REST / Python SDK"
+        exposedAggregates = EvaluationRubric, EvaluationResult
+    }
+
+    /* Trust gates Knowledge artifact output via provenance verification */
+    AgentTrust [U, OHS, PL] -> [D, ACL] AgentKnowledge {
+        implementationTechnology = "REST / Python SDK"
+        exposedAggregates = ProvenanceChain, TrustReport
+    }
+
+    /* Maturity gates Platform release readiness */
+    AgentMaturity [U, OHS, PL] -> [D, ACL] AgentPlatform {
+        implementationTechnology = "YAML / REST"
+        exposedAggregates = MaturityAssessment
+    }
+
+    /* ── Observability ── */
+
+    /* Traces contract defines the span/correlation schema all runtimes emit */
+    AgentTraces [U, PL] -> [D, CF] AgentKnowledge {
+        implementationTechnology = "OpenTelemetry SDK"
+        exposedAggregates = TraceContract
+    }
+
+    AgentTraces [U, PL] -> [D, CF] AgentFrameworks {
+        implementationTechnology = "OpenTelemetry SDK"
+        exposedAggregates = TraceContract
+    }
+
+    AgentTraces [U, PL] -> [D, CF] AgentTeam {
+        implementationTechnology = "OpenTelemetry SDK"
+        exposedAggregates = TraceContract
+    }
+
+    /* Knowledge emits structured events; Analytics consumes and aggregates them */
+    AgentKnowledge [U] -> [D, ACL] AgentAnalytics {
+        implementationTechnology = "Event stream / REST"
+        exposedAggregates = ObjectiveLifecycle, ArtifactGeneration
+    }
+
+    /* FinOps defines the cost attribution contract; Knowledge and ModelRouter conform */
+    AgentFinOps [U, PL] -> [D, CF] AgentKnowledge {
+        implementationTechnology = "FinOps SDK"
+        exposedAggregates = CostAttribution
+    }
+
+    AgentFinOps [U, PL] -> [D, CF] ModelRouter {
+        implementationTechnology = "FinOps SDK"
+        exposedAggregates = CostAttribution
+    }
+
+    /* ── Infrastructure and operations ── */
+
+    /* Environment contracts govern where and how Platform services run */
+    AgentEnvironment [U, PL] -> [D, CF] AgentPlatform {
+        implementationTechnology = "YAML environment contracts"
+        exposedAggregates = EnvironmentContract
+    }
+
+    /* Secrets contract governs credential ownership and rotation */
+    AgentSecrets [U, PL] -> [D, CF] AgentPlatform {
+        implementationTechnology = "Environment-scoped secrets"
+        exposedAggregates = SecretContract
+    }
+
+    /* Deploy handles CI/CD pipelines; Platform is the deployment target */
+    AgentDeploy [U, OHS] -> [D, ACL] AgentPlatform {
+        implementationTechnology = "CI/CD pipelines / Helm"
+        exposedAggregates = DeploymentPipeline
+    }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Bounded Context definitions
+ * ───────────────────────────────────────────────────────────────────────── */
+
+/* ── Assembly ── */
+
+BoundedContext AgentPlatform implements PlatformOperationsDomain {
+    type = APPLICATION
+    domainVisionStatement = "Top-level product assembly, deployment composition, and release coordination for the AGenNext platform."
+    responsibilities = "workspace composition, cross-repo dependency wiring, platform CI/CD, environment selection, release gates"
+    implementationTechnology = "Docker Compose / Helm / MicroK8s"
+
+    Aggregate PlatformAssembly {
+        Entity ServiceRegistry {
+            aggregateRoot
+            - ServiceRegistryId id
+            - List<@ServiceEntry> services
+            String platformVersion
+            String releaseState
+            def @ServiceEntry registerService(String name, String repo, String version)
+        }
+
+        Entity ServiceEntry {
+            String name
+            String repo
+            String version
+            String role
+            boolean healthy
+        }
+
+        Entity ReleaseManifest {
+            aggregateRoot
+            - ReleaseManifestId id
+            String releaseVersion
+            String releaseState
+            - List<@ReleaseGate> gates
+            def boolean isReleasable()
+        }
+
+        Entity ReleaseGate {
+            String gateName
+            String gateOwner
+            boolean passed
+            String evidence
+        }
+
+        ValueObject DeploymentConfig {
+            String environment
+            String namespace
+            String imageTag
+        }
+    }
+}
+
+/* ── Core product ── */
+
+BoundedContext AgentKnowledge implements ProductDeliveryDomain {
+    type = FEATURE
+    domainVisionStatement = "Convert enterprise source material into trusted, evaluated, governed business artifacts and intelligence workflows."
+    responsibilities = "source ingestion, objective lifecycle, artifact generation, workspace management, product API"
+    implementationTechnology = "Python / FastAPI / SurrealDB"
+
+    Aggregate SourceIngestion {
+        Entity IngestionJob {
+            aggregateRoot
+            - IngestionJobId id
+            String sourceUri
+            String sourceType
+            String freshnessStatus
+            String storageRef
+            def @IngestionJob ingest(String sourceUri)
+        }
+
+        Entity Source {
+            - SourceId id
+            String contentType
+            String rawRef
+            String extractedRef
+            Date ingestedAt
+        }
+
+        DomainEvent SourceIngested {
+            - IngestionJobId jobId
+            String sourceUri
+            Date occurredAt
+        }
+    }
+
+    Aggregate ObjectiveLifecycle {
+        Entity Objective {
+            aggregateRoot
+            - ObjectiveId id
+            String title
+            String objectiveType
+            String status
+            - @WorkspaceId workspaceId
+            - List<@ObjectiveTask> tasks
+            def @ObjectiveResult execute()
+            def void complete()
+            def void fail(String reason)
+        }
+
+        Entity ObjectiveTask {
+            - ObjectiveTaskId id
+            String agentRole
+            String taskDescription
+            String status
+            String outputRef
+        }
+
+        ValueObject ObjectiveResult {
+            - ObjectiveId objectiveId
+            String artifactId
+            String evaluationStatus
+            String trustStatus
+            String maturityStatus
+        }
+
+        DomainEvent ObjectiveCompleted {
+            - ObjectiveId objectiveId
+            - @ObjectiveResult result
+            Date occurredAt
+        }
+
+        DomainEvent ObjectiveFailed {
+            - ObjectiveId objectiveId
+            String reason
+            Date occurredAt
+        }
+    }
+
+    Aggregate ArtifactGeneration {
+        Entity Artifact {
+            aggregateRoot
+            - ArtifactId id
+            String artifactType
+            String title
+            String contentRef
+            String versionHash
+            - @ObjectiveId objectiveId
+            - List<@ArtifactVersion> versions
+            - @ArtifactEvaluationSummary evaluationSummary
+            def @Artifact publishVersion(String contentRef)
+        }
+
+        Entity ArtifactVersion {
+            - ArtifactVersionId id
+            int versionNumber
+            String contentRef
+            Date createdAt
+        }
+
+        ValueObject ArtifactEvaluationSummary {
+            String evalStatus
+            double clearScore
+            String trustStatus
+            double trustScore
+            boolean approved
+        }
+
+        DomainEvent ArtifactPublished {
+            - ArtifactId artifactId
+            String artifactType
+            Date occurredAt
+        }
+    }
+
+    Aggregate WorkspaceManagement {
+        Entity Workspace {
+            aggregateRoot
+            - WorkspaceId id
+            String tenantId
+            String name
+            String plan
+            - List<@WorkspaceMember> members
+            def @Workspace create(String tenantId, String name)
+        }
+
+        Entity WorkspaceMember {
+            String userId
+            String role
+        }
+
+        ValueObject WorkspaceConfig {
+            String defaultModel
+            String defaultLanguage
+            boolean humanApprovalRequired
+        }
+    }
+}
+
+/* ── Customer-facing surfaces ── */
+
+BoundedContext AgentDashboard implements ProductDeliveryDomain {
+    type = APPLICATION
+    domainVisionStatement = "Authenticated control plane providing visibility, objective launch, approval workflows, and observability views."
+    responsibilities = "objective runner, health status views, A2A trace views, human approval, result review"
+    implementationTechnology = "TypeScript / React / Next.js"
+
+    Aggregate DashboardView {
+        Entity ObjectiveStatusView {
+            aggregateRoot
+            - ObjectiveStatusViewId id
+            String objectiveId
+            String title
+            String status
+            double progressPercent
+            - List<@TaskStatusItem> tasks
+        }
+
+        Entity TaskStatusItem {
+            String taskId
+            String agentRole
+            String status
+        }
+
+        ValueObject RuntimeHealthView {
+            String serviceStatus
+            int activeObjectives
+            int failedObjectives
+            Date lastChecked
+        }
+    }
+
+    Aggregate ApprovalWorkflow {
+        Entity ApprovalRequest {
+            aggregateRoot
+            - ApprovalRequestId id
+            String objectiveId
+            String artifactId
+            String requestedBy
+            String status
+            - @ApprovalDecision decision
+            def @ApprovalDecision approve(String reviewerId, String notes)
+            def @ApprovalDecision reject(String reviewerId, String reason)
+        }
+
+        ValueObject ApprovalDecision {
+            String reviewerId
+            String decision
+            String notes
+            Date decidedAt
+        }
+
+        DomainEvent ArtifactApproved {
+            - ApprovalRequestId requestId
+            String artifactId
+            Date occurredAt
+        }
+    }
+}
+
+BoundedContext AgentSite implements PlatformOperationsDomain {
+    type = APPLICATION
+    domainVisionStatement = "Public website, product documentation, marketing pages, and use-case content."
+    implementationTechnology = "TypeScript / Astro or Next.js"
+
+    Aggregate PublicContent {
+        Entity Page {
+            aggregateRoot
+            - PageId id
+            String slug
+            String title
+            String contentMd
+            String pageType
+        }
+    }
+}
+
+/* ── Agent runtime and execution ── */
+
+BoundedContext AgentFrameworks implements AgentExecutionDomain {
+    type = FEATURE
+    domainVisionStatement = "LangGraph and runtime adapters providing workflow orchestration, state management, and SurrealDB-backed persistence."
+    responsibilities = "LangGraph workflow execution, runtime state, A2A handoff protocol, checkpoint persistence"
+    implementationTechnology = "Python / LangGraph / SurrealDB"
+
+    Aggregate WorkflowGraph {
+        Entity WorkflowDefinition {
+            aggregateRoot
+            - WorkflowDefinitionId id
+            String name
+            String version
+            - List<@WorkflowNode> nodes
+            - List<@WorkflowEdge> edges
+            def @WorkflowRun startRun(String objectiveId)
+        }
+
+        Entity WorkflowNode {
+            - WorkflowNodeId id
+            String nodeType
+            String agentRole
+            String entryCondition
+        }
+
+        Entity WorkflowEdge {
+            - WorkflowEdgeId id
+            - @WorkflowNodeId sourceNode
+            - @WorkflowNodeId targetNode
+            String condition
+        }
+
+        Entity WorkflowRun {
+            aggregateRoot
+            - WorkflowRunId id
+            - @WorkflowDefinitionId definitionId
+            String objectiveId
+            String status
+            Date startedAt
+            Date completedAt
+        }
+
+        DomainEvent WorkflowRunCompleted {
+            - WorkflowRunId runId
+            String objectiveId
+            Date occurredAt
+        }
+    }
+
+    Aggregate RuntimeCheckpoint {
+        Entity Checkpoint {
+            aggregateRoot
+            - CheckpointId id
+            - @WorkflowRunId runId
+            String nodeId
+            String stateJson
+            Date savedAt
+            def @Checkpoint save(String nodeId, String stateJson)
+            def @Checkpoint restore(CheckpointId checkpointId)
+        }
+
+        DomainEvent CheckpointSaved {
+            - CheckpointId checkpointId
+            - @WorkflowRunId runId
+            Date occurredAt
+        }
+    }
+}
+
+BoundedContext AgentTeam implements AgentExecutionDomain {
+    type = FEATURE
+    domainVisionStatement = "Goal-oriented agents and A2A handoff behaviour for multi-agent objective execution."
+    responsibilities = "agent task execution, A2A handoffs, skill invocation, model call delegation"
+    implementationTechnology = "Python / LangGraph nodes"
+
+    Aggregate AgentExecution {
+        Entity Agent {
+            aggregateRoot
+            - AgentId id
+            String agentRole
+            String status
+            - @WorkflowRunId runId
+            - List<@AgentTask> tasks
+            def @AgentTask executeTask(String taskDescription)
+            def @A2AHandoff handoffTo(String targetAgentRole, String context)
+        }
+
+        Entity AgentTask {
+            - AgentTaskId id
+            String description
+            String skillId
+            String status
+            String outputRef
+            Date startedAt
+            Date completedAt
+        }
+
+        Entity A2AHandoff {
+            aggregateRoot
+            - A2AHandoffId id
+            - @AgentId sourceAgent
+            String targetAgentRole
+            String context
+            String handoffStatus
+            Date createdAt
+        }
+
+        DomainEvent AgentTaskCompleted {
+            - AgentTaskId taskId
+            String outputRef
+            Date occurredAt
+        }
+
+        DomainEvent A2AHandoffInitiated {
+            - A2AHandoffId handoffId
+            Date occurredAt
+        }
+    }
+}
+
+BoundedContext AgentGraph implements AgentExecutionDomain {
+    type = FEATURE
+    domainVisionStatement = "Graph-shaped artifact schema contracts consumed by Frameworks and Knowledge."
+    implementationTechnology = "Python / Pydantic / JSON Schema"
+
+    Aggregate ArtifactSchema {
+        Entity ArtifactType {
+            aggregateRoot
+            - ArtifactTypeId id
+            String typeName
+            String version
+            String schemaRef
+            - List<@ArtifactField> fields
+        }
+
+        Entity ArtifactField {
+            String fieldName
+            String fieldType
+            boolean required
+        }
+
+        ValueObject SchemaDefinition {
+            String jsonSchema
+            String version
+        }
+    }
+}
+
+/* ── Governance and operating contracts ── */
+
+BoundedContext AgentObjective implements ProductDeliveryDomain {
+    type = FEATURE
+    domainVisionStatement = "Objective contracts and completion policies consumed by Knowledge as a published language."
+    implementationTechnology = "YAML / Python Pydantic"
+
+    Aggregate ObjectiveContract {
+        Entity ObjectiveDefinition {
+            aggregateRoot
+            - ObjectiveDefinitionId id
+            String objectiveType
+            String description
+            - @CompletionPolicy completionPolicy
+            - List<@ObjectiveInputSchema> inputs
+            - List<@ObjectiveOutputSchema> outputs
+        }
+
+        ValueObject CompletionPolicy {
+            boolean requiresEval
+            boolean requiresTrust
+            boolean requiresHumanApproval
+            double minClearScore
+            double minTrustScore
+        }
+
+        ValueObject ObjectiveInputSchema {
+            String fieldName
+            String fieldType
+            boolean required
+        }
+
+        ValueObject ObjectiveOutputSchema {
+            String artifactType
+            String schemaRef
+        }
+    }
+}
+
+BoundedContext AgentBlueprint implements AgentExecutionDomain {
+    type = FEATURE
+    domainVisionStatement = "Versioned team and system blueprints that define agent role composition and handoff topology."
+    implementationTechnology = "YAML"
+
+    Aggregate TeamBlueprint {
+        Entity BlueprintDefinition {
+            aggregateRoot
+            - BlueprintDefinitionId id
+            String blueprintName
+            String version
+            - List<@AgentRoleSpec> roles
+            - List<@HandoffEdgeSpec> handoffs
+        }
+
+        ValueObject AgentRoleSpec {
+            String roleName
+            String skillsetRef
+            boolean required
+        }
+
+        ValueObject HandoffEdgeSpec {
+            String fromRole
+            String toRole
+            String condition
+        }
+    }
+}
+
+BoundedContext AgentConstraints implements CapabilityAndRoutingDomain {
+    type = FEATURE
+    domainVisionStatement = "Reusable policy constraints and guardrails enforced by ModelRouter and agent execution."
+    implementationTechnology = "YAML / Python"
+
+    Aggregate PolicySet {
+        Entity Policy {
+            aggregateRoot
+            - PolicyId id
+            String policyName
+            String policyType
+            boolean enabled
+            - List<@Constraint> constraints
+        }
+
+        Entity Constraint {
+            - ConstraintId id
+            String constraintType
+            String targetScope
+            String operator
+            String value
+        }
+
+        ValueObject GuardrailRule {
+            String ruleName
+            String condition
+            String action
+        }
+    }
+}
+
+BoundedContext AgentSkills implements CapabilityAndRoutingDomain {
+    type = FEATURE
+    domainVisionStatement = "Reusable skill and capability registry that agents discover and invoke at runtime."
+    implementationTechnology = "Python / YAML"
+
+    Aggregate SkillRegistry {
+        Entity Skill {
+            aggregateRoot
+            - SkillId id
+            String skillName
+            String version
+            String description
+            - List<@SkillCapability> capabilities
+            - @SkillImplementation implementation
+        }
+
+        Entity SkillCapability {
+            String capabilityName
+            String inputSchema
+            String outputSchema
+        }
+
+        ValueObject SkillImplementation {
+            String implementationType
+            String entrypoint
+            String configSchema
+        }
+    }
+}
+
+/* ── Model routing ── */
+
+BoundedContext ModelRouter implements CapabilityAndRoutingDomain {
+    type = FEATURE
+    domainVisionStatement = "Model and provider routing under agent constraints, budgets, and quality requirements."
+    implementationTechnology = "Python"
+
+    Aggregate RoutingPolicy {
+        Entity RoutingRule {
+            aggregateRoot
+            - RoutingRuleId id
+            String taskType
+            String preferredProvider
+            - List<@ModelPreference> preferences
+            - @BudgetConstraint budgetConstraint
+        }
+
+        ValueObject ModelPreference {
+            String modelId
+            String provider
+            int priority
+            double maxCostPerCall
+        }
+
+        ValueObject BudgetConstraint {
+            double dailyBudget
+            double perObjectiveBudget
+            String currency
+        }
+    }
+
+    Aggregate ModelSelection {
+        Entity ModelCandidate {
+            aggregateRoot
+            - ModelCandidateId id
+            String modelId
+            String provider
+            String contextWindowTokens
+            boolean available
+        }
+
+        ValueObject SelectionResult {
+            String selectedModelId
+            String selectedProvider
+            String rationale
+            double estimatedCost
+        }
+    }
+}
+
+/* ── Research ── */
+
+BoundedContext AgentResearch implements ProductDeliveryDomain {
+    type = FEATURE
+    domainVisionStatement = "Evidence gathering and research-to-decision traceability for Knowledge workflows."
+    implementationTechnology = "Python"
+
+    Aggregate ResearchIntelligence {
+        Entity ResearchQuery {
+            aggregateRoot
+            - ResearchQueryId id
+            String query
+            String scope
+            String status
+            - @ResearchResult result
+            def @ResearchResult execute()
+        }
+
+        Entity ResearchResult {
+            - ResearchResultId id
+            - @ResearchQueryId queryId
+            - List<@Evidence> evidenceItems
+            String summary
+            Date completedAt
+        }
+
+        ValueObject Evidence {
+            String sourceUri
+            String extract
+            double relevanceScore
+            String retrievedAt
+        }
+    }
+}
+
+/* ── Evaluation and trust ── */
+
+BoundedContext AgentBench implements QualityAndTrustDomain {
+    type = FEATURE
+    domainVisionStatement = "Reproducible benchmark task definitions used by AgentEval to measure artifact quality."
+    implementationTechnology = "YAML / Python"
+
+    Aggregate BenchmarkSuite {
+        Entity BenchmarkTask {
+            aggregateRoot
+            - BenchmarkTaskId id
+            String taskName
+            String artifactType
+            String inputRef
+            String expectedOutputRef
+            - List<@TaskMetric> metrics
+        }
+
+        ValueObject TaskMetric {
+            String metricName
+            String metricType
+            double threshold
+        }
+    }
+}
+
+BoundedContext AgentEval implements QualityAndTrustDomain {
+    type = FEATURE
+    domainVisionStatement = "Evaluation rubrics, CLEAR scoring, and quality gates for artifact output."
+    responsibilities = "CLEAR scoring, rubric management, quality gate enforcement, eval result storage"
+    implementationTechnology = "Python / FastAPI"
+
+    Aggregate EvaluationRubric {
+        Entity Rubric {
+            aggregateRoot
+            - RubricId id
+            String rubricName
+            String artifactType
+            - List<@CLEARDimension> dimensions
+        }
+
+        ValueObject CLEARDimension {
+            String dimensionName
+            double weight
+            double threshold
+        }
+
+        ValueObject QualityThreshold {
+            double minCompositeScore
+            boolean blockOnFail
+        }
+    }
+
+    Aggregate EvaluationResult {
+        Entity EvalScore {
+            aggregateRoot
+            - EvalScoreId id
+            String artifactId
+            - @RubricId rubricId
+            double compositeScore
+            - List<@DimensionScore> dimensionScores
+            boolean passed
+            Date evaluatedAt
+        }
+
+        ValueObject DimensionScore {
+            String dimensionName
+            double score
+            String rationale
+        }
+
+        ValueObject QualityGateResult {
+            boolean passed
+            String blockingReason
+            double score
+        }
+
+        DomainEvent ArtifactEvaluated {
+            - EvalScoreId evalScoreId
+            String artifactId
+            boolean passed
+            Date occurredAt
+        }
+    }
+}
+
+BoundedContext AgentTrust implements QualityAndTrustDomain {
+    type = FEATURE
+    domainVisionStatement = "Provenance, evidence traceability, and trust scoring for every generated artifact."
+    responsibilities = "provenance chain construction, evidence verification, trust score computation, trust report packaging"
+    implementationTechnology = "Python / FastAPI"
+
+    Aggregate ProvenanceChain {
+        Entity ProvenanceRecord {
+            aggregateRoot
+            - ProvenanceRecordId id
+            String artifactId
+            - List<@EvidenceLink> evidenceLinks
+            String chainHash
+            Date createdAt
+        }
+
+        ValueObject EvidenceLink {
+            String sourceRef
+            String extractRef
+            String agentId
+            String stepDescription
+        }
+    }
+
+    Aggregate TrustReport {
+        Entity TrustScore {
+            aggregateRoot
+            - TrustScoreId id
+            String artifactId
+            double score
+            boolean verified
+            - @EvidencePackage evidencePackage
+            Date computedAt
+            def boolean passes(double threshold)
+        }
+
+        ValueObject EvidencePackage {
+            String provenanceRef
+            int evidenceItemCount
+            String verificationMethod
+        }
+
+        DomainEvent ArtifactTrustVerified {
+            - TrustScoreId trustScoreId
+            String artifactId
+            boolean verified
+            Date occurredAt
+        }
+    }
+}
+
+/* ── Observability ── */
+
+BoundedContext AgentTraces implements ObservabilityDomain {
+    type = FEATURE
+    domainVisionStatement = "Semantic trace contracts, span definitions, and correlation IDs published as a shared observability language."
+    implementationTechnology = "Python / OpenTelemetry"
+
+    Aggregate TraceContract {
+        Entity SpanDefinition {
+            aggregateRoot
+            - SpanDefinitionId id
+            String spanName
+            String spanKind
+            - List<@SpanAttribute> requiredAttributes
+        }
+
+        ValueObject SpanAttribute {
+            String key
+            String type
+            boolean required
+        }
+
+        ValueObject TraceContext {
+            String traceId
+            String spanId
+            String parentSpanId
+            String correlationId
+        }
+    }
+}
+
+BoundedContext AgentAnalytics implements ObservabilityDomain {
+    type = FEATURE
+    domainVisionStatement = "Events, metrics, trends, and improvement loops derived from platform execution data."
+    implementationTechnology = "Python / SurrealDB"
+
+    Aggregate MetricEvent {
+        Entity Event {
+            aggregateRoot
+            - EventId id
+            String eventType
+            String sourceContext
+            String payloadJson
+            Date occurredAt
+        }
+
+        Entity MetricDefinition {
+            aggregateRoot
+            - MetricDefinitionId id
+            String metricName
+            String aggregationType
+            String unit
+        }
+
+        ValueObject Trend {
+            String metricName
+            String period
+            double value
+            String direction
+        }
+    }
+}
+
+BoundedContext AgentFinOps implements ObservabilityDomain {
+    type = FEATURE
+    domainVisionStatement = "Cost governance, usage attribution, budget enforcement, and unit economics for model and platform spend."
+    implementationTechnology = "Python"
+
+    Aggregate CostAttribution {
+        Entity UsageRecord {
+            aggregateRoot
+            - UsageRecordId id
+            String objectiveId
+            String modelId
+            String workspaceId
+            double inputTokens
+            double outputTokens
+            double costUsd
+            Date recordedAt
+        }
+
+        Entity BudgetLimit {
+            aggregateRoot
+            - BudgetLimitId id
+            String scope
+            String scopeId
+            double limitUsd
+            String period
+            double consumedUsd
+            def boolean isExceeded()
+        }
+
+        ValueObject CostAllocation {
+            String workspaceId
+            String tenantId
+            double totalCostUsd
+            String period
+        }
+
+        DomainEvent BudgetExceeded {
+            - BudgetLimitId budgetId
+            double overage
+            Date occurredAt
+        }
+    }
+}
+
+/* ── Maturity and readiness ── */
+
+BoundedContext AgentMaturity implements QualityAndTrustDomain {
+    type = FEATURE
+    domainVisionStatement = "Maturity levels and production readiness gates that must pass before Platform ships."
+    implementationTechnology = "YAML / Python"
+
+    Aggregate MaturityAssessment {
+        Entity MaturityLevel {
+            aggregateRoot
+            - MaturityLevelId id
+            String levelName
+            int levelNumber
+            - List<@ReadinessGate> gates
+        }
+
+        Entity ReadinessGate {
+            - ReadinessGateId id
+            String gateName
+            String gateCategory
+            String criterion
+            boolean passed
+            String evidence
+        }
+
+        ValueObject MaturityScore {
+            int currentLevel
+            double percentComplete
+            int failingGates
+            boolean isProductionReady
+        }
+
+        DomainEvent MaturityLevelReached {
+            - MaturityLevelId levelId
+            String levelName
+            Date occurredAt
+        }
+    }
+}
+
+/* ── Infrastructure and operations ── */
+
+BoundedContext AgentEnvironment implements PlatformOperationsDomain {
+    type = FEATURE
+    domainVisionStatement = "Dev, test, staging, and production environment contracts consumed by Platform services."
+    implementationTechnology = "YAML contracts"
+
+    Aggregate EnvironmentContract {
+        Entity EnvironmentSpec {
+            aggregateRoot
+            - EnvironmentSpecId id
+            String environmentName
+            String tier
+            - List<@ServiceConfig> services
+            - List<@InfraConfig> infra
+        }
+
+        ValueObject ServiceConfig {
+            String serviceName
+            String imageRef
+            String replicas
+            String resourceProfile
+        }
+
+        ValueObject InfraConfig {
+            String componentName
+            String componentType
+            String connectionRef
+        }
+    }
+}
+
+BoundedContext AgentSecrets implements PlatformOperationsDomain {
+    type = FEATURE
+    domainVisionStatement = "Secrets, keys, and credential ownership with environment-scoped handling and rotation policies."
+    implementationTechnology = "Environment variables / Vault-compatible"
+
+    Aggregate SecretContract {
+        Entity SecretDefinition {
+            aggregateRoot
+            - SecretDefinitionId id
+            String secretName
+            String ownerContext
+            String environmentScope
+            boolean rotationRequired
+            - @RotationPolicy rotationPolicy
+        }
+
+        ValueObject RotationPolicy {
+            int rotationDays
+            String rotationMethod
+            boolean notifyOnExpiry
+        }
+    }
+}
+
+BoundedContext AgentDeploy implements PlatformOperationsDomain {
+    type = FEATURE
+    domainVisionStatement = "CI/CD pipelines, deployment stages, monitoring hooks, and rollback runbooks for Platform operations."
+    implementationTechnology = "GitHub Actions / Helm / MicroK8s"
+
+    Aggregate DeploymentPipeline {
+        Entity Pipeline {
+            aggregateRoot
+            - PipelineId id
+            String pipelineName
+            String targetEnvironment
+            - List<@DeploymentStage> stages
+            String status
+            def void run()
+        }
+
+        Entity DeploymentStage {
+            - DeploymentStageId id
+            String stageName
+            String stageType
+            boolean required
+            String status
+        }
+
+        ValueObject RollbackPlan {
+            String triggerCondition
+            String rollbackTarget
+            String rollbackProcedure
+            String contactOnCall
+        }
+
+        DomainEvent DeploymentCompleted {
+            - PipelineId pipelineId
+            String targetEnvironment
+            boolean successful
+            Date occurredAt
+        }
+    }
+}
