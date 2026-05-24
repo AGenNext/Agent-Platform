@@ -182,7 +182,8 @@ async def _upsert_relation(
         )
         if not _rows(existing):
             await db.query(
-                "RELATE $src -> kb_entity_relation -> $tgt SET "
+                # type::thing() converts string params to record IDs for RELATE
+                "RELATE type::thing($src) -> kb_entity_relation -> type::thing($tgt) SET "
                 "kb_id = $k, relation_type = $r, description = $d, "
                 "chunk_id = $c, weight = 1.0, created_at = time::now()",
                 {"src": src_id, "tgt": tgt_id, "k": kb_id,

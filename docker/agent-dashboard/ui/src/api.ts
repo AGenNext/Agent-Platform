@@ -38,6 +38,23 @@ export const api = {
     req<KbCommunity[]>('GET', `/knowledge-bases/${kbId}/communities`),
   graphSearch: (payload: { query: string; kb_ids: string[]; mode?: string; chunk_limit?: number }) =>
     req<GraphSearchResult>('POST', '/knowledge-bases/graph/search', payload),
+  listTenants: () => req<Tenant[]>('GET', '/tenants'),
+  createTenant: (payload: { name: string; plan?: string }) =>
+    req<Tenant>('POST', '/tenants', payload),
+  getTenant: (id: string) => req<Tenant>('GET', `/tenants/${id}`),
+  listUsers: (tenantId: string) => req<TenantUser[]>('GET', `/tenants/${tenantId}/users`),
+  createUser: (tenantId: string, payload: { email: string; role?: string; display_name?: string }) =>
+    req<TenantUser>('POST', `/tenants/${tenantId}/users`, payload),
+  listApiKeys: (tenantId: string) => req<ApiKey[]>('GET', `/tenants/${tenantId}/api-keys`),
+  createApiKey: (tenantId: string, payload: { name: string; scopes?: string[] }) =>
+    req<ApiKey>('POST', `/tenants/${tenantId}/api-keys`, payload),
+  revokeApiKey: (tenantId: string, keyId: string) =>
+    req<void>('DELETE', `/tenants/${tenantId}/api-keys/${keyId}`),
+  getBilling: (tenantId: string) => req<BillingSubscription>('GET', `/tenants/${tenantId}/billing`),
+  changePlan: (tenantId: string, plan: string) =>
+    req<BillingSubscription>('POST', `/tenants/${tenantId}/billing/plan`, { plan }),
+  listAuditLogs: (tenantId: string, action?: string, limit?: number) =>
+    req<AuditLog[]>('GET', `/tenants/${tenantId}/audit-logs${action ? `?action=${action}` : ''}${limit ? `&limit=${limit}` : ''}`),
   listObjectives: (status?: string) =>
     req<Objective[]>('GET', `/objectives${status ? `?status=${status}` : ''}`),
   createObjective: (payload: { title: string; objective_type: string; payload?: unknown }) =>
@@ -117,6 +134,61 @@ export interface TrustScore {
   score: number
   evidence_count: number
   passed?: boolean
+}
+
+export interface Tenant {
+  id: string
+  name: string
+  slug: string
+  plan: string
+  status: string
+  created_at: string
+}
+
+export interface TenantUser {
+  id: string
+  tenant_id: string
+  email: string
+  display_name: string
+  role: string
+  status: string
+  last_active?: string
+  created_at: string
+}
+
+export interface ApiKey {
+  id: string
+  tenant_id: string
+  name: string
+  key_prefix: string
+  scopes: string[]
+  status: string
+  last_used_at?: string
+  created_at: string
+  raw_key?: string
+}
+
+export interface BillingSubscription {
+  id: string
+  tenant_id: string
+  plan_id: string
+  status: string
+  current_period_start: string
+  current_period_end?: string
+  limits?: Record<string, number>
+}
+
+export interface AuditLog {
+  id: string
+  tenant_id: string
+  actor_id?: string
+  actor_type: string
+  action: string
+  resource_type?: string
+  resource_id?: string
+  result: string
+  metadata?: Record<string, unknown>
+  occurred_at: string
 }
 
 export interface KnowledgeBase {

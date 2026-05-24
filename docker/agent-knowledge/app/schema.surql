@@ -571,3 +571,99 @@ DEFINE INDEX idx_community_kb ON kb_communities FIELDS kb_id;
 DEFINE INDEX idx_otel_span        ON otel_spans FIELDS span_id UNIQUE;
 DEFINE INDEX idx_otel_parent      ON otel_spans FIELDS parent_span_id;
 DEFINE INDEX idx_otel_start       ON otel_spans FIELDS start_time_unix_nano;
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- M8 — ENTERPRISE SAAS FOUNDATIONS
+-- Tenants · Users · RBAC · API Keys · Billing · Audit Logs
+-- ═══════════════════════════════════════════════════════════════════════════
+
+-- ── Tenants ───────────────────────────────────────────────────────────────────
+DEFINE TABLE tenants SCHEMALESS PERMISSIONS FULL;
+DEFINE FIELD name         ON tenants TYPE string;
+DEFINE FIELD slug         ON tenants TYPE string;       -- url-safe unique identifier
+DEFINE FIELD plan         ON tenants TYPE string DEFAULT 'free';
+  -- free | pro | enterprise
+DEFINE FIELD status       ON tenants TYPE string DEFAULT 'active';
+  -- active | suspended | cancelled
+DEFINE FIELD settings     ON tenants FLEXIBLE TYPE object DEFAULT {};
+DEFINE FIELD created_at   ON tenants TYPE datetime DEFAULT time::now();
+DEFINE FIELD updated_at   ON tenants TYPE datetime DEFAULT time::now();
+DEFINE INDEX idx_tenant_slug ON tenants FIELDS slug UNIQUE;
+
+-- ── Users ─────────────────────────────────────────────────────────────────────
+DEFINE TABLE users SCHEMALESS PERMISSIONS FULL;
+DEFINE FIELD tenant_id    ON users TYPE string;
+DEFINE FIELD email        ON users TYPE string;
+DEFINE FIELD display_name ON users TYPE string DEFAULT '';
+DEFINE FIELD role         ON users TYPE string DEFAULT 'viewer';
+  -- owner | admin | editor | viewer
+DEFINE FIELD status       ON users TYPE string DEFAULT 'active';
+  -- active | invited | suspended
+DEFINE FIELD password_hash ON users TYPE option<string>;
+DEFINE FIELD last_active  ON users TYPE option<datetime>;
+DEFINE FIELD created_at   ON users TYPE datetime DEFAULT time::now();
+DEFINE FIELD updated_at   ON users TYPE datetime DEFAULT time::now();
+DEFINE INDEX idx_user_tenant ON users FIELDS tenant_id;
+DEFINE INDEX idx_user_email  ON users FIELDS tenant_id, email UNIQUE;
+
+-- ── API Keys ──────────────────────────────────────────────────────────────────
+-- key_hash is stored; raw key is shown once at creation time only.
+DEFINE TABLE api_keys SCHEMALESS PERMISSIONS FULL;
+DEFINE FIELD tenant_id    ON api_keys TYPE string;
+DEFINE FIELD user_id      ON api_keys TYPE option<string>;
+DEFINE FIELD name         ON api_keys TYPE string;
+DEFINE FIELD key_prefix   ON api_keys TYPE string;    -- first 8 chars for display (rg_xxxxxxxx)
+DEFINE FIELD key_hash     ON api_keys TYPE string;    -- sha256 of full key
+DEFINE FIELD scopes       ON api_keys FLEXIBLE TYPE array DEFAULT [];
+  -- ["read", "write", "admin"]
+DEFINE FIELD status       ON api_keys TYPE string DEFAULT 'active';
+  -- active | revoked
+DEFINE FIELD last_used_at ON api_keys TYPE option<datetime>;
+DEFINE FIELD expires_at   ON api_keys TYPE option<datetime>;
+DEFINE FIELD created_at   ON api_keys TYPE datetime DEFAULT time::now();
+DEFINE INDEX idx_apikey_tenant ON api_keys FIELDS tenant_id;
+DEFINE INDEX idx_apikey_hash   ON api_keys FIELDS key_hash UNIQUE;
+
+-- ── Subscription Plans (catalogue) ───────────────────────────────────────────
+DEFINE TABLE subscription_plans SCHEMALESS PERMISSIONS FULL;
+DEFINE FIELD plan_id      ON subscription_plans TYPE string;  -- free | pro | enterprise
+DEFINE FIELD name         ON subscription_plans TYPE string;
+DEFINE FIELD price_monthly ON subscription_plans TYPE float DEFAULT 0.0;
+DEFINE FIELD limits       ON subscription_plans FLEXIBLE TYPE object DEFAULT {};
+  -- { monthly_budget_usd, api_calls_per_day, kb_count, users }
+DEFINE INDEX idx_plan_id  ON subscription_plans FIELDS plan_id UNIQUE;
+
+-- ── Billing Subscriptions ─────────────────────────────────────────────────────
+DEFINE TABLE billing_subscriptions SCHEMALESS PERMISSIONS FULL;
+DEFINE FIELD tenant_id    ON billing_subscriptions TYPE string;
+DEFINE FIELD plan_id      ON billing_subscriptions TYPE string;
+DEFINE FIELD status       ON billing_subscriptions TYPE string DEFAULT 'active';
+  -- active | past_due | cancelled | trialing
+DEFINE FIELD current_period_start ON billing_subscriptions TYPE datetime DEFAULT time::now();
+DEFINE FIELD current_period_end   ON billing_subscriptions TYPE option<datetime>;
+DEFINE FIELD cancel_at    ON billing_subscriptions TYPE option<datetime>;
+DEFINE FIELD metadata     ON billing_subscriptions FLEXIBLE TYPE object DEFAULT {};
+DEFINE FIELD created_at   ON billing_subscriptions TYPE datetime DEFAULT time::now();
+DEFINE FIELD updated_at   ON billing_subscriptions TYPE datetime DEFAULT time::now();
+DEFINE INDEX idx_sub_tenant ON billing_subscriptions FIELDS tenant_id;
+
+-- ── Audit Logs (append-only) ──────────────────────────────────────────────────
+-- Every significant API action is written here.
+-- Immutable: no UPDATE/DELETE routes exposed.
+DEFINE TABLE audit_logs SCHEMALESS PERMISSIONS FULL;
+DEFINE FIELD tenant_id    ON audit_logs TYPE string;
+DEFINE FIELD actor_id     ON audit_logs TYPE option<string>;   -- user_id or api_key prefix
+DEFINE FIELD actor_type   ON audit_logs TYPE string DEFAULT 'user';
+  -- user | api_key | system
+DEFINE FIELD action       ON audit_logs TYPE string;
+  -- e.g. "knowledge_base.create", "artifact.generate", "user.invite"
+DEFINE FIELD resource_type ON audit_logs TYPE option<string>;
+DEFINE FIELD resource_id  ON audit_logs TYPE option<string>;
+DEFINE FIELD result       ON audit_logs TYPE string DEFAULT 'success';
+  -- success | failure | denied
+DEFINE FIELD metadata     ON audit_logs FLEXIBLE TYPE object DEFAULT {};
+DEFINE FIELD ip_address   ON audit_logs TYPE option<string>;
+DEFINE FIELD occurred_at  ON audit_logs TYPE datetime DEFAULT time::now();
+DEFINE INDEX idx_audit_tenant ON audit_logs FIELDS tenant_id;
+DEFINE INDEX idx_audit_time   ON audit_logs FIELDS occurred_at;
+DEFINE INDEX idx_audit_action ON audit_logs FIELDS action;

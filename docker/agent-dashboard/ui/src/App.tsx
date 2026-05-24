@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Activity, Box, GitBranch, LayoutDashboard, Radio, ShieldCheck, Wallet, Wand2 } from 'lucide-react'
+import { Activity, Box, Building2, GitBranch, LayoutDashboard, Radio, ShieldCheck, Wallet, Wand2 } from 'lucide-react'
 import { HealthView } from './views/HealthView'
 import { ObjectivesView } from './views/ObjectivesView'
 import { ArtifactsView } from './views/ArtifactsView'
@@ -8,8 +8,9 @@ import { TimelineView } from './views/TimelineView'
 import { ReadinessView } from './views/ReadinessView'
 import { SpendView } from './views/SpendView'
 import { GeneratorView } from './views/GeneratorView'
+import { TenantView } from './views/TenantView'
 
-type View = 'health' | 'objectives' | 'artifacts' | 'trace' | 'timeline' | 'readiness' | 'spend' | 'generator'
+type View = 'health' | 'objectives' | 'artifacts' | 'trace' | 'timeline' | 'readiness' | 'spend' | 'generator' | 'tenants'
 
 const nav: { id: View; label: string; icon: React.ReactNode }[] = [
   { id: 'health',     label: 'Health',      icon: <Activity size={16} /> },
@@ -20,6 +21,7 @@ const nav: { id: View; label: string; icon: React.ReactNode }[] = [
   { id: 'timeline',   label: 'Timeline',    icon: <Radio size={16} /> },
   { id: 'readiness',  label: 'Readiness',   icon: <ShieldCheck size={16} /> },
   { id: 'spend',      label: 'Spend',       icon: <Wallet size={16} /> },
+  { id: 'tenants',   label: 'Tenants',     icon: <Building2 size={16} /> },
 ]
 
 export default function App() {
@@ -87,6 +89,7 @@ export default function App() {
           {view === 'readiness'  && <ReadinessView />}
           {view === 'spend'      && <SpendView />}
           {view === 'generator'  && <GeneratorView />}
+          {view === 'tenants'    && <TenantView />}
         </div>
       </main>
     </div>

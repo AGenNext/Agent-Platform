@@ -61,7 +61,8 @@ async def local_search(
             # SurrealDB native graph traversal
             for sid in seed_ids[:5]:  # limit traversal to top 5 seeds
                 hop_result = await db.query(
-                    "SELECT ->kb_entity_relation->kb_entities.* AS neighbours FROM $eid",
+                    # type::thing() converts string param to record ID for graph traversal
+                    "SELECT ->kb_entity_relation->kb_entities.* AS neighbours FROM type::thing($eid)",
                     {"eid": sid},
                 )
                 rows = _rows(hop_result)
