@@ -13,6 +13,8 @@ from .routes.trust import router as trust_router
 from .routes.model_router import router as model_router_router
 from .routes.events import router as events_router
 from .routes.maturity import router as maturity_router
+from .routes.knowledge import router as knowledge_router
+from .routes.generator import router as generator_router
 from .events import emit
 
 # Legacy objective/artifact routes
@@ -43,6 +45,8 @@ app.include_router(trust_router)
 app.include_router(model_router_router)
 app.include_router(events_router)
 app.include_router(maturity_router)
+app.include_router(knowledge_router)
+app.include_router(generator_router)
 
 
 # ── Health ───────────────────────────────────────────────────────────────────
@@ -69,6 +73,7 @@ def root():
         "routes": [
             "/agents", "/workflows", "/eval", "/trust",
             "/model-router", "/objectives", "/artifacts",
+            "/knowledge-bases", "/generate",
         ],
     }
 

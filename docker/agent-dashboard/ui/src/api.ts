@@ -12,6 +12,22 @@ async function req<T>(method: string, path: string, body?: unknown): Promise<T> 
 
 export const api = {
   health: () => req<HealthStatus>('GET', '/health'),
+  listKnowledgeBases: (workspaceId?: string) =>
+    req<KnowledgeBase[]>('GET', `/knowledge-bases${workspaceId ? `?workspace_id=${workspaceId}` : ''}`),
+  createKnowledgeBase: (payload: { name: string; description?: string; kb_type?: string; workspace_id?: string }) =>
+    req<KnowledgeBase>('POST', '/knowledge-bases', payload),
+  listChunks: (kbId: string) =>
+    req<KbChunk[]>('GET', `/knowledge-bases/${kbId}/chunks`),
+  addChunk: (kbId: string, payload: { content: string; source_ref?: string; source_label?: string; seq?: number }) =>
+    req<KbChunk>('POST', `/knowledge-bases/${kbId}/chunks`, payload),
+  searchKb: (kbId: string, query: string) =>
+    req<KbChunk[]>('POST', `/knowledge-bases/${kbId}/search`, { query }),
+  generateArtifact: (payload: { objective_id: string; artifact_type: string; kb_ids: string[]; topic: string; instructions?: string; chunk_limit?: number }) =>
+    req<ArtifactJob>('POST', '/generate', payload),
+  getJob: (jobId: string) =>
+    req<ArtifactJob>('GET', `/generate/jobs/${jobId}`),
+  listJobs: (objectiveId: string) =>
+    req<ArtifactJob[]>('GET', `/generate/objective/${objectiveId}/jobs`),
   listObjectives: (status?: string) =>
     req<Objective[]>('GET', `/objectives${status ? `?status=${status}` : ''}`),
   createObjective: (payload: { title: string; objective_type: string; payload?: unknown }) =>
@@ -91,6 +107,44 @@ export interface TrustScore {
   score: number
   evidence_count: number
   passed?: boolean
+}
+
+export interface KnowledgeBase {
+  id: string
+  name: string
+  description: string
+  kb_type: string
+  workspace_id?: string
+  chunk_count: number
+  created_at: string
+  updated_at: string
+}
+
+export interface KbChunk {
+  id: string
+  kb_id: string
+  content: string
+  source_ref?: string
+  source_label?: string
+  seq: number
+  metadata?: Record<string, unknown>
+  created_at: string
+}
+
+export interface ArtifactJob {
+  id: string
+  objective_id: string
+  artifact_type: string
+  kb_ids: string[]
+  topic: string
+  instructions?: string
+  status: 'pending' | 'running' | 'complete' | 'failed'
+  artifact_id?: string
+  chunks_used: string[]
+  model_used?: string
+  error?: string
+  created_at: string
+  completed_at?: string
 }
 
 export interface UsageSummary {

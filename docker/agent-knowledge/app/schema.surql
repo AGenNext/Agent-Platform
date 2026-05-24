@@ -472,6 +472,56 @@ DEFINE FIELD resource_attributes  ON otel_spans FLEXIBLE TYPE object DEFAULT {};
 DEFINE FIELD scope_name           ON otel_spans TYPE option<string>;
 DEFINE FIELD scope_version        ON otel_spans TYPE option<string>;
 DEFINE INDEX idx_otel_trace       ON otel_spans FIELDS trace_id;
+
+-- ── Knowledge Bases ───────────────────────────────────────────────────────────
+-- Customer-owned collections of chunked content (populated by the RAG layer).
+-- One KB = one topical corpus. Artifact generation queries across selected KBs.
+DEFINE TABLE knowledge_bases SCHEMALESS PERMISSIONS FULL;
+DEFINE FIELD name         ON knowledge_bases TYPE string;
+DEFINE FIELD description  ON knowledge_bases TYPE string DEFAULT '';
+DEFINE FIELD kb_type      ON knowledge_bases TYPE string DEFAULT 'general';
+  -- general | technical | product | legal | marketing | research
+DEFINE FIELD workspace_id ON knowledge_bases TYPE option<string>;
+DEFINE FIELD chunk_count  ON knowledge_bases TYPE int DEFAULT 0;
+DEFINE FIELD created_at   ON knowledge_bases TYPE datetime DEFAULT time::now();
+DEFINE FIELD updated_at   ON knowledge_bases TYPE datetime DEFAULT time::now();
+DEFINE INDEX idx_kb_workspace ON knowledge_bases FIELDS workspace_id;
+DEFINE INDEX idx_kb_name      ON knowledge_bases FIELDS name;
+
+-- ── KB Chunks ─────────────────────────────────────────────────────────────────
+-- Individual text units within a knowledge base.
+-- embedding field holds float[] when vector search is available.
+-- source_ref is the canonical citation URL or document identifier.
+DEFINE TABLE kb_chunks SCHEMALESS PERMISSIONS FULL;
+DEFINE FIELD kb_id        ON kb_chunks TYPE string;
+DEFINE FIELD content      ON kb_chunks TYPE string;
+DEFINE FIELD embedding    ON kb_chunks FLEXIBLE TYPE option<array>;
+DEFINE FIELD source_ref   ON kb_chunks TYPE option<string>;
+DEFINE FIELD source_label ON kb_chunks TYPE option<string>;
+DEFINE FIELD seq          ON kb_chunks TYPE int DEFAULT 0;
+DEFINE FIELD metadata     ON kb_chunks FLEXIBLE TYPE object DEFAULT {};
+DEFINE FIELD created_at   ON kb_chunks TYPE datetime DEFAULT time::now();
+DEFINE INDEX idx_chunk_kb  ON kb_chunks FIELDS kb_id;
+DEFINE INDEX idx_chunk_seq ON kb_chunks FIELDS kb_id, seq;
+
+-- ── Artifact Generation Jobs ──────────────────────────────────────────────────
+-- Tracks each generation request: KBs selected, chunks retrieved, model used.
+DEFINE TABLE artifact_jobs SCHEMALESS PERMISSIONS FULL;
+DEFINE FIELD objective_id  ON artifact_jobs TYPE string;
+DEFINE FIELD artifact_type ON artifact_jobs TYPE string;
+DEFINE FIELD kb_ids        ON artifact_jobs FLEXIBLE TYPE array DEFAULT [];
+DEFINE FIELD topic         ON artifact_jobs TYPE string;
+DEFINE FIELD instructions  ON artifact_jobs TYPE option<string>;
+DEFINE FIELD status        ON artifact_jobs TYPE string DEFAULT 'pending';
+  -- pending | running | complete | failed
+DEFINE FIELD artifact_id   ON artifact_jobs TYPE option<string>;
+DEFINE FIELD chunks_used   ON artifact_jobs FLEXIBLE TYPE array DEFAULT [];
+DEFINE FIELD model_used    ON artifact_jobs TYPE option<string>;
+DEFINE FIELD error         ON artifact_jobs TYPE option<string>;
+DEFINE FIELD created_at    ON artifact_jobs TYPE datetime DEFAULT time::now();
+DEFINE FIELD completed_at  ON artifact_jobs TYPE option<datetime>;
+DEFINE INDEX idx_job_objective ON artifact_jobs FIELDS objective_id;
+DEFINE INDEX idx_job_status    ON artifact_jobs FIELDS status;
 DEFINE INDEX idx_otel_span        ON otel_spans FIELDS span_id UNIQUE;
 DEFINE INDEX idx_otel_parent      ON otel_spans FIELDS parent_span_id;
 DEFINE INDEX idx_otel_start       ON otel_spans FIELDS start_time_unix_nano;
