@@ -64,3 +64,9 @@ async def seed_routing_rules() -> None:
 async def run_startup() -> None:
     await apply_schema()
     await seed_routing_rules()
+    # Discover available models — non-fatal if providers are unreachable
+    try:
+        from .discovery import run_discovery
+        await run_discovery()
+    except Exception:
+        pass

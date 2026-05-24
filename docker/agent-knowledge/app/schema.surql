@@ -127,6 +127,68 @@ DEFINE FIELD recorded_at   ON usage_records TYPE datetime DEFAULT time::now();
 DEFINE INDEX idx_usage_objective ON usage_records FIELDS objective_id;
 DEFINE INDEX idx_usage_model     ON usage_records FIELDS model_id;
 
+-- ── Discovered models registry ───────────────────────────────────────────────
+-- Populated by auto-discovery probes (Ollama /api/tags, Anthropic known list).
+-- Router reads this table; routing_rules reference model_id from here.
+DEFINE TABLE discovered_models SCHEMALESS PERMISSIONS FULL;
+DEFINE FIELD model_id         ON discovered_models TYPE string;
+DEFINE FIELD provider         ON discovered_models TYPE string;  -- ollama | anthropic | openai | cohere | ...
+DEFINE FIELD display_name     ON discovered_models TYPE string;
+DEFINE FIELD model_family     ON discovered_models TYPE option<string>;
+DEFINE FIELD context_window   ON discovered_models TYPE option<int>;
+DEFINE FIELD input_modalities ON discovered_models FLEXIBLE TYPE array DEFAULT [];  -- text | image | audio
+DEFINE FIELD output_modalities ON discovered_models FLEXIBLE TYPE array DEFAULT [];
+DEFINE FIELD capabilities     ON discovered_models FLEXIBLE TYPE object DEFAULT {};
+  -- { reasoning: bool, code: bool, vision: bool, function_calling: bool, streaming: bool }
+DEFINE FIELD cost_per_1k_input  ON discovered_models TYPE float DEFAULT 0.0;  -- USD
+DEFINE FIELD cost_per_1k_output ON discovered_models TYPE float DEFAULT 0.0;  -- USD
+DEFINE FIELD max_output_tokens  ON discovered_models TYPE option<int>;
+DEFINE FIELD is_local           ON discovered_models TYPE bool DEFAULT false;
+DEFINE FIELD is_available       ON discovered_models TYPE bool DEFAULT true;
+DEFINE FIELD last_seen          ON discovered_models TYPE datetime DEFAULT time::now();
+DEFINE FIELD discovered_at      ON discovered_models TYPE datetime DEFAULT time::now();
+DEFINE FIELD metadata           ON discovered_models FLEXIBLE TYPE object DEFAULT {};
+DEFINE INDEX idx_model_id       ON discovered_models FIELDS model_id, provider UNIQUE;
+DEFINE INDEX idx_model_provider ON discovered_models FIELDS provider;
+DEFINE INDEX idx_model_available ON discovered_models FIELDS is_available;
+
+-- ── Model performance history ─────────────────────────────────────────────────
+-- One record per model call outcome — used by intelligent router to score models.
+DEFINE TABLE model_performance SCHEMALESS PERMISSIONS FULL;
+DEFINE FIELD model_id          ON model_performance TYPE string;
+DEFINE FIELD provider          ON model_performance TYPE string;
+DEFINE FIELD task_type         ON model_performance TYPE string;
+DEFINE FIELD objective_id      ON model_performance TYPE option<string>;
+DEFINE FIELD latency_ms        ON model_performance TYPE option<int>;
+DEFINE FIELD input_tokens      ON model_performance TYPE int DEFAULT 0;
+DEFINE FIELD output_tokens     ON model_performance TYPE int DEFAULT 0;
+DEFINE FIELD cost_usd          ON model_performance TYPE float DEFAULT 0.0;
+DEFINE FIELD eval_score        ON model_performance TYPE option<float>;  -- CLEAR composite if available
+DEFINE FIELD success           ON model_performance TYPE bool DEFAULT true;
+DEFINE FIELD error_code        ON model_performance TYPE option<string>;
+DEFINE FIELD recorded_at       ON model_performance TYPE datetime DEFAULT time::now();
+DEFINE INDEX idx_perf_model    ON model_performance FIELDS model_id, task_type;
+DEFINE INDEX idx_perf_time     ON model_performance FIELDS recorded_at;
+
+-- ── Agent-Constraints policy store ──────────────────────────────────────────
+-- Policy types: workspace_budget | objective_budget | model_allowlist |
+--               model_denylist | max_cost_per_call | token_quota
+DEFINE TABLE agent_constraints SCHEMALESS PERMISSIONS FULL;
+DEFINE FIELD policy_type      ON agent_constraints TYPE string;
+DEFINE FIELD scope            ON agent_constraints TYPE string DEFAULT 'global';
+  -- global | workspace:<id> | objective:<id> | task_type:<name>
+DEFINE FIELD target_id        ON agent_constraints TYPE option<string>;
+DEFINE FIELD value            ON agent_constraints FLEXIBLE TYPE any;
+  -- float for budgets, array for lists
+DEFINE FIELD unit             ON agent_constraints TYPE string DEFAULT 'usd';
+DEFINE FIELD period           ON agent_constraints TYPE string DEFAULT 'daily';
+  -- daily | weekly | monthly | per_call | total
+DEFINE FIELD enabled          ON agent_constraints TYPE bool DEFAULT true;
+DEFINE FIELD created_at       ON agent_constraints TYPE datetime DEFAULT time::now();
+DEFINE FIELD updated_at       ON agent_constraints TYPE datetime DEFAULT time::now();
+DEFINE INDEX idx_constraint_scope  ON agent_constraints FIELDS scope, policy_type;
+DEFINE INDEX idx_constraint_target ON agent_constraints FIELDS target_id;
+
 -- ── Runtime events (audit trail) ────────────────────────────────────────────
 DEFINE TABLE events SCHEMALESS PERMISSIONS FULL;
 DEFINE FIELD entity_type ON events TYPE string;
