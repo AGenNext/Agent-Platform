@@ -20,6 +20,7 @@ import httpx
 from .db import get_db
 from .events import emit
 from .knowledge import search_chunks
+from .graph_search import hybrid_search, build_prompt_context
 from .trust import record_provenance
 
 _ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY", "")
@@ -103,18 +104,20 @@ async def generate(
     try:
         await _update_job(job_id, {"status": "running"})
 
-        # 1. Retrieve relevant chunks
-        chunks = await search_chunks(kb_ids, topic, limit=chunk_limit)
-        if not chunks and instructions:
-            chunks = await search_chunks(kb_ids, instructions, limit=chunk_limit)
+        # 1. Retrieve via graph hybrid search (local entity + global community)
+        #    Falls back to text search automatically if no graph is built
+        search_result = await hybrid_search(kb_ids, topic, chunk_limit=chunk_limit)
+        if not search_result["chunks"] and instructions:
+            search_result = await hybrid_search(kb_ids, instructions, chunk_limit=chunk_limit)
+        chunks = search_result["chunks"]
 
-        # 2. Build prompt
+        # 2. Build prompt — community summaries first, then chunk excerpts
         type_spec = ARTIFACT_TYPES.get(artifact_type, ARTIFACT_TYPES["summary"])
-        context_block = _build_context(chunks)
+        context_block = build_prompt_context(search_result)
         user_prompt = (
             f"Topic: {topic}\n\n"
             + (f"Additional instructions: {instructions}\n\n" if instructions else "")
-            + f"Knowledge Base Excerpts:\n{context_block}\n\n"
+            + f"Knowledge Base Context:\n{context_block}\n\n"
             + f"Please write the {type_spec['label']} now."
         )
 
@@ -243,17 +246,6 @@ async def _get_job(job_id: str) -> Optional[Dict[str, Any]]:
         )
     rows = _rows(results)
     return _norm(rows[0]) if rows else None
-
-
-def _build_context(chunks: List[Dict[str, Any]]) -> str:
-    if not chunks:
-        return "(No matching knowledge base content found for this topic.)"
-    parts = []
-    for i, chunk in enumerate(chunks, 1):
-        label = chunk.get("source_label") or chunk.get("source_ref") or f"Chunk {i}"
-        content = chunk.get("content", "").strip()
-        parts.append(f"[{i}] Source: {label}\n{content}")
-    return "\n\n---\n\n".join(parts)
 
 
 async def _call_llm(system: str, user: str) -> tuple[str, str]:

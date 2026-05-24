@@ -499,6 +499,10 @@ DEFINE FIELD embedding    ON kb_chunks FLEXIBLE TYPE option<array>;
 DEFINE FIELD source_ref   ON kb_chunks TYPE option<string>;
 DEFINE FIELD source_label ON kb_chunks TYPE option<string>;
 DEFINE FIELD seq          ON kb_chunks TYPE int DEFAULT 0;
+DEFINE FIELD modality     ON kb_chunks TYPE string DEFAULT 'text';
+  -- text | image | table | math | figure
+DEFINE FIELD raw_content  ON kb_chunks TYPE option<string>;
+  -- base64 for images; original markdown for tables; LaTeX for math
 DEFINE FIELD metadata     ON kb_chunks FLEXIBLE TYPE object DEFAULT {};
 DEFINE FIELD created_at   ON kb_chunks TYPE datetime DEFAULT time::now();
 DEFINE INDEX idx_chunk_kb  ON kb_chunks FIELDS kb_id;
@@ -522,6 +526,48 @@ DEFINE FIELD created_at    ON artifact_jobs TYPE datetime DEFAULT time::now();
 DEFINE FIELD completed_at  ON artifact_jobs TYPE option<datetime>;
 DEFINE INDEX idx_job_objective ON artifact_jobs FIELDS objective_id;
 DEFINE INDEX idx_job_status    ON artifact_jobs FIELDS status;
+
+-- ── KB Entities (graph nodes) ─────────────────────────────────────────────────
+-- Extracted from kb_chunks via LLM. Entity nodes in the knowledge graph.
+-- Cross-modal: same entity can appear in text, table, and image chunks.
+DEFINE TABLE kb_entities SCHEMALESS PERMISSIONS FULL;
+DEFINE FIELD kb_id        ON kb_entities TYPE string;
+DEFINE FIELD name         ON kb_entities TYPE string;
+DEFINE FIELD entity_type  ON kb_entities TYPE string DEFAULT 'concept';
+  -- person | org | product | concept | event | location | other
+DEFINE FIELD description  ON kb_entities TYPE option<string>;
+DEFINE FIELD chunk_ids    ON kb_entities FLEXIBLE TYPE array DEFAULT [];
+DEFINE FIELD mention_count ON kb_entities TYPE int DEFAULT 1;
+DEFINE FIELD created_at   ON kb_entities TYPE datetime DEFAULT time::now();
+DEFINE FIELD updated_at   ON kb_entities TYPE datetime DEFAULT time::now();
+DEFINE INDEX idx_entity_kb   ON kb_entities FIELDS kb_id;
+DEFINE INDEX idx_entity_name ON kb_entities FIELDS kb_id, name UNIQUE;
+
+-- ── KB Entity Relations (graph edges via RELATE) ──────────────────────────────
+-- RELATE kb_entities:X -> kb_entity_relation -> kb_entities:Y
+-- Native SurrealDB graph traversal: entity<->kb_entity_relation<->entity
+DEFINE TABLE kb_entity_relation SCHEMALESS PERMISSIONS FULL;
+DEFINE FIELD kb_id        ON kb_entity_relation TYPE string;
+DEFINE FIELD relation_type ON kb_entity_relation TYPE string;  -- "related_to" | "is_a" | "part_of" | ...
+DEFINE FIELD description  ON kb_entity_relation TYPE option<string>;
+DEFINE FIELD chunk_id     ON kb_entity_relation TYPE option<string>;
+DEFINE FIELD weight       ON kb_entity_relation TYPE float DEFAULT 1.0;
+DEFINE FIELD created_at   ON kb_entity_relation TYPE datetime DEFAULT time::now();
+DEFINE INDEX idx_rel_kb   ON kb_entity_relation FIELDS kb_id;
+
+-- ── KB Communities ────────────────────────────────────────────────────────────
+-- BFS-detected clusters of densely connected entities.
+-- LLM generates a summary + title for each community (GraphRAG global search).
+DEFINE TABLE kb_communities SCHEMALESS PERMISSIONS FULL;
+DEFINE FIELD kb_id         ON kb_communities TYPE string;
+DEFINE FIELD community_idx ON kb_communities TYPE int;
+DEFINE FIELD title         ON kb_communities TYPE option<string>;
+DEFINE FIELD summary       ON kb_communities TYPE option<string>;
+DEFINE FIELD entity_names  ON kb_communities FLEXIBLE TYPE array DEFAULT [];
+DEFINE FIELD entity_count  ON kb_communities TYPE int DEFAULT 0;
+DEFINE FIELD level         ON kb_communities TYPE int DEFAULT 0;
+DEFINE FIELD created_at    ON kb_communities TYPE datetime DEFAULT time::now();
+DEFINE INDEX idx_community_kb ON kb_communities FIELDS kb_id;
 DEFINE INDEX idx_otel_span        ON otel_spans FIELDS span_id UNIQUE;
 DEFINE INDEX idx_otel_parent      ON otel_spans FIELDS parent_span_id;
 DEFINE INDEX idx_otel_start       ON otel_spans FIELDS start_time_unix_nano;

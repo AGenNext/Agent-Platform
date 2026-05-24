@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { api, type KnowledgeBase, type ArtifactJob } from '../api'
+import { api, type KnowledgeBase, type ArtifactJob, type GraphStats } from '../api'
 import Card from '../components/Card'
 
 const ARTIFACT_TYPES = [
@@ -30,6 +30,8 @@ export function GeneratorView() {
   const [running, setRunning] = useState(false)
   const [job, setJob] = useState<ArtifactJob | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [graphStats, setGraphStats] = useState<Record<string, GraphStats>>({})
+  const [buildingGraph, setBuildingGraph] = useState<string | null>(null)
 
   // KB create form
   const [showCreate, setShowCreate] = useState(false)
@@ -40,8 +42,31 @@ export function GeneratorView() {
 
   useEffect(() => { loadKbs() }, [])
 
+  async function loadGraphStats(kbs: KnowledgeBase[]) {
+    const stats: Record<string, GraphStats> = {}
+    await Promise.all(kbs.map(async kb => {
+      try { stats[kb.id] = await api.getGraphStats(kb.id) } catch {}
+    }))
+    setGraphStats(stats)
+  }
+
+  async function handleBuildGraph(kbId: string) {
+    setBuildingGraph(kbId)
+    try {
+      await api.buildGraph(kbId)
+      const updated = await api.listKnowledgeBases()
+      setKbs(updated)
+      await loadGraphStats(updated)
+    } catch {}
+    setBuildingGraph(null)
+  }
+
   async function loadKbs() {
-    try { setKbs(await api.listKnowledgeBases()) } catch {}
+    try {
+      const kbs = await api.listKnowledgeBases()
+      setKbs(kbs)
+      await loadGraphStats(kbs)
+    } catch {}
   }
 
   function toggleKb(id: string) {
@@ -166,7 +191,24 @@ export function GeneratorView() {
                       {kb.description && (
                         <div className="text-slate-500 mt-0.5 truncate">{kb.description}</div>
                       )}
-                      <div className="text-slate-600 mt-0.5">{kb.chunk_count} chunk{kb.chunk_count !== 1 ? 's' : ''}</div>
+                      <div className="flex items-center justify-between mt-0.5">
+                        <span className="text-slate-600">{kb.chunk_count} chunk{kb.chunk_count !== 1 ? 's' : ''}</span>
+                        {(() => {
+                          const gs = graphStats[kb.id]
+                          if (gs && gs.entity_count > 0) {
+                            return <span className="text-[10px] text-emerald-500">{gs.entity_count}e · {gs.community_count}c</span>
+                          }
+                          return (
+                            <button
+                              onClick={e => { e.stopPropagation(); handleBuildGraph(kb.id) }}
+                              disabled={buildingGraph === kb.id}
+                              className="text-[10px] text-indigo-400 hover:text-indigo-300 disabled:opacity-50"
+                            >
+                              {buildingGraph === kb.id ? 'building…' : '+ graph'}
+                            </button>
+                          )
+                        })()}
+                      </div>
                     </button>
                   )
                 })}

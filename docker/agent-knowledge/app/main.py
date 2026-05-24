@@ -15,6 +15,7 @@ from .routes.events import router as events_router
 from .routes.maturity import router as maturity_router
 from .routes.knowledge import router as knowledge_router
 from .routes.generator import router as generator_router
+from .routes.graph import router as graph_router
 from .events import emit
 
 # Legacy objective/artifact routes
@@ -47,6 +48,7 @@ app.include_router(events_router)
 app.include_router(maturity_router)
 app.include_router(knowledge_router)
 app.include_router(generator_router)
+app.include_router(graph_router)
 
 
 # ── Health ───────────────────────────────────────────────────────────────────

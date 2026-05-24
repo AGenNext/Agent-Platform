@@ -28,6 +28,16 @@ export const api = {
     req<ArtifactJob>('GET', `/generate/jobs/${jobId}`),
   listJobs: (objectiveId: string) =>
     req<ArtifactJob[]>('GET', `/generate/objective/${objectiveId}/jobs`),
+  buildGraph: (kbId: string) =>
+    req<GraphStats>('POST', `/knowledge-bases/${kbId}/graph/build`),
+  getGraphStats: (kbId: string) =>
+    req<GraphStats>('GET', `/knowledge-bases/${kbId}/graph`),
+  listEntities: (kbId: string) =>
+    req<KbEntity[]>('GET', `/knowledge-bases/${kbId}/entities`),
+  listCommunities: (kbId: string) =>
+    req<KbCommunity[]>('GET', `/knowledge-bases/${kbId}/communities`),
+  graphSearch: (payload: { query: string; kb_ids: string[]; mode?: string; chunk_limit?: number }) =>
+    req<GraphSearchResult>('POST', '/knowledge-bases/graph/search', payload),
   listObjectives: (status?: string) =>
     req<Objective[]>('GET', `/objectives${status ? `?status=${status}` : ''}`),
   createObjective: (payload: { title: string; objective_type: string; payload?: unknown }) =>
@@ -129,6 +139,41 @@ export interface KbChunk {
   seq: number
   metadata?: Record<string, unknown>
   created_at: string
+}
+
+export interface GraphStats {
+  kb_id: string
+  entity_count: number
+  relation_count: number
+  community_count: number
+}
+
+export interface KbEntity {
+  id: string
+  kb_id: string
+  name: string
+  entity_type: string
+  description?: string
+  chunk_ids: string[]
+  mention_count: number
+}
+
+export interface KbCommunity {
+  id: string
+  kb_id: string
+  community_idx: number
+  title?: string
+  summary?: string
+  entity_names: string[]
+  entity_count: number
+}
+
+export interface GraphSearchResult {
+  mode: string
+  chunks: KbChunk[]
+  entities?: KbEntity[]
+  communities?: KbCommunity[]
+  has_graph?: boolean
 }
 
 export interface ArtifactJob {
