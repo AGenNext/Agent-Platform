@@ -15,6 +15,7 @@ const links = [
   { to: "/billing", label: "Billing" },
   { to: "/integrations", label: "Integrations" },
   { to: "/objectives", label: "Objectives" },
+  { to: "/observability", label: "Observability" },
   { to: "/runtime", label: "Runtime" },
 ];
 
