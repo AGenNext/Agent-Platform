@@ -20,12 +20,15 @@ import httpx
 from .db import get_db
 from .events import emit
 
-_OLLAMA_URL = os.getenv("OLLAMA_URL", "http://ollama:11434")
-_OPENAI_KEY = os.getenv("OPENAI_API_KEY", "")
-_COHERE_KEY  = os.getenv("COHERE_API_KEY", "")
+_OLLAMA_URL    = os.getenv("OLLAMA_URL", "http://ollama:11434")
+_ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+_OPENAI_KEY    = os.getenv("OPENAI_API_KEY", "")
+_COHERE_KEY    = os.getenv("COHERE_API_KEY", "")
 
-# Anthropic published model catalogue with capabilities and pricing (USD per 1k tokens)
-_ANTHROPIC_CATALOGUE: List[Dict[str, Any]] = [
+# Fallback catalogue — used ONLY when ANTHROPIC_API_KEY is absent.
+# Source: https://docs.anthropic.com/en/docs/about-claude/models/overview
+# Keep this list current or it will drift from the live API.
+_ANTHROPIC_FALLBACK: List[Dict[str, Any]] = [
     {
         "model_id": "claude-opus-4-7",
         "display_name": "Claude Opus 4.7",
@@ -171,7 +174,49 @@ async def _probe_ollama(results: Dict[str, List[str]]) -> None:
 
 
 async def _probe_anthropic(results: Dict[str, List[str]]) -> None:
-    for spec in _ANTHROPIC_CATALOGUE:
+    if _ANTHROPIC_KEY:
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                r = await client.get(
+                    "https://api.anthropic.com/v1/models",
+                    headers={"x-api-key": _ANTHROPIC_KEY, "anthropic-version": "2023-06-01"},
+                )
+                if r.status_code == 200:
+                    for m in r.json().get("data", []):
+                        mid = m.get("id", "")
+                        if not mid:
+                            continue
+                        record = {
+                            "model_id": mid,
+                            "provider": "anthropic",
+                            "display_name": m.get("display_name", mid),
+                            "model_family": mid.rsplit("-", 1)[0] if "-" in mid else mid,
+                            "context_window": m.get("context_window"),
+                            "input_modalities": ["text", "image"],
+                            "output_modalities": ["text"],
+                            "capabilities": {
+                                "reasoning": "opus" in mid or "sonnet" in mid,
+                                "code": True,
+                                "vision": True,
+                                "function_calling": True,
+                                "streaming": True,
+                            },
+                            "cost_per_1k_input": 0.0,
+                            "cost_per_1k_output": 0.0,
+                            "max_output_tokens": None,
+                            "is_local": False,
+                            "is_available": True,
+                            "last_seen": _now(),
+                            "metadata": {"created_at": m.get("created_at")},
+                        }
+                        await _upsert_model(record)
+                        results["anthropic"].append(mid)
+                    return
+        except Exception:
+            pass  # fall through to static fallback
+
+    # No key or API unreachable — use static fallback
+    for spec in _ANTHROPIC_FALLBACK:
         record = {
             **spec,
             "provider": "anthropic",
