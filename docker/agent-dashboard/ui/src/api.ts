@@ -55,6 +55,26 @@ export const api = {
     req<BillingSubscription>('POST', `/tenants/${tenantId}/billing/plan`, { plan }),
   listAuditLogs: (tenantId: string, action?: string, limit?: number) =>
     req<AuditLog[]>('GET', `/tenants/${tenantId}/audit-logs${action ? `?action=${action}` : ''}${limit ? `&limit=${limit}` : ''}`),
+  listTrends: (artifactType?: string, modelId?: string) =>
+    req<EvalTrend[]>('GET', `/analytics/trends${artifactType ? `?artifact_type=${artifactType}` : ''}`),
+  computeTrends: (days = 7) =>
+    req<EvalTrend[]>('POST', `/analytics/trends/compute?days=${days}`),
+  listSuggestions: (status?: string) =>
+    req<RoutingSuggestion[]>('GET', `/analytics/suggestions${status ? `?status=${status}` : ''}`),
+  analyseSuggestions: () =>
+    req<RoutingSuggestion[]>('POST', '/analytics/suggestions/analyse'),
+  resolveSuggestion: (id: string, action: 'applied' | 'dismissed') =>
+    req<RoutingSuggestion>('POST', `/analytics/suggestions/${id}/resolve?action=${action}`),
+  listBenchmarks: () =>
+    req<BenchmarkDef[]>('GET', '/analytics/benchmarks'),
+  createBenchmark: (payload: { name: string; artifact_type: string; test_cases: unknown[]; description?: string }) =>
+    req<BenchmarkDef>('POST', '/analytics/benchmarks', payload),
+  runBenchmark: (benchmarkId: string) =>
+    req<BenchmarkRun>('POST', `/analytics/benchmarks/${benchmarkId}/run`, {}),
+  listBenchmarkRuns: (benchmarkId?: string) =>
+    benchmarkId
+      ? req<BenchmarkRun[]>('GET', `/analytics/benchmarks/${benchmarkId}/runs`)
+      : req<BenchmarkRun[]>('GET', '/analytics/runs'),
   listObjectives: (status?: string) =>
     req<Objective[]>('GET', `/objectives${status ? `?status=${status}` : ''}`),
   createObjective: (payload: { title: string; objective_type: string; payload?: unknown }) =>
@@ -270,4 +290,59 @@ export interface UsageSummary {
   total_output_tokens: number
   total_cost_usd: number
   avg_cost_usd: number
+}
+
+export interface EvalTrend {
+  id: string
+  period_date: string
+  artifact_type: string
+  model_id?: string
+  avg_score: number
+  min_score: number
+  max_score: number
+  sample_count: number
+  computed_at: string
+}
+
+export interface RoutingSuggestion {
+  id: string
+  task_type?: string
+  current_weights: Record<string, number>
+  suggested_weights: Record<string, number>
+  rationale: string
+  evidence?: {
+    model_id?: string
+    avg_eval_score?: number
+    avg_latency_ms?: number
+    avg_cost_usd?: number
+    sample_count?: number
+  }
+  status: 'pending' | 'applied' | 'dismissed'
+  created_at: string
+  resolved_at?: string
+}
+
+export interface BenchmarkDef {
+  id: string
+  name: string
+  description?: string
+  artifact_type: string
+  test_cases: Array<{ topic: string; kb_ids?: string[]; min_eval_score?: number }>
+  baseline_score?: number
+  regression_threshold: number
+  created_at: string
+}
+
+export interface BenchmarkRun {
+  id: string
+  benchmark_id: string
+  status: 'running' | 'passed' | 'failed' | 'regressed'
+  avg_score?: number
+  baseline_score?: number
+  delta?: number
+  regression?: boolean
+  model_id?: string
+  case_results?: Array<{ topic: string; artifact_id?: string; eval_score: number; min_score: number; passed: boolean; error?: string }>
+  started_at?: string
+  completed_at?: string
 }

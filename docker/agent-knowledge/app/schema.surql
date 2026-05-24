@@ -667,3 +667,89 @@ DEFINE FIELD occurred_at  ON audit_logs TYPE datetime DEFAULT time::now();
 DEFINE INDEX idx_audit_tenant ON audit_logs FIELDS tenant_id;
 DEFINE INDEX idx_audit_time   ON audit_logs FIELDS occurred_at;
 DEFINE INDEX idx_audit_action ON audit_logs FIELDS action;
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- M9 — CONTINUOUS IMPROVEMENT LOOP
+-- Feedback · Eval Trends · Benchmarks · Routing Suggestions
+-- ═══════════════════════════════════════════════════════════════════════════
+
+-- ── Artifact Feedback ─────────────────────────────────────────────────────────
+-- Explicit user signal on generated artifacts (thumbs, stars, notes).
+-- Feeds back into routing weight auto-tuning.
+DEFINE TABLE artifact_feedback SCHEMALESS PERMISSIONS FULL;
+DEFINE FIELD artifact_id   ON artifact_feedback TYPE string;
+DEFINE FIELD objective_id  ON artifact_feedback TYPE option<string>;
+DEFINE FIELD tenant_id     ON artifact_feedback TYPE option<string>;
+DEFINE FIELD user_id       ON artifact_feedback TYPE option<string>;
+DEFINE FIELD rating        ON artifact_feedback TYPE int;
+  -- 1 (poor) · 2 · 3 · 4 · 5 (excellent)   or  -1 / +1 (thumbs)
+DEFINE FIELD dimension_ratings ON artifact_feedback FLEXIBLE TYPE object DEFAULT {};
+  -- { completeness, accuracy, relevance, usefulness } each 1-5
+DEFINE FIELD notes         ON artifact_feedback TYPE option<string>;
+DEFINE FIELD model_id      ON artifact_feedback TYPE option<string>;
+DEFINE FIELD artifact_type ON artifact_feedback TYPE option<string>;
+DEFINE FIELD created_at    ON artifact_feedback TYPE datetime DEFAULT time::now();
+DEFINE INDEX idx_feedback_artifact ON artifact_feedback FIELDS artifact_id;
+DEFINE INDEX idx_feedback_tenant   ON artifact_feedback FIELDS tenant_id;
+DEFINE INDEX idx_feedback_model    ON artifact_feedback FIELDS model_id;
+
+-- ── Eval Trend Snapshots ──────────────────────────────────────────────────────
+-- Daily rollup of eval scores per artifact_type × model.
+-- Written by the analytics job; read by the trend chart in the dashboard.
+DEFINE TABLE eval_trends SCHEMALESS PERMISSIONS FULL;
+DEFINE FIELD period_date   ON eval_trends TYPE string;       -- YYYY-MM-DD
+DEFINE FIELD artifact_type ON eval_trends TYPE option<string>;
+DEFINE FIELD model_id      ON eval_trends TYPE option<string>;
+DEFINE FIELD tenant_id     ON eval_trends TYPE option<string>;
+DEFINE FIELD avg_score     ON eval_trends TYPE float;
+DEFINE FIELD min_score     ON eval_trends TYPE float;
+DEFINE FIELD max_score     ON eval_trends TYPE float;
+DEFINE FIELD sample_count  ON eval_trends TYPE int;
+DEFINE FIELD avg_feedback  ON eval_trends TYPE option<float>;
+DEFINE FIELD computed_at   ON eval_trends TYPE datetime DEFAULT time::now();
+DEFINE INDEX idx_trend_period ON eval_trends FIELDS period_date, artifact_type, model_id UNIQUE;
+
+-- ── Benchmarks ────────────────────────────────────────────────────────────────
+-- Named suites of test cases used to detect quality regressions.
+DEFINE TABLE benchmarks SCHEMALESS PERMISSIONS FULL;
+DEFINE FIELD name          ON benchmarks TYPE string;
+DEFINE FIELD description   ON benchmarks TYPE string DEFAULT '';
+DEFINE FIELD artifact_type ON benchmarks TYPE string;
+DEFINE FIELD test_cases    ON benchmarks FLEXIBLE TYPE array DEFAULT [];
+  -- [{ topic, kb_ids, instructions, min_eval_score }]
+DEFINE FIELD baseline_score ON benchmarks TYPE option<float>;
+DEFINE FIELD regression_threshold ON benchmarks TYPE float DEFAULT 0.05;
+DEFINE FIELD created_at    ON benchmarks TYPE datetime DEFAULT time::now();
+DEFINE INDEX idx_benchmark_name ON benchmarks FIELDS name UNIQUE;
+
+-- ── Benchmark Runs ────────────────────────────────────────────────────────────
+DEFINE TABLE benchmark_runs SCHEMALESS PERMISSIONS FULL;
+DEFINE FIELD benchmark_id  ON benchmark_runs TYPE string;
+DEFINE FIELD status        ON benchmark_runs TYPE string DEFAULT 'running';
+  -- running | passed | regressed | failed
+DEFINE FIELD case_results  ON benchmark_runs FLEXIBLE TYPE array DEFAULT [];
+  -- [{ topic, artifact_id, eval_score, passed, delta }]
+DEFINE FIELD avg_score     ON benchmark_runs TYPE option<float>;
+DEFINE FIELD baseline_score ON benchmark_runs TYPE option<float>;
+DEFINE FIELD delta         ON benchmark_runs TYPE option<float>;
+DEFINE FIELD regression    ON benchmark_runs TYPE bool DEFAULT false;
+DEFINE FIELD model_id      ON benchmark_runs TYPE option<string>;
+DEFINE FIELD started_at    ON benchmark_runs TYPE datetime DEFAULT time::now();
+DEFINE FIELD completed_at  ON benchmark_runs TYPE option<datetime>;
+DEFINE INDEX idx_brun_benchmark ON benchmark_runs FIELDS benchmark_id;
+DEFINE INDEX idx_brun_status    ON benchmark_runs FIELDS status;
+
+-- ── Routing Suggestions ───────────────────────────────────────────────────────
+-- System-generated weight adjustment proposals. Human reviews before applying.
+DEFINE TABLE routing_suggestions SCHEMALESS PERMISSIONS FULL;
+DEFINE FIELD task_type       ON routing_suggestions TYPE option<string>;
+DEFINE FIELD current_weights ON routing_suggestions FLEXIBLE TYPE object DEFAULT {};
+DEFINE FIELD suggested_weights ON routing_suggestions FLEXIBLE TYPE object DEFAULT {};
+DEFINE FIELD rationale       ON routing_suggestions TYPE string;
+DEFINE FIELD evidence        ON routing_suggestions FLEXIBLE TYPE object DEFAULT {};
+  -- { avg_latency_ms, avg_cost_usd, avg_eval_score, sample_count }
+DEFINE FIELD status          ON routing_suggestions TYPE string DEFAULT 'pending';
+  -- pending | applied | dismissed
+DEFINE FIELD created_at      ON routing_suggestions TYPE datetime DEFAULT time::now();
+DEFINE FIELD resolved_at     ON routing_suggestions TYPE option<datetime>;
+DEFINE INDEX idx_suggestion_status ON routing_suggestions FIELDS status;
