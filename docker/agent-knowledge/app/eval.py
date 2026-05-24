@@ -35,17 +35,36 @@ async def evaluate_artifact(
 ) -> Dict[str, Any]:
     """
     Score an artifact across CLEAR dimensions and persist the result.
+    The 'evidence' dimension is cross-checked against recorded provenance —
+    if no source-grounded provenance exists, evidence score is capped at 0.5.
     Returns the eval record with passed=True/False.
     """
+    # Source grounding enforcement: cap evidence score if no provenance
+    grounded_scores = dict(dimension_scores)
+    async with get_db() as db:
+        prov_r = await db.query(
+            "SELECT provenance FROM trust_scores WHERE artifact_id = $aid ORDER BY computed_at DESC LIMIT 1",
+            {"aid": artifact_id},
+        )
+        prov_rows = _rows(prov_r)
+        provenance = prov_rows[0].get("provenance", []) if prov_rows else []
+        has_grounded_source = any(
+            link.get("source_ref", "").strip()
+            for link in (provenance if isinstance(provenance, list) else [])
+        )
+    if not has_grounded_source:
+        grounded_scores["evidence"] = min(grounded_scores.get("evidence", 0.0), 0.5)
+
     w = weights or DEFAULT_WEIGHTS
     composite = sum(
-        dimension_scores.get(dim, 0.0) * w.get(dim, 0.20)
+        grounded_scores.get(dim, 0.0) * w.get(dim, 0.20)
         for dim in CLEAR_DIMENSIONS
     )
     passed = composite >= threshold
 
     scores_list = [
-        {"dimension": dim, "score": dimension_scores.get(dim, 0.0), "weight": w.get(dim, 0.20)}
+        {"dimension": dim, "score": grounded_scores.get(dim, 0.0), "weight": w.get(dim, 0.20),
+         "source_grounding_applied": dim == "evidence" and not has_grounded_source}
         for dim in CLEAR_DIMENSIONS
     ]
 

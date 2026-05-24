@@ -12,6 +12,7 @@ from .routes.eval import router as eval_router
 from .routes.trust import router as trust_router
 from .routes.model_router import router as model_router_router
 from .routes.events import router as events_router
+from .routes.maturity import router as maturity_router
 from .events import emit
 
 # Legacy objective/artifact routes
@@ -41,6 +42,7 @@ app.include_router(eval_router)
 app.include_router(trust_router)
 app.include_router(model_router_router)
 app.include_router(events_router)
+app.include_router(maturity_router)
 
 
 # ── Health ───────────────────────────────────────────────────────────────────

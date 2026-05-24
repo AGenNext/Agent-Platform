@@ -1,12 +1,13 @@
 import { useState } from 'react'
-import { Activity, Box, GitBranch, LayoutDashboard, Radio } from 'lucide-react'
+import { Activity, Box, GitBranch, LayoutDashboard, Radio, ShieldCheck } from 'lucide-react'
 import { HealthView } from './views/HealthView'
 import { ObjectivesView } from './views/ObjectivesView'
 import { ArtifactsView } from './views/ArtifactsView'
 import { TraceView } from './views/TraceView'
 import { TimelineView } from './views/TimelineView'
+import { ReadinessView } from './views/ReadinessView'
 
-type View = 'health' | 'objectives' | 'artifacts' | 'trace' | 'timeline'
+type View = 'health' | 'objectives' | 'artifacts' | 'trace' | 'timeline' | 'readiness'
 
 const nav: { id: View; label: string; icon: React.ReactNode }[] = [
   { id: 'health',     label: 'Health',      icon: <Activity size={16} /> },
@@ -14,6 +15,7 @@ const nav: { id: View; label: string; icon: React.ReactNode }[] = [
   { id: 'artifacts',  label: 'Artifacts',   icon: <Box size={16} /> },
   { id: 'trace',      label: 'A2A Trace',   icon: <GitBranch size={16} /> },
   { id: 'timeline',   label: 'Timeline',    icon: <Radio size={16} /> },
+  { id: 'readiness',  label: 'Readiness',   icon: <ShieldCheck size={16} /> },
 ]
 
 export default function App() {
@@ -78,6 +80,7 @@ export default function App() {
           {view === 'artifacts'  && <ArtifactsView />}
           {view === 'trace'      && <TraceView />}
           {view === 'timeline'   && <TimelineView />}
+          {view === 'readiness'  && <ReadinessView />}
         </div>
       </main>
     </div>
