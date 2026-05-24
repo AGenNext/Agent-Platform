@@ -1,0 +1,46 @@
+# ── TLS via cert-manager + Let's Encrypt ─────────────────────────────────────
+# Prerequisites:
+#   microk8s enable cert-manager
+#   kubectl apply -f k8s/base/letsencrypt-issuer.yaml
+# Replace <YOUR_DOMAIN> with your actual domain before applying.
+# ─────────────────────────────────────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: realgraph-ingress
+  namespace: realgraph
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    # SSE requires buffering disabled
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    nginx.ingress.kubernetes.io/proxy-cache: "off"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: public
+  tls:
+    - hosts:
+        - app.realgraph.ai
+        - api.realgraph.ai
+      secretName: realgraph-tls
+  rules:
+    - host: app.realgraph.ai
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: agent-dashboard
+                port:
+                  number: 3000
+    - host: api.realgraph.ai
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: agent-knowledge
+                port:
+                  number: 8001

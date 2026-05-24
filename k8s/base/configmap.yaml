@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: platform-config
+  namespace: realgraph
+data:
+  PLATFORM_ENV: "staging"
+  SURREALDB_URL: "ws://surrealdb:8000/rpc"
+  SURREALDB_NS: "realgraph"
+  SURREALDB_DB: "platform"
+  MINIO_ENDPOINT: "http://minio:9000"
+  MINIO_BUCKET_ARTIFACTS: "agent-artifacts"
+  MINIO_BUCKET_SOURCES: "agent-sources"
+  MINIO_BUCKET_TRACES: "agent-traces"
+  AGENT_KNOWLEDGE_URL: "http://agent-knowledge:8001"
+  OLLAMA_URL: "http://ollama:11434"
