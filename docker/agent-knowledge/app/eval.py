@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from .db import get_db
+from .events import emit
 
 CLEAR_DIMENSIONS = ["completeness", "logical", "evidence", "accuracy", "relevance"]
 DEFAULT_WEIGHTS = {d: 0.20 for d in CLEAR_DIMENSIONS}
@@ -68,7 +69,13 @@ async def evaluate_artifact(
             {"status": eval_status, "id": artifact_id},
         )
 
-    return {**created, "threshold": threshold}
+    result_out = {**created, "threshold": threshold}
+    await emit("artifact", artifact_id, "eval_completed", {
+        "composite_score": round(composite, 4),
+        "passed": passed,
+        "threshold": threshold,
+    })
+    return result_out
 
 
 async def get_eval_result(artifact_id: str) -> Optional[Dict[str, Any]]:

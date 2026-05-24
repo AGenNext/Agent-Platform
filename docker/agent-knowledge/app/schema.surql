@@ -15,10 +15,18 @@ DEFINE FIELD updated_at       ON objectives TYPE datetime DEFAULT time::now();
 DEFINE INDEX idx_objectives_status    ON objectives FIELDS status;
 DEFINE INDEX idx_objectives_workspace ON objectives FIELDS workspace_id;
 
--- Reactive: mark updated_at whenever status changes
+-- Reactive: log status transitions to events table
 DEFINE EVENT objective_status_changed ON objectives
   WHEN $before.status != $after.status
-  THEN (UPDATE $after.id SET updated_at = time::now());
+  THEN {
+    UPDATE $after.id SET updated_at = time::now();
+    CREATE events SET
+      entity_type = 'objective',
+      entity_id   = string::concat('', $after.id),
+      event_type  = 'status_changed',
+      payload     = { from: $before.status, to: $after.status, title: $after.title },
+      occurred_at = time::now();
+  };
 
 -- ── Artifacts ───────────────────────────────────────────────────────────────
 DEFINE TABLE artifacts SCHEMALESS PERMISSIONS FULL;
@@ -118,6 +126,16 @@ DEFINE FIELD cost_usd      ON usage_records TYPE float DEFAULT 0.0;
 DEFINE FIELD recorded_at   ON usage_records TYPE datetime DEFAULT time::now();
 DEFINE INDEX idx_usage_objective ON usage_records FIELDS objective_id;
 DEFINE INDEX idx_usage_model     ON usage_records FIELDS model_id;
+
+-- ── Runtime events (audit trail) ────────────────────────────────────────────
+DEFINE TABLE events SCHEMALESS PERMISSIONS FULL;
+DEFINE FIELD entity_type ON events TYPE string;
+DEFINE FIELD entity_id   ON events TYPE string;
+DEFINE FIELD event_type  ON events TYPE string;
+DEFINE FIELD payload     ON events FLEXIBLE TYPE object DEFAULT {};
+DEFINE FIELD occurred_at ON events TYPE datetime DEFAULT time::now();
+DEFINE INDEX idx_events_entity ON events FIELDS entity_type, entity_id;
+DEFINE INDEX idx_events_time   ON events FIELDS occurred_at;
 
 -- ── Routing rules ────────────────────────────────────────────────────────────
 DEFINE TABLE routing_rules SCHEMALESS PERMISSIONS FULL;

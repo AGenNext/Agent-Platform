@@ -11,6 +11,8 @@ from .routes.workflows import router as workflows_router
 from .routes.eval import router as eval_router
 from .routes.trust import router as trust_router
 from .routes.model_router import router as model_router_router
+from .routes.events import router as events_router
+from .events import emit
 
 # Legacy objective/artifact routes
 from .models import ObjectiveCreate, ArtifactCreate, ObjectiveRecord, ArtifactRecord
@@ -38,6 +40,7 @@ app.include_router(workflows_router)
 app.include_router(eval_router)
 app.include_router(trust_router)
 app.include_router(model_router_router)
+app.include_router(events_router)
 
 
 # ── Health ───────────────────────────────────────────────────────────────────
@@ -83,7 +86,9 @@ async def create_objective(payload: ObjectiveCreate):
             "updated_at": _now(),
         }
         result = await db.create("objectives", record)
-    return _norm(result[0] if isinstance(result, list) else result)
+    obj = _norm(result[0] if isinstance(result, list) else result)
+    await emit("objective", obj["id"], "created", {"title": obj["title"], "objective_type": obj.get("objective_type")})
+    return obj
 
 
 @app.get("/objectives", response_model=List[ObjectiveRecord], tags=["objectives"])
@@ -116,6 +121,7 @@ async def run_objective(objective_id: str):
             "status": "running",
             "updated_at": _now(),
         })
+    await emit("objective", objective_id, "run_triggered", {"status": "running"})
     return {"objective_id": objective_id, "status": "running"}
 
 
@@ -134,7 +140,13 @@ async def create_artifact(payload: ArtifactCreate):
             "created_at": _now(),
         }
         result = await db.create("artifacts", record)
-    return _norm(result[0] if isinstance(result, list) else result)
+    artifact = _norm(result[0] if isinstance(result, list) else result)
+    await emit("artifact", artifact["id"], "created", {
+        "title": artifact["title"],
+        "artifact_type": artifact.get("artifact_type"),
+        "objective_id": artifact.get("objective_id"),
+    })
+    return artifact
 
 
 @app.get("/artifacts", response_model=List[ArtifactRecord], tags=["artifacts"])

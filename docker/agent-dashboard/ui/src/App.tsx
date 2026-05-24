@@ -1,17 +1,19 @@
 import { useState } from 'react'
-import { Activity, Box, GitBranch, LayoutDashboard } from 'lucide-react'
+import { Activity, Box, GitBranch, LayoutDashboard, Radio } from 'lucide-react'
 import { HealthView } from './views/HealthView'
 import { ObjectivesView } from './views/ObjectivesView'
 import { ArtifactsView } from './views/ArtifactsView'
 import { TraceView } from './views/TraceView'
+import { TimelineView } from './views/TimelineView'
 
-type View = 'health' | 'objectives' | 'artifacts' | 'trace'
+type View = 'health' | 'objectives' | 'artifacts' | 'trace' | 'timeline'
 
 const nav: { id: View; label: string; icon: React.ReactNode }[] = [
   { id: 'health',     label: 'Health',      icon: <Activity size={16} /> },
   { id: 'objectives', label: 'Objectives',  icon: <LayoutDashboard size={16} /> },
   { id: 'artifacts',  label: 'Artifacts',   icon: <Box size={16} /> },
   { id: 'trace',      label: 'A2A Trace',   icon: <GitBranch size={16} /> },
+  { id: 'timeline',   label: 'Timeline',    icon: <Radio size={16} /> },
 ]
 
 export default function App() {
@@ -75,6 +77,7 @@ export default function App() {
           {view === 'objectives' && <ObjectivesView />}
           {view === 'artifacts'  && <ArtifactsView />}
           {view === 'trace'      && <TraceView />}
+          {view === 'timeline'   && <TimelineView />}
         </div>
       </main>
     </div>

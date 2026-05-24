@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from .db import get_db
+from .events import emit
 
 DEFAULT_TRUST_THRESHOLD = 0.65
 
@@ -88,6 +89,9 @@ async def trust_gate(artifact_id: str, threshold: float = DEFAULT_TRUST_THRESHOL
         return {"passed": False, "score": None, "verified": False, "threshold": threshold, "reason": "no_trust_score"}
     score = latest.get("score", 0.0)
     passed = score >= threshold
+    await emit("artifact", artifact_id, "trust_gate", {
+        "passed": passed, "score": score, "threshold": threshold,
+    })
     return {
         "passed": passed,
         "score": score,
