@@ -8,6 +8,7 @@ import { DeploymentsPage } from "./pages/DeploymentsPage";
 import { HealthPage } from "./pages/HealthPage";
 import { IntegrationsPage } from "./pages/IntegrationsPage";
 import { KnowledgeBasePage } from "./pages/KnowledgeBasePage";
+import { ApiReferencePage } from "./pages/ApiReferencePage";
 import { ObservabilityPage } from "./pages/ObservabilityPage";
 import { MemoryPage } from "./pages/MemoryPage";
 import { ObjectivesPage } from "./pages/ObjectivesPage";
@@ -46,6 +47,7 @@ export default function App() {
           <Route path="/knowledge" element={<KnowledgeBasePage />} />
           <Route path="/deployments" element={<DeploymentsPage />} />
           <Route path="/observability" element={<ObservabilityPage />} />
+          <Route path="/api-reference" element={<ApiReferencePage />} />
         </Routes>
       </main>
     </div>

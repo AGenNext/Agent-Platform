@@ -4,7 +4,7 @@ from fastapi import FastAPI
 
 from app.db.schema_loader import apply_schemas
 from app.db.surrealdb import db
-from app.routers import agents, artifacts, billing, blueprints, deployments, health, knowledge, memory, objectives, observability, sessions, skills, tasks, traces, trust, workflow
+from app.routers import agents, alert_rules, artifacts, billing, blueprints, credentials, deployments, health, knowledge, memory, objectives, observability, rate_limits, sessions, skills, tasks, traces, trust, workflow
 
 
 @asynccontextmanager
@@ -45,3 +45,6 @@ app.include_router(sessions.router)
 app.include_router(knowledge.router)
 app.include_router(deployments.router)
 app.include_router(observability.router)
+app.include_router(credentials.router)
+app.include_router(rate_limits.router)
+app.include_router(alert_rules.router)
