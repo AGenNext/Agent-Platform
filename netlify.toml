@@ -1,0 +1,41 @@
+[build]
+  base    = "services/agent-dashboard"
+  command = "npm install && npm run build"
+  publish = "services/agent-dashboard/dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Proxy /api/* → Fly.io API (set VITE_API_URL in Netlify env vars)
+# This avoids CORS issues — dashboard and API share the same origin.
+[[redirects]]
+  from   = "/api/*"
+  to     = ":VITE_API_URL/:splat"
+  status = 200
+  force  = true
+
+# SPA fallback — all routes → index.html
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
+
+[context.production.environment]
+  VITE_SURREALDB_NS = "agent_platform"
+  VITE_SURREALDB_DB = "agent_platform"
+
+[context.deploy-preview.environment]
+  VITE_SURREALDB_NS = "agent_platform"
+  VITE_SURREALDB_DB = "agent_platform"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options        = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy        = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

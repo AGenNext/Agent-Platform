@@ -1,0 +1,6 @@
+# API proxy — Netlify rewrites /api/* → Fly.io API
+# VITE_API_URL must be set in Netlify environment variables
+/api/*  :VITE_API_URL/:splat  200
+
+# SPA fallback
+/*      /index.html            200

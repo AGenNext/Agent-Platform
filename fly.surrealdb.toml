@@ -1,0 +1,39 @@
+app = "agent-surrealdb"
+primary_region = "iad"
+
+[build]
+  image = "surrealdb/surrealdb:latest"
+
+# SurrealDB needs a persistent volume for durability.
+# Create it once with: flyctl volumes create surrealdb_data --region iad --size 5
+[mounts]
+  source      = "surrealdb_data"
+  destination = "/data"
+
+[processes]
+  app = "start --log info --user root --pass $SURREAL_ROOT_PASS file:/data/agent.db"
+
+[env]
+  # SURREAL_ROOT_PASS → set via: flyctl secrets set SURREAL_ROOT_PASS=...
+
+[http_service]
+  internal_port        = 8000
+  force_https          = true
+  auto_stop_machines   = false
+  auto_start_machines  = true
+  min_machines_running = 1
+
+[[vm]]
+  memory   = "512mb"
+  cpu_kind = "shared"
+  cpus     = 1
+
+[checks]
+  [checks.ready]
+    grace_period = "15s"
+    interval     = "20s"
+    method       = "GET"
+    path         = "/health"
+    port         = 8000
+    timeout      = "5s"
+    type         = "http"

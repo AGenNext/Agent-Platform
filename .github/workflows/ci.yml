@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  dashboard-build:
+    name: Dashboard — TypeScript + Vite build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/agent-dashboard
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: services/agent-dashboard/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline 2>/dev/null || npm install
+
+      - name: Type-check
+        run: npx tsc --noEmit
+
+      - name: Production build
+        run: npm run build
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-dist
+          path: services/agent-dashboard/dist/
+          retention-days: 7
+
+  api-lint:
+    name: API — Python lint + import check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/agent-knowledge-api
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Check imports (fast syntax check)
+        run: python -c "import app.main; print('imports ok')"
+        env:
+          SURREALDB_URL: ws://localhost:8000/rpc
+          SURREALDB_NAMESPACE: agent_platform
+          SURREALDB_DATABASE: agent_platform
+          SURREALDB_USERNAME: root
+          SURREALDB_PASSWORD: root
