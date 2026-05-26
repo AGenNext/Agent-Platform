@@ -1,0 +1,76 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# GitHub Secrets & Environments reference
+# This file is DOCUMENTATION ONLY — secrets are set in the GitHub UI.
+#
+# Org-level:  github.com/AGenNext → Settings → Secrets → Actions
+# Repo-level: github.com/AGenNext/Agent-Platform → Settings → Secrets → Actions
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Organisation-level secrets (shared across all AGenNext repos) ─────────────
+#    github.com/AGenNext → Settings → Secrets → Actions → New organisation secret
+#    Repository access: select Agent-Platform (or "All repositories")
+org_secrets:
+  FLY_API_TOKEN:
+    description: Fly.io personal access token
+    how_to_get: https://fly.io/user/personal-access-tokens → Create token
+    used_by: [.github/workflows/deploy.yml, scripts/cloud_deploy.sh]
+
+  NETLIFY_AUTH_TOKEN:
+    description: Netlify personal access token
+    how_to_get: https://app.netlify.com/user/applications → Personal access tokens
+    used_by: [.github/workflows/deploy.yml]
+
+  SURREAL_ROOT_PASS:
+    description: SurrealDB root password for Fly.io deployment
+    how_to_get: generate — e.g. openssl rand -base64 32
+    used_by: [scripts/cloud_deploy.sh, fly.surrealdb.toml]
+
+# ── Repository-level secrets (specific to Agent-Platform) ────────────────────
+#    github.com/AGenNext/Agent-Platform → Settings → Secrets → Actions
+repo_secrets:
+  NETLIFY_SITE_ID:
+    description: Netlify site ID for the dashboard
+    how_to_get: netlify.com → Site → Site settings → Site ID
+    used_by: [.github/workflows/deploy.yml]
+
+  VITE_API_URL:
+    description: Production API base URL (baked into dashboard bundle)
+    example: https://agent-knowledge-api.fly.dev
+    used_by: [.github/workflows/deploy.yml, netlify.toml]
+
+  VITE_SURREALDB_URL:
+    description: Production SurrealDB WebSocket URL (for LIVE SELECT)
+    example: wss://agent-surrealdb.fly.dev/rpc
+    used_by: [.github/workflows/deploy.yml]
+
+# ── GitHub Environments (optional — adds deployment protection rules) ─────────
+#    github.com/AGenNext/Agent-Platform → Settings → Environments
+environments:
+  staging:
+    protection_rules:
+      - required_reviewers: 0
+      - wait_timer: 0
+    secrets:
+      VITE_API_URL: https://agent-knowledge-api-staging.fly.dev
+      VITE_SURREALDB_URL: wss://agent-surrealdb-staging.fly.dev/rpc
+      NETLIFY_SITE_ID: <staging-site-id>
+
+  production:
+    protection_rules:
+      - required_reviewers: 1    # at least 1 approval before deploy
+      - wait_timer: 0
+    secrets:
+      VITE_API_URL: https://agent-knowledge-api.fly.dev
+      VITE_SURREALDB_URL: wss://agent-surrealdb.fly.dev/rpc
+      NETLIFY_SITE_ID: <production-site-id>
+
+# ── Local development (.env files — never committed) ─────────────────────────
+local_env_files:
+  - path: .env                                  # root — docker compose
+    template: .env.example
+  - path: services/agent-knowledge-api/.env     # API service
+    template: services/agent-knowledge-api/.env.example
+  - path: services/agent-dashboard/.env.local   # Vite reads automatically
+    template: services/agent-dashboard/.env.example
+  - path: services/sample-agents/.env           # sample agents
+    template: services/sample-agents/.env.example
