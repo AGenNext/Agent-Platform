@@ -1,13 +1,14 @@
 from typing import Any, Dict, Optional
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
+from ..auth import require_api_key
 
 from ..model_router import (
     select_model, get_routing_rule, list_routing_rules, upsert_routing_rule,
     record_usage, usage_summary, list_usage_records,
 )
 
-router = APIRouter(prefix="/model-router", tags=["model-router"])
+router = APIRouter(prefix="/model-router", tags=["model-router"], dependencies=[Depends(require_api_key)])
 
 
 class ModelSelectRequest(BaseModel):

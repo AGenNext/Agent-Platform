@@ -1,6 +1,7 @@
 from typing import Optional
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
+from ..auth import require_api_key
 
 from ..agent_team import (
     create_agent, get_agent, list_agents, update_agent_status,
@@ -8,7 +9,7 @@ from ..agent_team import (
     create_handoff, get_handoff_chain, list_handoffs,
 )
 
-router = APIRouter(prefix="/agents", tags=["agent-team"])
+router = APIRouter(prefix="/agents", tags=["agent-team"], dependencies=[Depends(require_api_key)])
 
 
 class AgentCreate(BaseModel):

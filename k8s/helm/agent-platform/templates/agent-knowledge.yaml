@@ -1,0 +1,65 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-knowledge
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "agent-platform.labels" . | nindent 4 }}
+    app: agent-knowledge
+spec:
+  replicas: {{ .Values.agentKnowledge.replicaCount }}
+  selector:
+    matchLabels:
+      app: agent-knowledge
+  template:
+    metadata:
+      labels:
+        app: agent-knowledge
+    spec:
+      containers:
+        - name: agent-knowledge
+          image: {{ .Values.agentKnowledge.image.repository }}:{{ .Values.agentKnowledge.image.tag }}
+          imagePullPolicy: {{ .Values.agentKnowledge.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.agentKnowledge.port }}
+          env:
+            {{- range $key, $val := .Values.agentKnowledge.env }}
+            - name: {{ $key }}
+              value: {{ $val | quote }}
+            {{- end }}
+            - name: SURREALDB_URL
+              value: "ws://surrealdb:{{ .Values.surrealdb.port }}/rpc"
+            - name: OBJECT_STORAGE_ENDPOINT
+              value: "http://minio:{{ .Values.minio.apiPort }}"
+          envFrom:
+            - secretRef:
+                name: {{ .Values.agentKnowledge.secretRef }}
+          resources:
+            {{- toYaml .Values.agentKnowledge.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.agentKnowledge.port }}
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.agentKnowledge.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-knowledge
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "agent-platform.labels" . | nindent 4 }}
+spec:
+  selector:
+    app: agent-knowledge
+  ports:
+    - port: {{ .Values.agentKnowledge.port }}
+      targetPort: {{ .Values.agentKnowledge.port }}

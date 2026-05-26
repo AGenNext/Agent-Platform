@@ -1,0 +1,6 @@
+apiVersion: v2
+name: agent-platform
+description: AGenNext Agent Platform — enterprise agentic SaaS
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

@@ -19,6 +19,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from .db import get_db
+from .finops import emit_model_usage
 
 
 # ── Routing ───────────────────────────────────────────────────────────────────
@@ -117,7 +118,18 @@ async def record_usage(
             "recorded_at": _now(),
         }
         result = await db.create("usage_records", record)
-    return _norm(result[0] if isinstance(result, list) else result)
+    normalized = _norm(result[0] if isinstance(result, list) else result)
+    import asyncio
+    asyncio.create_task(emit_model_usage(
+        workspace_id=workspace_id,
+        objective_id=objective_id,
+        model_id=model_id,
+        provider=provider,
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
+        cost_usd=cost_usd,
+    ))
+    return normalized
 
 
 async def usage_summary(

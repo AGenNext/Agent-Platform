@@ -1,0 +1,19 @@
+Agent Platform deployed successfully.
+
+  Release: {{ .Release.Name }}
+  Namespace: {{ .Release.Namespace }}
+
+Access:
+{{- if .Values.ingress.enabled }}
+  Dashboard: https://{{ (index .Values.ingress.hosts 0).host }}/
+  API:       https://{{ (index .Values.ingress.hosts 0).host }}/api/
+  API Docs:  https://{{ (index .Values.ingress.hosts 0).host }}/api/docs
+{{- else }}
+  kubectl port-forward svc/agent-dashboard 3000:{{ .Values.agentDashboard.port }} -n {{ .Release.Namespace }}
+  kubectl port-forward svc/agent-knowledge 8001:{{ .Values.agentKnowledge.port }} -n {{ .Release.Namespace }}
+{{- end }}
+
+Next steps:
+  1. Set secrets: helm upgrade ... --set secrets.surrealdbPassword=... --set secrets.platformApiKeys=...
+  2. Verify: kubectl get pods -n {{ .Release.Namespace }}
+  3. Smoke test: ./scripts/test-platform.sh

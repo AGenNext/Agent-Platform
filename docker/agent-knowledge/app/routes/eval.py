@@ -1,13 +1,14 @@
 from typing import Dict, List, Optional
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
+from ..auth import require_api_key
 
 from ..eval import (
     evaluate_artifact, get_eval_result, list_eval_results, eval_summary,
     CLEAR_DIMENSIONS, DEFAULT_THRESHOLD,
 )
 
-router = APIRouter(prefix="/eval", tags=["agent-eval"])
+router = APIRouter(prefix="/eval", tags=["agent-eval"], dependencies=[Depends(require_api_key)])
 
 
 class EvalRequest(BaseModel):
