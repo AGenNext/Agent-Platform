@@ -1,0 +1,60 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-dashboard
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "agent-platform.labels" . | nindent 4 }}
+    app: agent-dashboard
+spec:
+  replicas: {{ .Values.agentDashboard.replicaCount }}
+  selector:
+    matchLabels:
+      app: agent-dashboard
+  template:
+    metadata:
+      labels:
+        app: agent-dashboard
+    spec:
+      containers:
+        - name: agent-dashboard
+          image: {{ .Values.agentDashboard.image.repository }}:{{ .Values.agentDashboard.image.tag }}
+          imagePullPolicy: {{ .Values.agentDashboard.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.agentDashboard.port }}
+          env:
+            {{- range $key, $val := .Values.agentDashboard.env }}
+            - name: {{ $key }}
+              value: {{ $val | quote }}
+            {{- end }}
+            - name: AGENT_KNOWLEDGE_URL
+              value: "http://agent-knowledge:{{ .Values.agentKnowledge.port }}"
+          resources:
+            {{- toYaml .Values.agentDashboard.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.agentDashboard.port }}
+            initialDelaySeconds: 20
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.agentDashboard.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-dashboard
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "agent-platform.labels" . | nindent 4 }}
+spec:
+  selector:
+    app: agent-dashboard
+  ports:
+    - port: {{ .Values.agentDashboard.port }}
+      targetPort: {{ .Values.agentDashboard.port }}

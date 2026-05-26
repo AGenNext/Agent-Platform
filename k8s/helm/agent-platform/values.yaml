@@ -1,0 +1,114 @@
+global:
+  env: production
+  imageRegistry: ""
+
+agentKnowledge:
+  image:
+    repository: agennext/agent-knowledge
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicaCount: 2
+  port: 8001
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+  env:
+    PLATFORM_ENV: production
+    SURREALDB_NAMESPACE: agent_platform
+    SURREALDB_DATABASE: agent_platform
+    LOG_LEVEL: INFO
+    API_RATE_LIMIT: "200/minute"
+  secretRef: agent-platform-secrets
+
+agentDashboard:
+  image:
+    repository: agennext/agent-dashboard
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  port: 3000
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+  env:
+    PLATFORM_ENV: production
+
+surrealdb:
+  enabled: true
+  image:
+    repository: surrealdb/surrealdb
+    tag: latest
+  port: 8000
+  storage:
+    size: 20Gi
+    storageClass: ""
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+minio:
+  enabled: true
+  image:
+    repository: minio/minio
+    tag: latest
+  apiPort: 9000
+  consolePort: 9001
+  storage:
+    size: 50Gi
+    storageClass: ""
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  buckets:
+    - agent-artifacts
+    - agent-sources
+    - agent-traces
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+  hosts:
+    - host: platform.example.com
+      paths:
+        - path: /api
+          service: agent-knowledge
+          port: 8001
+        - path: /
+          service: agent-dashboard
+          port: 3000
+  tls:
+    - secretName: agent-platform-tls
+      hosts:
+        - platform.example.com
+
+secrets:
+  # Values here are base64-encoded or set via external secret manager.
+  # Override in production via --set secrets.surrealdbPassword=... or use Infisical.
+  create: true
+  surrealdbUsername: root
+  surrealdbPassword: ""
+  minioRootUser: minio
+  minioRootPassword: ""
+  platformApiKeys: ""
+  lagoApiKey: ""
+  lagoApiUrl: "https://api.getlago.com/api/v1"
+  corsAllowedOrigins: ""

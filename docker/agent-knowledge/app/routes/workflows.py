@@ -1,6 +1,7 @@
 from typing import Any, Dict, Optional
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
+from ..auth import require_api_key
 
 from ..frameworks import (
     create_run, get_run, list_runs, update_run_state,
@@ -8,7 +9,7 @@ from ..frameworks import (
     save_checkpoint, restore_checkpoint, SurrealDBCheckpointer,
 )
 
-router = APIRouter(prefix="/workflows", tags=["agent-frameworks"])
+router = APIRouter(prefix="/workflows", tags=["agent-frameworks"], dependencies=[Depends(require_api_key)])
 
 
 class RunCreate(BaseModel):

@@ -1,13 +1,14 @@
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+from ..auth import require_api_key
 
 from ..trust import (
     record_provenance, get_trust_score, list_trust_scores, trust_gate,
     DEFAULT_TRUST_THRESHOLD,
 )
 
-router = APIRouter(prefix="/trust", tags=["agent-trust"])
+router = APIRouter(prefix="/trust", tags=["agent-trust"], dependencies=[Depends(require_api_key)])
 
 
 class EvidenceLink(BaseModel):

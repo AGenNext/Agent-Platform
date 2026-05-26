@@ -1,0 +1,98 @@
+{{- if .Values.surrealdb.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: surrealdb-data
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "agent-platform.labels" . | nindent 4 }}
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: {{ .Values.surrealdb.storage.size }}
+  {{- if .Values.surrealdb.storage.storageClass }}
+  storageClassName: {{ .Values.surrealdb.storage.storageClass }}
+  {{- end }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: surrealdb
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "agent-platform.labels" . | nindent 4 }}
+    app: surrealdb
+spec:
+  serviceName: surrealdb
+  replicas: 1
+  selector:
+    matchLabels:
+      app: surrealdb
+  template:
+    metadata:
+      labels:
+        app: surrealdb
+    spec:
+      containers:
+        - name: surrealdb
+          image: {{ .Values.surrealdb.image.repository }}:{{ .Values.surrealdb.image.tag }}
+          args:
+            - start
+            - --log
+            - info
+            - --user
+            - $(SURREALDB_USERNAME)
+            - --pass
+            - $(SURREALDB_PASSWORD)
+            - file:/data/platform.db
+          env:
+            - name: SURREALDB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: agent-platform-secrets
+                  key: SURREALDB_USERNAME
+            - name: SURREALDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: agent-platform-secrets
+                  key: SURREALDB_PASSWORD
+          ports:
+            - containerPort: {{ .Values.surrealdb.port }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          resources:
+            {{- toYaml .Values.surrealdb.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.surrealdb.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.surrealdb.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: surrealdb-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: surrealdb
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "agent-platform.labels" . | nindent 4 }}
+spec:
+  selector:
+    app: surrealdb
+  ports:
+    - port: {{ .Values.surrealdb.port }}
+      targetPort: {{ .Values.surrealdb.port }}
+{{- end }}

@@ -1,22 +1,37 @@
 import os
 from contextlib import asynccontextmanager
+from typing import List, Optional
+from datetime import datetime, timezone
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
 from .db import ping
+from .logging_config import configure_logging, RequestLoggingMiddleware
+from .otel import setup_otel
 from .startup import run_startup
 from .routes.agents import router as agents_router
 from .routes.workflows import router as workflows_router
 from .routes.eval import router as eval_router
 from .routes.trust import router as trust_router
 from .routes.model_router import router as model_router_router
-
-# Legacy objective/artifact routes
 from .models import ObjectiveCreate, ArtifactCreate, ObjectiveRecord, ArtifactRecord
-from typing import List, Optional
-from datetime import datetime, timezone
 from .db import get_db
+
+configure_logging()
+
+import logging
+logger = logging.getLogger(__name__)
+
+_RATE_LIMIT = os.getenv("API_RATE_LIMIT", "200/minute")
+limiter = Limiter(key_func=get_remote_address, default_limits=[_RATE_LIMIT])
+
+_raw_origins = os.getenv("CORS_ALLOWED_ORIGINS", "")
+_CORS_ORIGINS: List[str] = [o.strip() for o in _raw_origins.split(",") if o.strip()] or ["*"]
 
 
 @asynccontextmanager
@@ -27,11 +42,25 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Agent Knowledge API",
-    description="AGenNext source-to-artifact enterprise intelligence API — "
-                "Agent-Team, Agent-Frameworks, Eval, Trust, Model-Router all backed by SurrealDB.",
+    description="AGenNext source-to-artifact enterprise intelligence API.",
     version="0.1.0",
     lifespan=lifespan,
 )
+
+setup_otel(app)
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.add_middleware(RequestLoggingMiddleware)
 
 app.include_router(agents_router)
 app.include_router(workflows_router)
@@ -39,8 +68,6 @@ app.include_router(eval_router)
 app.include_router(trust_router)
 app.include_router(model_router_router)
 
-
-# ── Health ───────────────────────────────────────────────────────────────────
 
 @app.get("/health", tags=["platform"])
 async def health():
