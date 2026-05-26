@@ -60,6 +60,32 @@ services:
       agent-knowledge-api:
         condition: service_healthy
 
+  sample-agents:
+    build:
+      context: ./services/sample-agents
+      dockerfile: Dockerfile
+    environment:
+      PLATFORM_URL: http://agent-knowledge-api:8001
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      # Which agent to run: researcher | orchestrator | memory | demo
+      AGENT_MODE: ${AGENT_MODE:-demo}
+    depends_on:
+      agent-knowledge-api:
+        condition: service_healthy
+    profiles:
+      - agents
+    command: >
+      sh -c "
+        case \"$$AGENT_MODE\" in
+          researcher)   python src/researcher_agent.py ;;
+          orchestrator) python src/orchestrator_agent.py ;;
+          memory)       python src/memory_agent.py ;;
+          demo)         python src/langchain_integration_demo.py ;;
+          *)            echo \"Unknown AGENT_MODE: $$AGENT_MODE\" && exit 1 ;;
+        esac
+      "
+
   ollama:
     image: ollama/ollama:latest
     profiles:
