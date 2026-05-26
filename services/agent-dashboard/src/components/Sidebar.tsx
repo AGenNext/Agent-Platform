@@ -18,6 +18,9 @@ const links = [
   { to: "/observability", label: "Observability" },
   { to: "/api-reference", label: "API Reference" },
   { to: "/runtime", label: "Runtime" },
+  { to: "/credentials", label: "Credentials" },
+  { to: "/alerts", label: "Alert Rules" },
+  { to: "/admin", label: "Admin" },
 ];
 
 const navStyle = (active: boolean): React.CSSProperties => ({

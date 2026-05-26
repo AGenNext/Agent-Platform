@@ -1,9 +1,12 @@
 import { Route, Routes } from "react-router-dom";
 import { Sidebar } from "./components/Sidebar";
+import { AdminPage } from "./pages/AdminPage";
 import { AgentBuilderPage } from "./pages/AgentBuilderPage";
 import { AgentsPage } from "./pages/AgentsPage";
+import { AlertRulesPage } from "./pages/AlertRulesPage";
 import { ArtifactsPage } from "./pages/ArtifactsPage";
 import { BillingPage } from "./pages/BillingPage";
+import { CredentialsPage } from "./pages/CredentialsPage";
 import { DeploymentsPage } from "./pages/DeploymentsPage";
 import { HealthPage } from "./pages/HealthPage";
 import { IntegrationsPage } from "./pages/IntegrationsPage";
@@ -48,6 +51,9 @@ export default function App() {
           <Route path="/deployments" element={<DeploymentsPage />} />
           <Route path="/observability" element={<ObservabilityPage />} />
           <Route path="/api-reference" element={<ApiReferencePage />} />
+          <Route path="/credentials" element={<CredentialsPage />} />
+          <Route path="/alerts" element={<AlertRulesPage />} />
+          <Route path="/admin" element={<AdminPage />} />
         </Routes>
       </main>
     </div>
