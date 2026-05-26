@@ -173,7 +173,10 @@ export const api = {
     });
   },
   getAgentMemory(agentId: string, tenantId: string, params?: { memory_type?: string; limit?: number }): Promise<MemoryRecord[]> {
-    const q = new URLSearchParams({ tenant_id: tenantId, ...(params ?? {}) } as Record<string, string>).toString();
+    const raw: Record<string, string> = { tenant_id: tenantId };
+    if (params?.memory_type) raw.memory_type = params.memory_type;
+    if (params?.limit != null) raw.limit = String(params.limit);
+    const q = new URLSearchParams(raw).toString();
     return request<MemoryRecord[]>(`/memory/${encodeURIComponent(agentId)}?${q}`);
   },
   runObjective(body: ObjectiveRequest): Promise<ObjectiveResponse> {

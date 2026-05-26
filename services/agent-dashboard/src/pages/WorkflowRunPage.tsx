@@ -312,8 +312,8 @@ function TaskRow({ task: t, onStatusChange }: { task: Record<string, unknown>; o
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "8px 0", borderBottom: "1px solid var(--border)", gap: 10 }}>
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: 13, fontWeight: 500 }}>{String(t.name ?? "Unnamed task")}</div>
-        {t.agent_id && <div style={{ fontSize: 11, color: "var(--text-muted)" }}>→ {String(t.agent_id)}</div>}
-        {t.error && <div style={{ fontSize: 11, color: "var(--red)", marginTop: 2 }}>{String(t.error)}</div>}
+        {!!t.agent_id && <div style={{ fontSize: 11, color: "var(--text-muted)" }}>→ {String(t.agent_id)}</div>}
+        {!!t.error && <div style={{ fontSize: 11, color: "var(--red)", marginTop: 2 }}>{String(t.error)}</div>}
       </div>
       <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
         {status === "pending" && (

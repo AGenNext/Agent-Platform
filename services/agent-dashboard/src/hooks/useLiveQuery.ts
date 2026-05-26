@@ -8,7 +8,8 @@ export function useLiveQuery<T>(
   const [data, setData] = useState<T[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [connected, setConnected] = useState(false);
-  const queryUuidRef = useRef<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const queryUuidRef = useRef<any>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -43,7 +44,7 @@ export function useLiveQuery<T>(
           });
         });
 
-        queryUuidRef.current = String(uuid);
+        queryUuidRef.current = uuid;
         setConnected(true);
         setError(null);
       } catch (e) {

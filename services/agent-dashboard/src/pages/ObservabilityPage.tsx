@@ -127,7 +127,8 @@ export function ObservabilityPage() {
 
   const loadAll = async () => {
     setLoading(true);
-    const p = tenantId ? { tenant_id: tenantId, window: window_ } : { window: window_ };
+    const p: Record<string, string> = { window: window_ };
+    if (tenantId) p.tenant_id = tenantId;
     try {
       const [ms, lat, as_, sp, tr, lb] = await Promise.allSettled([
         get<MetricSummary[]>("/observability/metrics/summary", p),

@@ -53,7 +53,7 @@ const REQUIRED_CAPS = ["analytics", "billing", "health", "tracing", "auth", "art
 interface Blueprint {
   blueprint_id: string;
   name: string;
-  description: string;
+  description?: string;
   goal_types: string[];
   skill_ids: string[];
   cost_limit_usd: number;
@@ -129,7 +129,7 @@ export function AgentBuilderPage() {
   function selectBlueprint(bp: Blueprint) {
     const updated: AgentDraft = {
       ...emptyDraft(),
-      description: bp.description,
+      description: bp.description ?? "",
       goal_types: bp.goal_types,
       skill_ids: bp.skill_ids,
       cost_limit_usd: bp.cost_limit_usd,

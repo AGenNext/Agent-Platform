@@ -120,9 +120,9 @@ export function ApiReferencePage() {
             </span>
           )}
         </div>
-        {info?.description && (
+        {!!info?.description && (
           <p style={{ margin: "6px 0 0", color: "var(--text-muted)", fontSize: 13, maxWidth: 600 }}>
-            {info.description as string}
+            {String(info.description)}
           </p>
         )}
       </div>

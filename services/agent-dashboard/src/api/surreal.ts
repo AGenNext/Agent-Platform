@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import Surreal from "surrealdb";
 
 const SURREAL_URL = import.meta.env.VITE_SURREALDB_URL ?? "ws://localhost:8000/rpc";
