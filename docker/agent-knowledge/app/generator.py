@@ -85,7 +85,7 @@ ARTIFACT_TYPES: Dict[str, Dict[str, str]] = {
 }
 
 
-async def generate(
+async def start_generate(
     objective_id: str,
     artifact_type: str,
     kb_ids: List[str],
@@ -94,24 +94,37 @@ async def generate(
     chunk_limit: int = 15,
 ) -> Dict[str, Any]:
     """
-    Create an artifact_job, run the full pipeline, return the completed job.
-    Runs synchronously within the request — use FastAPI BackgroundTasks for
-    fire-and-forget if jobs become long-running.
+    Create the job record and return it immediately.
+    Caller is responsible for running generate_background() as a BackgroundTask.
     """
     job_id = await _create_job(objective_id, artifact_type, kb_ids, topic, instructions)
     await emit("artifact_job", job_id, "started", {"artifact_type": artifact_type, "kb_ids": kb_ids})
+    return await _get_job(job_id)
+
+
+async def generate_background(job_id: str, chunk_limit: int = 15) -> None:
+    """Run the full generation pipeline for an already-created job record."""
+    job = await _get_job(job_id)
+    if not job:
+        return
+
+    objective_id  = job["objective_id"]
+    artifact_type = job["artifact_type"]
+    kb_ids        = job["kb_ids"]
+    topic         = job["topic"]
+    instructions  = job.get("instructions") or ""
 
     try:
-        await _update_job(job_id, {"status": "running"})
+        await _update_job(job_id, {"status": "running", "progress_step": "retrieving"})
 
-        # 1. Retrieve via graph hybrid search (local entity + global community)
-        #    Falls back to text search automatically if no graph is built
+        # 1. Hybrid KB search
         search_result = await hybrid_search(kb_ids, topic, chunk_limit=chunk_limit)
         if not search_result["chunks"] and instructions:
             search_result = await hybrid_search(kb_ids, instructions, chunk_limit=chunk_limit)
         chunks = search_result["chunks"]
 
-        # 2. Build prompt — community summaries first, then chunk excerpts
+        # 2. Build prompt
+        await _update_job(job_id, {"progress_step": "building_context"})
         type_spec = ARTIFACT_TYPES.get(artifact_type, ARTIFACT_TYPES["summary"])
         context_block = build_prompt_context(search_result)
         user_prompt = (
@@ -122,6 +135,7 @@ async def generate(
         )
 
         # 3. Call LLM
+        await _update_job(job_id, {"progress_step": "generating"})
         content, model_used = await _call_llm(type_spec["system"], user_prompt)
 
         # 4. Store artifact
@@ -150,7 +164,8 @@ async def generate(
             "via": "generator",
         })
 
-        # 5. Record provenance (source grounding)
+        # 5. Provenance
+        await _update_job(job_id, {"progress_step": "recording_provenance"})
         evidence_links = []
         for chunk in chunks:
             sr = chunk.get("source_ref") or chunk.get("source_label") or chunk.get("kb_id", "")
@@ -164,7 +179,8 @@ async def generate(
         if evidence_links:
             await record_provenance(artifact_id, evidence_links)
 
-        # 6. Auto-eval via direct score (high scores when sources used, lower without)
+        # 6. Auto-eval
+        await _update_job(job_id, {"progress_step": "evaluating"})
         has_sources = len(evidence_links) > 0
         evidence_score = min(0.85, 0.45 + 0.04 * len(evidence_links)) if has_sources else 0.35
         auto_scores = {
@@ -175,12 +191,16 @@ async def generate(
             "relevance": 0.85,
         }
         from .eval import evaluate_artifact
-        await evaluate_artifact(artifact_id, auto_scores, rationale=f"Auto-eval: {len(chunks)} chunks from {len(kb_ids)} KB(s)")
+        await evaluate_artifact(
+            artifact_id, auto_scores,
+            rationale=f"Auto-eval: {len(chunks)} chunks from {len(kb_ids)} KB(s)"
+        )
 
-        # 7. Finish job
+        # 7. Complete
         chunk_ids = [c.get("id", "") for c in chunks]
         await _update_job(job_id, {
             "status": "complete",
+            "progress_step": "complete",
             "artifact_id": artifact_id,
             "chunks_used": chunk_ids,
             "model_used": model_used,
@@ -188,12 +208,28 @@ async def generate(
         })
         await emit("artifact_job", job_id, "complete", {"artifact_id": artifact_id})
 
-        return await _get_job(job_id)
-
     except Exception as exc:
-        await _update_job(job_id, {"status": "failed", "error": str(exc), "completed_at": _now()})
+        await _update_job(job_id, {
+            "status": "failed",
+            "progress_step": "failed",
+            "error": str(exc),
+            "completed_at": _now(),
+        })
         await emit("artifact_job", job_id, "failed", {"error": str(exc)})
-        raise
+
+
+async def generate(
+    objective_id: str,
+    artifact_type: str,
+    kb_ids: List[str],
+    topic: str,
+    instructions: str = "",
+    chunk_limit: int = 15,
+) -> Dict[str, Any]:
+    """Synchronous wrapper — creates job and runs pipeline inline. Used by benchmarks."""
+    job = await start_generate(objective_id, artifact_type, kb_ids, topic, instructions, chunk_limit)
+    await generate_background(job["id"], chunk_limit)
+    return await _get_job(job["id"])
 
 
 async def get_job(job_id: str) -> Optional[Dict[str, Any]]:

@@ -189,6 +189,49 @@ async def get_artifact(artifact_id: str):
     return _norm(result)
 
 
+@app.get("/artifacts/{artifact_id}/detail", tags=["artifacts"])
+async def get_artifact_detail(artifact_id: str):
+    """Returns artifact with content, eval result, and trust score combined."""
+    from fastapi import HTTPException
+    async with get_db() as db:
+        art_result = await db.select(f"artifacts:{artifact_id}")
+    if not art_result:
+        raise HTTPException(404, "Artifact not found")
+    artifact = _norm(art_result if isinstance(art_result, dict) else art_result)
+
+    async with get_db() as db:
+        eval_rows = await db.query(
+            "SELECT * FROM eval_results WHERE artifact_id = $a ORDER BY evaluated_at DESC LIMIT 1",
+            {"a": artifact_id},
+        )
+        trust_rows = await db.query(
+            "SELECT * FROM trust_scores WHERE artifact_id = $a ORDER BY computed_at DESC LIMIT 1",
+            {"a": artifact_id},
+        )
+        prov_rows = await db.query(
+            "SELECT * FROM trust_provenance WHERE artifact_id = $a LIMIT 20",
+            {"a": artifact_id},
+        )
+
+    def _r(res):
+        if not res:
+            return []
+        if isinstance(res, list) and res and isinstance(res[0], dict):
+            return res[0].get("result", res)
+        return res if isinstance(res, list) else []
+
+    eval_result  = _norm(_r(eval_rows)[0])  if _r(eval_rows)  else None
+    trust_result = _norm(_r(trust_rows)[0]) if _r(trust_rows) else None
+    provenance   = [_norm(r) for r in _r(prov_rows)]
+
+    return {
+        **artifact,
+        "eval":       eval_result,
+        "trust":      trust_result,
+        "provenance": provenance,
+    }
+
+
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
 def _now() -> str:

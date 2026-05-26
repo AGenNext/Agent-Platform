@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import { api, type Artifact, type EvalResult, type TrustScore } from '../api'
 import { Card, CardHeader } from '../components/Card'
 import { Badge, statusVariant } from '../components/Badge'
+import { ArtifactPanel } from '../components/ArtifactPanel'
 import { ChevronDown, ChevronRight, ShieldCheck, Star } from 'lucide-react'
 
 export function ArtifactsView() {
   const [artifacts, setArtifacts] = useState<Artifact[]>([])
-  const [loading, setLoading] = useState(true)
-  const [expanded, setExpanded] = useState<string | null>(null)
+  const [loading, setLoading]     = useState(true)
+  const [expanded, setExpanded]   = useState<string | null>(null)
+  const [panelId, setPanelId]     = useState<string | null>(null)
 
   useEffect(() => {
     api.listArtifacts()
@@ -41,9 +43,15 @@ export function ArtifactsView() {
                   <Badge label={artifact.artifact_type} variant="blue" />
                   <Badge label={artifact.status} variant={statusVariant(artifact.status)} />
                 </div>
-                <span className="text-xs text-slate-500 ml-3 shrink-0">
-                  {new Date(artifact.created_at).toLocaleDateString()}
-                </span>
+                <div className="flex items-center gap-3 ml-3 shrink-0">
+                  <span className="text-xs text-slate-500">{new Date(artifact.created_at).toLocaleDateString()}</span>
+                  <button
+                    onClick={e => { e.stopPropagation(); setPanelId(artifact.id) }}
+                    className="text-xs text-indigo-400 hover:text-indigo-300 px-2 py-0.5 rounded border border-indigo-900/50 hover:border-indigo-700"
+                  >
+                    View
+                  </button>
+                </div>
               </button>
 
               {expanded === artifact.id && (
@@ -60,6 +68,10 @@ export function ArtifactsView() {
             </div>
           ))}
         </div>
+      )}
+
+      {panelId && (
+        <ArtifactPanel artifactId={panelId} onClose={() => setPanelId(null)} />
       )}
     </Card>
   )

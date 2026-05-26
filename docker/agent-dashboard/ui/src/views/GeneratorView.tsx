@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api, type KnowledgeBase, type ArtifactJob, type GraphStats } from '../api'
 import Card from '../components/Card'
+import { ArtifactPanel } from '../components/ArtifactPanel'
 
 const ARTIFACT_TYPES = [
   { id: 'blog_post',      label: 'Blog Post' },
@@ -29,9 +30,11 @@ export function GeneratorView({ prefilledKbIds }: { prefilledKbIds?: string[] })
   const [topic, setTopic] = useState('')
   const [instructions, setInstructions] = useState('')
   const [objectiveId, setObjectiveId] = useState('')
-  const [running, setRunning] = useState(false)
-  const [job, setJob] = useState<ArtifactJob | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [running, setRunning]         = useState(false)
+  const [job, setJob]                 = useState<ArtifactJob | null>(null)
+  const [stepLabel, setStepLabel]     = useState<string>('')
+  const [error, setError]             = useState<string | null>(null)
+  const [panelArtifactId, setPanelId] = useState<string | null>(null)
   const [graphStats, setGraphStats] = useState<Record<string, GraphStats>>({})
   const [buildingGraph, setBuildingGraph] = useState<string | null>(null)
 
@@ -85,18 +88,42 @@ export function GeneratorView({ prefilledKbIds }: { prefilledKbIds?: string[] })
     setError(null)
     setRunning(true)
     setJob(null)
+    setStepLabel('Queued…')
+
     try {
-      const result = await api.generateArtifact({
+      // POST returns immediately with job_id
+      const startedJob = await api.generateArtifact({
         objective_id: objectiveId || 'default',
         artifact_type: artifactType,
         kb_ids: [...selectedKbs],
         topic,
         instructions: instructions || undefined,
       })
-      setJob(result)
+      setJob(startedJob)
+
+      // Stream progress via SSE
+      const es = new EventSource(`/api/generate/jobs/${startedJob.id}/stream`)
+      es.onmessage = (e) => {
+        try {
+          const data = JSON.parse(e.data)
+          setStepLabel(data.step_label ?? '')
+          if (data.done) {
+            es.close()
+            setRunning(false)
+            // Refresh job record
+            api.getJob(startedJob.id).then(j => {
+              setJob(j)
+              if (j.artifact_id) setPanelId(j.artifact_id)
+            }).catch(() => {})
+          }
+        } catch {}
+      }
+      es.onerror = () => {
+        es.close()
+        setRunning(false)
+      }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Generation failed')
-    } finally {
       setRunning(false)
     }
   }
@@ -279,44 +306,54 @@ export function GeneratorView({ prefilledKbIds }: { prefilledKbIds?: string[] })
                 >
                   {running ? 'Generating…' : `Generate ${selectedTypeLabel}`}
                 </button>
-                {selectedKbs.size > 0 && (
+                {running && stepLabel && (
+                  <span className="text-xs text-indigo-300 animate-pulse">{stepLabel}</span>
+                )}
+                {!running && selectedKbs.size > 0 && (
                   <span className="text-xs text-slate-500">{selectedKbs.size} KB{selectedKbs.size > 1 ? 's' : ''} selected</span>
                 )}
               </div>
             </div>
           </Card>
 
-          {job && <JobResult job={job} />}
+          {job && <JobResult job={job} onView={id => setPanelId(id)} />}
         </div>
       </div>
+
+      {panelArtifactId && (
+        <ArtifactPanel
+          artifactId={panelArtifactId}
+          onClose={() => setPanelId(null)}
+        />
+      )}
     </div>
   )
 }
 
-function JobResult({ job }: { job: ArtifactJob }) {
-  const content = (job as unknown as Record<string, unknown>)
-  const artifact = content as ArtifactJob
-
+function JobResult({ job, onView }: { job: ArtifactJob; onView: (id: string) => void }) {
   return (
-    <Card title={`Result — ${artifact.status.toUpperCase()}`}>
-      <div className="space-y-4">
+    <Card title={`Result — ${job.status.toUpperCase()}`}>
+      <div className="space-y-3">
         <div className="flex gap-6 text-xs text-slate-400">
-          <span>Model: <span className="text-slate-200">{artifact.model_used ?? '—'}</span></span>
-          <span>Chunks used: <span className="text-slate-200">{Array.isArray(artifact.chunks_used) ? artifact.chunks_used.length : 0}</span></span>
-          {artifact.artifact_id && (
-            <span>Artifact: <span className="text-indigo-300 font-mono text-[10px]">{artifact.artifact_id}</span></span>
-          )}
+          <span>Model: <span className="text-slate-200">{job.model_used ?? '—'}</span></span>
+          <span>Chunks: <span className="text-slate-200">{Array.isArray(job.chunks_used) ? job.chunks_used.length : 0}</span></span>
         </div>
 
-        {artifact.status === 'failed' && (
+        {job.status === 'failed' && (
           <div className="p-3 bg-red-900/20 border border-red-800/40 rounded text-xs text-red-300">
-            {artifact.error}
+            {job.error}
           </div>
         )}
 
-        {artifact.status === 'complete' && (
-          <div className="text-xs text-emerald-400">
-            Artifact created · provenance recorded · CLEAR eval complete
+        {job.status === 'complete' && job.artifact_id && (
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-emerald-400">Artifact created · provenance recorded · CLEAR eval complete</span>
+            <button
+              onClick={() => onView(job.artifact_id!)}
+              className="px-3 py-1.5 bg-indigo-700 hover:bg-indigo-600 text-white text-xs rounded"
+            >
+              View Artifact →
+            </button>
           </div>
         )}
       </div>

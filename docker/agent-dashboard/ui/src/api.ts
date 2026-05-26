@@ -97,6 +97,8 @@ export const api = {
     benchmarkId
       ? req<BenchmarkRun[]>('GET', `/analytics/benchmarks/${benchmarkId}/runs`)
       : req<BenchmarkRun[]>('GET', '/analytics/runs'),
+  getArtifactDetail: (id: string) =>
+    req<ArtifactDetail>('GET', `/artifacts/${id}/detail`),
   listObjectives: (status?: string) =>
     req<Objective[]>('GET', `/objectives${status ? `?status=${status}` : ''}`),
   createObjective: (payload: { title: string; objective_type: string; payload?: unknown }) =>
@@ -389,6 +391,24 @@ export interface ContextMap {
   kb_maps: KbContextEntry[]
   cross_links: Array<{ entity_name: string; kb_ids: string[]; kb_names: string[] }>
   suggested_kb_ids: string[]
+}
+
+export interface ArtifactDetail {
+  id: string
+  title: string
+  artifact_type: string
+  status: string
+  content_ref?: string
+  payload?: Record<string, unknown>
+  created_at: string
+  eval?: {
+    composite_score: number
+    passed: boolean
+    dimension_scores: Record<string, number>
+    rationale?: string
+  }
+  trust?: { score: number; evidence_count: number }
+  provenance?: Array<{ source_ref: string; extract?: string }>
 }
 
 export interface IngestResult {
