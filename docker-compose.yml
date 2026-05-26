@@ -81,6 +81,9 @@ services:
           researcher)   python src/researcher_agent.py ;;
           orchestrator) python src/orchestrator_agent.py ;;
           memory)       python src/memory_agent.py ;;
+          a2a)          python src/a2a_agent.py ;;
+          crewai)       python src/crewai_integration.py ;;
+          autogen)      python src/autogen_integration.py ;;
           demo)         python src/langchain_integration_demo.py ;;
           *)            echo \"Unknown AGENT_MODE: $$AGENT_MODE\" && exit 1 ;;
         esac

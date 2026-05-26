@@ -6,3 +6,10 @@ httpx>=0.27.0
 python-dotenv>=1.0.0
 pydantic>=2.0.0
 rich>=13.0.0
+
+# CrewAI integration (optional — install to run crewai_integration.py)
+# crewai>=0.80.0
+# crewai-tools>=0.14.0
+
+# AutoGen integration (optional — install to run autogen_integration.py)
+# pyautogen>=0.3.0
