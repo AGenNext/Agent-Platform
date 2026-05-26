@@ -20,9 +20,11 @@ const KB_TYPE_COLORS: Record<string, string> = {
   research:   'bg-emerald-900/60 text-emerald-300',
 }
 
-export function GeneratorView() {
+export function GeneratorView({ prefilledKbIds }: { prefilledKbIds?: string[] }) {
   const [kbs, setKbs] = useState<KnowledgeBase[]>([])
-  const [selectedKbs, setSelectedKbs] = useState<Set<string>>(new Set())
+  const [selectedKbs, setSelectedKbs] = useState<Set<string>>(
+    () => new Set(prefilledKbIds ?? [])
+  )
   const [artifactType, setArtifactType] = useState('blog_post')
   const [topic, setTopic] = useState('')
   const [instructions, setInstructions] = useState('')

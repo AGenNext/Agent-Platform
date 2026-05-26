@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Activity, BarChart2, Box, Building2, GitBranch, LayoutDashboard, Radio, ShieldCheck, Wallet, Wand2 } from 'lucide-react'
+import { Activity, BarChart2, Box, Building2, GitBranch, LayoutDashboard, Map, Radio, ShieldCheck, Wallet, Wand2 } from 'lucide-react'
 import { HealthView } from './views/HealthView'
 import { ObjectivesView } from './views/ObjectivesView'
 import { ArtifactsView } from './views/ArtifactsView'
@@ -10,24 +10,32 @@ import { SpendView } from './views/SpendView'
 import { GeneratorView } from './views/GeneratorView'
 import { TenantView } from './views/TenantView'
 import { AnalyticsView } from './views/AnalyticsView'
+import { ContextMapperView } from './views/ContextMapperView'
 
-type View = 'health' | 'objectives' | 'artifacts' | 'trace' | 'timeline' | 'readiness' | 'spend' | 'generator' | 'tenants' | 'analytics'
+type View = 'health' | 'objectives' | 'artifacts' | 'trace' | 'timeline' | 'readiness' | 'spend' | 'generator' | 'tenants' | 'analytics' | 'context-mapper'
 
 const nav: { id: View; label: string; icon: React.ReactNode }[] = [
-  { id: 'health',     label: 'Health',      icon: <Activity size={16} /> },
-  { id: 'objectives', label: 'Objectives',  icon: <LayoutDashboard size={16} /> },
-  { id: 'artifacts',  label: 'Artifacts',   icon: <Box size={16} /> },
-  { id: 'generator',  label: 'Generator',   icon: <Wand2 size={16} /> },
-  { id: 'trace',      label: 'A2A Trace',   icon: <GitBranch size={16} /> },
-  { id: 'timeline',   label: 'Timeline',    icon: <Radio size={16} /> },
-  { id: 'readiness',  label: 'Readiness',   icon: <ShieldCheck size={16} /> },
-  { id: 'spend',      label: 'Spend',       icon: <Wallet size={16} /> },
-  { id: 'tenants',   label: 'Tenants',     icon: <Building2 size={16} /> },
-  { id: 'analytics', label: 'Analytics',   icon: <BarChart2 size={16} /> },
+  { id: 'health',          label: 'Health',         icon: <Activity size={16} /> },
+  { id: 'objectives',      label: 'Objectives',     icon: <LayoutDashboard size={16} /> },
+  { id: 'artifacts',       label: 'Artifacts',      icon: <Box size={16} /> },
+  { id: 'context-mapper',  label: 'Context Map',    icon: <Map size={16} /> },
+  { id: 'generator',       label: 'Generator',      icon: <Wand2 size={16} /> },
+  { id: 'trace',           label: 'A2A Trace',      icon: <GitBranch size={16} /> },
+  { id: 'timeline',        label: 'Timeline',       icon: <Radio size={16} /> },
+  { id: 'readiness',       label: 'Readiness',      icon: <ShieldCheck size={16} /> },
+  { id: 'spend',           label: 'Spend',          icon: <Wallet size={16} /> },
+  { id: 'tenants',         label: 'Tenants',        icon: <Building2 size={16} /> },
+  { id: 'analytics',       label: 'Analytics',      icon: <BarChart2 size={16} /> },
 ]
 
 export default function App() {
-  const [view, setView] = useState<View>('health')
+  const [view, setView]             = useState<View>('health')
+  const [prefilledKbIds, setPrefilledKbIds] = useState<string[]>([])
+
+  function openGenerator(kbIds: string[]) {
+    setPrefilledKbIds(kbIds)
+    setView('generator')
+  }
 
   return (
     <div className="flex min-h-screen">
@@ -83,16 +91,17 @@ export default function App() {
         </header>
 
         <div className="flex-1 p-6 overflow-auto">
-          {view === 'health'     && <HealthView />}
-          {view === 'objectives' && <ObjectivesView />}
-          {view === 'artifacts'  && <ArtifactsView />}
-          {view === 'trace'      && <TraceView />}
-          {view === 'timeline'   && <TimelineView />}
-          {view === 'readiness'  && <ReadinessView />}
-          {view === 'spend'      && <SpendView />}
-          {view === 'generator'  && <GeneratorView />}
-          {view === 'tenants'    && <TenantView />}
-          {view === 'analytics'  && <AnalyticsView />}
+          {view === 'health'         && <HealthView />}
+          {view === 'objectives'     && <ObjectivesView />}
+          {view === 'artifacts'      && <ArtifactsView />}
+          {view === 'trace'          && <TraceView />}
+          {view === 'timeline'       && <TimelineView />}
+          {view === 'readiness'      && <ReadinessView />}
+          {view === 'spend'          && <SpendView />}
+          {view === 'generator'      && <GeneratorView prefilledKbIds={prefilledKbIds} />}
+          {view === 'tenants'        && <TenantView />}
+          {view === 'analytics'      && <AnalyticsView />}
+          {view === 'context-mapper' && <ContextMapperView onOpenGenerator={openGenerator} />}
         </div>
       </main>
     </div>

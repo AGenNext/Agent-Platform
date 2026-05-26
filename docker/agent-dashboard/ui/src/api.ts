@@ -12,6 +12,8 @@ async function req<T>(method: string, path: string, body?: unknown): Promise<T> 
 
 export const api = {
   health: () => req<HealthStatus>('GET', '/health'),
+  mapContext: (query: string, workspaceId?: string, topKbs?: number) =>
+    req<ContextMap>('POST', '/context-map', { query, workspace_id: workspaceId, top_kbs: topKbs }),
   listKnowledgeBases: (workspaceId?: string) =>
     req<KnowledgeBase[]>('GET', `/knowledge-bases${workspaceId ? `?workspace_id=${workspaceId}` : ''}`),
   createKnowledgeBase: (payload: { name: string; description?: string; kb_type?: string; workspace_id?: string }) =>
@@ -345,4 +347,26 @@ export interface BenchmarkRun {
   case_results?: Array<{ topic: string; artifact_id?: string; eval_score: number; min_score: number; passed: boolean; error?: string }>
   started_at?: string
   completed_at?: string
+}
+
+export interface KbContextEntry {
+  kb_id: string
+  kb_name: string
+  kb_type: string
+  chunk_count: number
+  has_graph: boolean
+  relevance_score: number
+  matched_entity_count: number
+  matched_community_count: number
+  matched_chunk_count: number
+  top_entities: Array<{ name: string; entity_type: string; description?: string }>
+  top_communities: Array<{ title?: string; summary?: string; entity_count: number }>
+  top_chunks: Array<{ preview: string; source_label: string }>
+}
+
+export interface ContextMap {
+  query: string
+  kb_maps: KbContextEntry[]
+  cross_links: Array<{ entity_name: string; kb_ids: string[]; kb_names: string[] }>
+  suggested_kb_ids: string[]
 }
