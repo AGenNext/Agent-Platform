@@ -10,10 +10,30 @@ async function req<T>(method: string, path: string, body?: unknown): Promise<T> 
   return res.json()
 }
 
+async function reqForm<T>(path: string, formData: FormData): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, { method: 'POST', body: formData })
+  if (!res.ok) throw new Error(`POST ${path} → ${res.status}`)
+  return res.json()
+}
+
 export const api = {
   health: () => req<HealthStatus>('GET', '/health'),
   mapContext: (query: string, workspaceId?: string, topKbs?: number) =>
     req<ContextMap>('POST', '/context-map', { query, workspace_id: workspaceId, top_kbs: topKbs }),
+  ingestText: (kbId: string, payload: { text: string; source_label?: string; source_ref?: string; strategy?: string; chunk_size?: number; chunk_overlap?: number }) =>
+    req<IngestResult>('POST', `/knowledge-bases/${kbId}/ingest/text`, payload),
+  ingestFile: (kbId: string, file: File, opts: { source_label?: string; strategy?: string; chunk_size?: number }) => {
+    const fd = new FormData()
+    fd.append('file', file)
+    if (opts.source_label) fd.append('source_label', opts.source_label)
+    if (opts.strategy)     fd.append('strategy', opts.strategy)
+    if (opts.chunk_size)   fd.append('chunk_size', String(opts.chunk_size))
+    return reqForm<IngestResult>(`/knowledge-bases/${kbId}/ingest/file`, fd)
+  },
+  previewChunks: (text: string, strategy?: string, chunkSize?: number, overlap?: number) =>
+    req<{ chunks: PreviewChunk[] }>('POST', '/knowledge-bases/ingest/preview', {
+      text, strategy, chunk_size: chunkSize, chunk_overlap: overlap,
+    }),
   listKnowledgeBases: (workspaceId?: string) =>
     req<KnowledgeBase[]>('GET', `/knowledge-bases${workspaceId ? `?workspace_id=${workspaceId}` : ''}`),
   createKnowledgeBase: (payload: { name: string; description?: string; kb_type?: string; workspace_id?: string }) =>
@@ -369,4 +389,18 @@ export interface ContextMap {
   kb_maps: KbContextEntry[]
   cross_links: Array<{ entity_name: string; kb_ids: string[]; kb_names: string[] }>
   suggested_kb_ids: string[]
+}
+
+export interface IngestResult {
+  kb_id: string
+  chunks_stored: number
+  chunks_skipped: number
+  total_input_chunks: number
+  source_label: string
+}
+
+export interface PreviewChunk {
+  seq: number
+  content: string
+  char_count: number
 }

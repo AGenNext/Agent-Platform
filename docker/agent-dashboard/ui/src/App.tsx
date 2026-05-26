@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Activity, BarChart2, Box, Building2, GitBranch, LayoutDashboard, Map, Radio, ShieldCheck, Wallet, Wand2 } from 'lucide-react'
+import { Activity, BarChart2, Box, Building2, GitBranch, LayoutDashboard, Map, Radio, ShieldCheck, Upload, Wallet, Wand2 } from 'lucide-react'
 import { HealthView } from './views/HealthView'
 import { ObjectivesView } from './views/ObjectivesView'
 import { ArtifactsView } from './views/ArtifactsView'
@@ -11,13 +11,15 @@ import { GeneratorView } from './views/GeneratorView'
 import { TenantView } from './views/TenantView'
 import { AnalyticsView } from './views/AnalyticsView'
 import { ContextMapperView } from './views/ContextMapperView'
+import { IngestView } from './views/IngestView'
 
-type View = 'health' | 'objectives' | 'artifacts' | 'trace' | 'timeline' | 'readiness' | 'spend' | 'generator' | 'tenants' | 'analytics' | 'context-mapper'
+type View = 'health' | 'objectives' | 'artifacts' | 'trace' | 'timeline' | 'readiness' | 'spend' | 'generator' | 'tenants' | 'analytics' | 'context-mapper' | 'ingest'
 
 const nav: { id: View; label: string; icon: React.ReactNode }[] = [
   { id: 'health',          label: 'Health',         icon: <Activity size={16} /> },
   { id: 'objectives',      label: 'Objectives',     icon: <LayoutDashboard size={16} /> },
   { id: 'artifacts',       label: 'Artifacts',      icon: <Box size={16} /> },
+  { id: 'ingest',          label: 'Ingest',         icon: <Upload size={16} /> },
   { id: 'context-mapper',  label: 'Context Map',    icon: <Map size={16} /> },
   { id: 'generator',       label: 'Generator',      icon: <Wand2 size={16} /> },
   { id: 'trace',           label: 'A2A Trace',      icon: <GitBranch size={16} /> },
@@ -101,6 +103,7 @@ export default function App() {
           {view === 'generator'      && <GeneratorView prefilledKbIds={prefilledKbIds} />}
           {view === 'tenants'        && <TenantView />}
           {view === 'analytics'      && <AnalyticsView />}
+          {view === 'ingest'         && <IngestView />}
           {view === 'context-mapper' && <ContextMapperView onOpenGenerator={openGenerator} />}
         </div>
       </main>
