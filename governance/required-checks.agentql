@@ -1,0 +1,13 @@
+namespace agennext.platform.required_checks
+
+vocabulary required_checks {
+  term central_agent_deploy_governance_validation means "The required GitHub check named Central Agent-deploy governance validation" maps to github.required_check.central_agent_deploy_governance_validation
+  term fail_closed means "No merge, deploy, or promotion proceeds without successful governance evidence" maps to governance.merge_policy.fail_closed
+}
+
+constitution RequiredChecks {
+  rule required_check_name: "Central Agent-deploy governance validation is the required check for pull requests, merges, deployments, and promotions."
+  rule fail_closed: "If GitHub has no check evidence, the change is not considered CI-validated."
+  rule no_direct_main_validation_claim: "Direct main commits without Actions evidence may be source changes, but they must not be described as CI-passed."
+  rule branch_protection_target: "The main branch must require Central Agent-deploy governance validation before merge."
+}
