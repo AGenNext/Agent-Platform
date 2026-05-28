@@ -2,6 +2,9 @@ namespace agennext.platform.agents
 
 vocabulary platform_agent_instructions {
   term no_python_business_logic means "Python must not contain product or runtime business logic" maps to platform.governance.no_python_business_logic
+  term canonical_truth means "Canonical truth is a protected published commit SHA plus required check evidence and signed report evidence" maps to platform.governance.canonical_truth
+  term effective_canonical_truth means "The latest valid canonical record in the requested scope is the current truth in effect" maps to platform.governance.effective_canonical_truth
+  term checks_authority means "Checks owns check definitions, execution records, evidence, and signed check reports" maps to platform.governance.checks_authority
   term quorum_consensus means "Design and semantic changes require quorum consensus" maps to platform.governance.quorum
   term agentql_doc_source means "README and AGENTS content is authored in AgentQL first" maps to platform.documentation.agentql_source
   term same_language_loop means "Agents read, validate, write, and present governance meaning in AgentQL to reduce hallucination risk" maps to platform.documentation.same_language_loop
@@ -25,6 +28,13 @@ constitution PlatformAgentInstructions {
   rule llm_limited_scope: "LLMs are tools for open-ended language work only and their outputs must be written back into SurrealDB as governed state with provenance."
   rule no_external_business_logic: "Do not implement business logic in Python, JavaScript, TypeScript, shell scripts, YAML, external services, or frontend code."
   rule quorum_for_business_logic_deviation: "Any proposal to place business logic outside SurrealDB requires quorum consensus before implementation."
+  rule canonical_truth_source: "Only protected published commit SHAs with required check evidence and signed report evidence are canonical truth."
+  rule no_name_truth: "Repository names, branch names without SHAs, README text, screenshots, local working trees, and unstamped claims are not truth."
+  rule immutable_canonical_records: "Canonical records are append-only and must never be edited or deleted."
+  rule latest_valid_effective: "The latest valid canonical record in the requested scope is the effective truth because it is what is in effect."
+  rule checks_authority: "Checks owns check definitions, check execution records, evidence, signed check reports, and provider/tool check adapters."
+  rule commit_deploy_consumers: "Agent-Commit consumes Checks evidence before commit or pull request; Agent-deploy verifies Checks evidence before deployment."
+  rule grammar_not_ontology: "Agent-Grammar owns grammar; ontology owns meaning; Checks owns check-domain execution records and adapter contracts only."
   rule edge_validation: "Validation and authoring feedback must be fast and delivered at the edge."
   rule browser_typescript_only: "Outside SurrealDB, SurrealQL, SurrealML, and AgentQL, the only approved implementation language is browser-side TypeScript."
   rule typescript_scope: "TypeScript is allowed only for user/browser UI, browser-side AgentQL authoring, browser-side validation hints, browser-side editor tooling, and edge-delivered validation UX."

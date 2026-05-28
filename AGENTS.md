@@ -37,6 +37,29 @@ Any proposal to place business logic outside SurrealDB requires quorum consensus
 
 No quorum, no exception.
 
+## Canonical Truth
+
+Canonical truth is a protected published commit SHA plus required check evidence and signed report evidence.
+
+The following are not truth:
+
+- repository names
+- branch names without SHAs
+- README text
+- screenshots
+- local working trees
+- unstamped claims
+
+Canonical records are append-only and must never be edited or deleted.
+
+The latest valid canonical record in the requested scope is the effective truth because it is what is in effect.
+
+Checks owns check definitions, check execution records, evidence, signed check reports, and provider/tool check adapters.
+
+Agent-Commit consumes Checks evidence before commit or pull request. Agent-deploy verifies Checks evidence before deployment.
+
+Agent-Grammar owns grammar. Ontology owns meaning. Checks owns check-domain execution records and adapter contracts only.
+
 ## CI/CD Enforcement
 
 Every repository must include a CI/CD governance check that fails when Python business logic is introduced.
@@ -62,11 +85,7 @@ The check must reject Python-owned:
 - runtime state mutation
 - product/domain models
 
-Agent-Platform enforces this through the centralized Agent-deploy governance workflow. The editable validation definitions live in:
-
-```text
-governance/no-python-business-logic.rules.tsv
-```
+Agent-Platform enforces this through the required Checks status for the protected published commit SHA. Transitional workflows must be migrated to Checks ownership.
 
 The check is intentionally strict. Existing violations must be migrated to SurrealDB `DEFINE API`, SurrealQL custom functions, SurrealDB events/permissions, AgentQL-generated SurrealQL, or SurrealML bindings.
 
