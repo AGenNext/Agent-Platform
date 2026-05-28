@@ -97,9 +97,44 @@ Agent Platform owns:
 
 Agent Platform does not duplicate subsystem ownership.
 
+## Well-Known Discovery
+
+The runtime publishes customer-facing discovery manifests for agent clients:
+
+- `/.well-known/agent-platform.json`
+- `/.well-known/agent.json`
+
+Configure the advertised hosts with `PUBLIC_PLATFORM_URL`, `PUBLIC_AGENT_KNOWLEDGE_URL`, `PUBLIC_AGENT_DASHBOARD_URL`, and `PUBLIC_AGENT_SITE_URL`.
+
+These values seed the SurrealDB `platform_hosts` registry at startup. Runtime discovery reads the registry first and uses environment values as a fallback.
+
 ## Core Principle
 
 ```text
 Subsystems own capabilities.
 Agent-Platform assembles and launches the product.
 ```
+
+## Strict Runtime Rule
+
+SurrealDB is the platform layer for data processing, storage, business logic, policy enforcement, runtime state, API endpoints, permissions, and deterministic decisions. SurrealML is the learned inference layer.
+
+Business logic outside SurrealDB or SurrealML is prohibited unless quorum consensus approves a documented exception. No quorum, no exception.
+
+Any design change or architecture deviation also requires quorum consensus before implementation. No quorum, no design change.
+
+Any grammar, vocabulary, ontology, taxonomy, naming, schema-language, or semantic-model change requires quorum consensus before implementation. No quorum, no vocabulary change.
+
+Validation must run on the user's/client's system before any change is accepted by AGenNext servers.
+
+Validation and authoring feedback must be fast and delivered at the edge. Checks that can run locally must run in the user's browser/client before server submission.
+
+Outside SurrealDB, SurrealQL, SurrealML, and AgentQL, the only approved implementation language is browser-side TypeScript.
+
+CI enforces this direction with `./scripts/check-no-python-business-logic.sh`. The editable validation rules live in `governance/no-python-business-logic.rules.tsv`. The check fails when Python owns business endpoints, scoring, routing, gates, lifecycle transitions, state mutation, or product/domain models.
+
+## AgentQL
+
+AgentQL is the AGenNext language for defining agent runtime vocabulary, ontology, policies, APIs, beliefs, mind state, constitution rules, and SurrealDB-owned business behavior.
+
+AgentQL uses Langium for grammar-driven authoring and tooling. AgentQL compiles to SurrealDB and SurrealML artifacts; it is not a separate runtime business-logic layer.
