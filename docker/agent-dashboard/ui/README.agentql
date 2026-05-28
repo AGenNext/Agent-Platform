@@ -1,0 +1,17 @@
+namespace agennext.platform.dashboard_ui_readme
+
+vocabulary dashboard_ui {
+  term dashboard_ui means "Browser-side dashboard user interface" maps to platform.dashboard.ui
+  term browser_typescript means "TypeScript is used only for browser-side UI and edge validation surfaces" maps to platform.language.browser_typescript
+  term edge_feedback means "User-facing validation and authoring feedback runs fast in the browser or client" maps to platform.validation.edge_feedback
+  term same_language_loop means "AgentQL-authored UI guidance reduces semantic conversion and hallucination risk" maps to platform.documentation.same_language_loop
+}
+
+constitution DashboardUiReadme {
+  rule browser_surface: "Dashboard UI is a browser-facing presentation surface."
+  rule no_business_logic: "Dashboard UI must not own product/runtime business logic, policy enforcement, scoring, routing, approval, authorization, or runtime state mutation."
+  rule browser_typescript_only: "Outside SurrealDB, SurrealQL, SurrealML, and AgentQL, TypeScript is allowed only for browser-side UI, browser-side AgentQL authoring, validation hints, editor tooling, and edge-delivered validation UX."
+  rule edge_feedback: "Validation and authoring feedback must be fast and delivered at the edge."
+  rule docs_agentql_first: "README content must be authored in AgentQL first."
+  rule same_language_hallucination_control: "When an agent reads and presents in the same language, hallucination risk is minimized."
+}
