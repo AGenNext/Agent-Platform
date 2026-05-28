@@ -21,6 +21,19 @@ check() {
   fi
 }
 
+check_json_field() {
+  local name="$1"
+  local url="$2"
+  local field="$3"
+  if curl -sf "$url" | python3 -c "import json, sys; data=json.load(sys.stdin); assert data.get('${field}')"; then
+    echo "  [ok]  $name — $url has ${field}"
+    PASS=$((PASS + 1))
+  else
+    echo "  [FAIL] $name — $url missing ${field}"
+    FAIL=$((FAIL + 1))
+  fi
+}
+
 echo "── Infrastructure ──────────────────────────────────────────────"
 check "SurrealDB health"  "http://localhost:${SURREALDB_PORT}/health"
 check "MinIO health"      "http://localhost:${MINIO_API_PORT}/minio/health/live"
@@ -28,7 +41,11 @@ check "MinIO health"      "http://localhost:${MINIO_API_PORT}/minio/health/live"
 echo "── Platform services ───────────────────────────────────────────"
 check "Agent Knowledge health"    "http://localhost:${AGENT_KNOWLEDGE_PORT}/health"
 check "Agent Knowledge root"      "http://localhost:${AGENT_KNOWLEDGE_PORT}/"
+check "Agent Knowledge discovery" "http://localhost:${AGENT_KNOWLEDGE_PORT}/.well-known/agent-platform.json"
+check_json_field "Agent Knowledge discovery contract" "http://localhost:${AGENT_KNOWLEDGE_PORT}/.well-known/agent-platform.json" "hosts"
 check "Agent Dashboard health"    "http://localhost:${AGENT_DASHBOARD_PORT}/health"
+check "Agent Dashboard discovery" "http://localhost:${AGENT_DASHBOARD_PORT}/.well-known/agent-platform.json"
+check_json_field "Agent Dashboard discovery contract" "http://localhost:${AGENT_DASHBOARD_PORT}/.well-known/agent-platform.json" "endpoints"
 
 echo ""
 echo "Results: ${PASS} passed, ${FAIL} failed"
