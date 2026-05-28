@@ -1,0 +1,34 @@
+name: agent-platform
+
+networks:
+  platform:
+    driver: bridge
+
+volumes:
+  surrealdb_data:
+
+services:
+
+  # ── Infrastructure ──────────────────────────────────────────────────────
+
+  surrealdb:
+    image: surrealdb/surrealdb:latest
+    command: >
+      start
+      --log info
+      --user ${SURREALDB_USERNAME:-root}
+      --pass ${SURREALDB_PASSWORD:-root}
+      file:/data/platform.db
+    ports:
+      - "${SURREALDB_PORT:-8000}:8000"
+    volumes:
+      - surrealdb_data:/data
+    networks:
+      - platform
+    healthcheck:
+      test: ["CMD", "surreal", "isready", "--conn", "http://localhost:8000"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
