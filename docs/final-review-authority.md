@@ -15,6 +15,7 @@ Agent-Review may provide review mechanics, review signals, comments, findings, o
 | Agent-Platform | Final review authority and platform-level accept/reject decision |
 | Agent-Review | Review mechanics, review findings, review recommendations |
 | Agent-Commit | Creates commits/branches/PRs after platform approval |
+| Agent-deploy | Deploys only after platform approval and governance validation |
 | Agent-Eval | Standards-based quality scores |
 | Agent-Security | Security gates and vulnerability findings |
 | Agent-Compliance | Compliance control/evidence status |
@@ -49,7 +50,9 @@ Agent-Review produces findings/recommendations
   ↓
 Agent-Platform makes final decision
   ↓
-Agent-Commit may create commit/PR only after approval
+Agent-Commit may create commit/PR only after approval and governance validation
+  ↓
+Agent-deploy may deploy only after approval and governance validation
 ```
 
 ## Rule
@@ -57,3 +60,11 @@ Agent-Commit may create commit/PR only after approval
 No individual agent or team can self-approve final work.
 
 Final review is a platform responsibility.
+
+Agent-Commit and Agent-deploy must run centralized governance validations before commit, PR, merge, deployment, or promotion.
+
+The editable validation source is:
+
+```text
+governance/
+```
