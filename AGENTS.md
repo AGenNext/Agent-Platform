@@ -62,13 +62,7 @@ The check must reject Python-owned:
 - runtime state mutation
 - product/domain models
 
-Agent-Platform enforces this with:
-
-```bash
-./scripts/check-no-python-business-logic.sh
-```
-
-The editable validation definitions live in:
+Agent-Platform enforces this through the centralized Agent-deploy governance workflow. The editable validation definitions live in:
 
 ```text
 governance/no-python-business-logic.rules.tsv
