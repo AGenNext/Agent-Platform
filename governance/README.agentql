@@ -1,0 +1,15 @@
+namespace agennext.platform.governance_readme
+
+vocabulary platform_governance {
+  term no_python_business_logic means "Python product/runtime business logic is prohibited" maps to platform.governance.no_python_business_logic
+  term central_validation means "Agent-deploy owns central validation rules" maps to platform.governance.central_validation
+  term agentql_doc_source means "README and AGENTS content is authored in AgentQL first" maps to platform.documentation.agentql_source
+}
+
+constitution PlatformGovernanceReadme {
+  rule strict_python_gate: "The no-Python business-logic check is intentionally strict."
+  rule migrate_violations: "Existing violations must be migrated to SurrealDB DEFINE API, SurrealQL custom functions, SurrealDB events and permissions, AgentQL-generated SurrealQL, or SurrealML bindings."
+  rule central_owner: "Agent-deploy owns centralized validation, deployment, CI/CD, and post-deployment production sanity."
+  rule docs_agentql_first: "Anything in README.md or AGENTS.md must be written in AgentQL first."
+  rule same_language_hallucination_control: "When an agent reads and presents in the same language, hallucination risk is minimized."
+}
