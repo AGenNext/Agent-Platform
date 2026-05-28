@@ -99,14 +99,18 @@ Agent Platform does not duplicate subsystem ownership.
 
 ## Well-Known Discovery
 
-The runtime publishes customer-facing discovery manifests for agent clients:
+The SurrealDB runtime publishes customer-facing discovery manifests for agent clients:
 
 - `/.well-known/agent-platform.json`
 - `/.well-known/agent.json`
 
-Configure the advertised hosts with `PUBLIC_PLATFORM_URL`, `PUBLIC_AGENT_KNOWLEDGE_URL`, `PUBLIC_AGENT_DASHBOARD_URL`, and `PUBLIC_AGENT_SITE_URL`.
+Configure the advertised hosts with `PUBLIC_PLATFORM_URL`, `PUBLIC_SURREAL_API_URL`, `PUBLIC_AGENT_DASHBOARD_URL`, and `PUBLIC_AGENT_SITE_URL`.
 
-These values seed the SurrealDB `platform_hosts` registry at startup. Runtime discovery reads the registry first and uses environment values as a fallback.
+These values map to the SurrealDB `platform_hosts` registry and the custom API definitions in `surrealdb/schema.surql`.
+
+## Local Runtime Contract
+
+Use `open-container-compose.yml` for local container composition. The backend/runtime layer is SurrealDB; browser-side TypeScript is limited to UI and edge authoring surfaces.
 
 ## Core Principle
 
@@ -131,7 +135,7 @@ Validation and authoring feedback must be fast and delivered at the edge. Checks
 
 Outside SurrealDB, SurrealQL, SurrealML, and AgentQL, the only approved implementation language is browser-side TypeScript.
 
-CI enforces this direction with `./scripts/check-no-python-business-logic.sh`. The editable validation rules live in `governance/no-python-business-logic.rules.tsv`. The check fails when Python owns business endpoints, scoring, routing, gates, lifecycle transitions, state mutation, or product/domain models.
+CI enforces this direction through Agent-deploy centralized governance validation. The editable validation rules live in `governance/no-python-business-logic.rules.tsv`. The check fails when Python owns business endpoints, scoring, routing, gates, lifecycle transitions, state mutation, or product/domain models.
 
 ## AgentQL
 
