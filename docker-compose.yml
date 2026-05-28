@@ -90,6 +90,10 @@ services:
       OBJECT_STORAGE_ACCESS_KEY: ${MINIO_ROOT_USER:-minio}
       OBJECT_STORAGE_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minio123}
       PLATFORM_ENV: ${PLATFORM_ENV:-dev}
+      PUBLIC_PLATFORM_URL: ${PUBLIC_PLATFORM_URL:-http://localhost:${AGENT_DASHBOARD_PORT:-3000}}
+      PUBLIC_AGENT_KNOWLEDGE_URL: ${PUBLIC_AGENT_KNOWLEDGE_URL:-http://localhost:${AGENT_KNOWLEDGE_PORT:-8001}}
+      PUBLIC_AGENT_DASHBOARD_URL: ${PUBLIC_AGENT_DASHBOARD_URL:-http://localhost:${AGENT_DASHBOARD_PORT:-3000}}
+      PUBLIC_AGENT_SITE_URL: ${PUBLIC_AGENT_SITE_URL:-http://localhost:${AGENT_SITE_PORT:-3001}}
     ports:
       - "${AGENT_KNOWLEDGE_PORT:-8001}:8001"
     networks:
@@ -114,8 +118,12 @@ services:
     environment:
       # Server-side: use the container service name
       AGENT_KNOWLEDGE_URL: http://agent-knowledge:8001
+      SURREAL_API_URL: http://surrealdb:8000/api/${SURREALDB_NAMESPACE:-agent_platform}/${SURREALDB_DATABASE:-agent_platform}
       # Browser-side: use the host-mapped port
       PUBLIC_AGENT_KNOWLEDGE_URL: http://localhost:${AGENT_KNOWLEDGE_PORT:-8001}
+      PUBLIC_PLATFORM_URL: ${PUBLIC_PLATFORM_URL:-http://localhost:${AGENT_DASHBOARD_PORT:-3000}}
+      PUBLIC_AGENT_DASHBOARD_URL: ${PUBLIC_AGENT_DASHBOARD_URL:-http://localhost:${AGENT_DASHBOARD_PORT:-3000}}
+      PUBLIC_AGENT_SITE_URL: ${PUBLIC_AGENT_SITE_URL:-http://localhost:${AGENT_SITE_PORT:-3001}}
       PLATFORM_ENV: ${PLATFORM_ENV:-dev}
     ports:
       - "${AGENT_DASHBOARD_PORT:-3000}:3000"
