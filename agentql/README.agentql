@@ -1,0 +1,17 @@
+namespace agennext.platform.agentql_readme
+
+vocabulary agentql_readme {
+  term agentql means "AGenNext language for declaring agent runtime vocabulary, ontology, policies, APIs, beliefs, mind state, constitution rules, and SurrealDB-owned business behavior" maps to platform.language.agentql
+  term langium means "TypeScript language-engineering toolkit used for AgentQL grammar, AST, validation, editor tooling, and code generation" maps to platform.language.langium
+  term surrealdb_target means "AgentQL compiles to SurrealDB runtime artifacts" maps to platform.language.target.surrealdb
+  term surrealml_target means "AgentQL binds learned inference to SurrealML" maps to platform.language.target.surrealml
+}
+
+constitution AgentQlReadme {
+  rule agentql_authoring_language: "AgentQL is the AGenNext language for declaring runtime vocabulary, ontology, policies, APIs, beliefs, mind state, constitution rules, and SurrealDB-owned business behavior."
+  rule langium_tooling: "AgentQL uses Langium for grammar, parser, typed AST, validation, editor tooling, and code generation."
+  rule runtime_target: "AgentQL is an authoring language and the runtime target is SurrealDB and SurrealML."
+  rule no_second_business_layer: "AgentQL must not create a second business-logic layer."
+  rule quorum_for_language_change: "Future changes to AgentQL grammar, vocabulary, ontology, taxonomy, naming, semantic meaning, generated SurrealQL, or SurrealML bindings require quorum consensus before implementation."
+  rule same_language_hallucination_control: "When an agent reads and presents in the same language, hallucination risk is minimized."
+}
