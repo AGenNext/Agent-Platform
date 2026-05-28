@@ -1,0 +1,17 @@
+{
+  "name": "@agennext/agentql",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "langium:generate": "langium generate",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "langium": "^3.4.0"
+  },
+  "devDependencies": {
+    "langium-cli": "^3.4.0",
+    "typescript": "^5.9.0"
+  }
+}
