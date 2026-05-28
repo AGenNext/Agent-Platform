@@ -21,15 +21,17 @@ jobs:
     steps:
       - name: Checkout Agent-Platform
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          path: target
 
       - name: Checkout Agent-deploy validation owner
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           repository: AGenNext/Agent-deploy
-          path: .agent-deploy
+          path: agent-deploy-validator
 
       - name: Install ripgrep
         run: sudo apt-get update && sudo apt-get install -y ripgrep
 
       - name: Run centralized governance validation
-        run: ./.agent-deploy/scripts/validate_repo_governance.sh .
+        run: ./agent-deploy-validator/scripts/validate_repo_governance.sh ./target
