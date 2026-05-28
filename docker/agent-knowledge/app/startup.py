@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 
 from .db import get_db
-
 _SCHEMA_PATH = Path(__file__).parent / "schema.surql"
 
 _DEFAULT_ROUTING_RULES = [
