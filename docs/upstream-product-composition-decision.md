@@ -43,6 +43,42 @@ Use upstream tools for acceleration, visualization, and operations.
 Do not outsource the canonical runtime or product data model.
 ```
 
+## Strict Runtime Ownership Rule
+
+SurrealDB owns platform data processing, storage, business logic, policy enforcement, runtime state, API endpoints, permissions, live queries, and deterministic decisioning.
+
+SurrealML owns learned inference for model-backed scoring, classification, and prediction inside the runtime.
+
+LLMs are tools for open-ended language work only. Their outputs must become governed SurrealDB state with provenance before they can affect platform decisions.
+
+Business logic in Python, JavaScript, TypeScript, shell scripts, YAML, external services, or frontend code is prohibited unless quorum consensus approves a documented exception.
+
+Any exception must state why SurrealDB or SurrealML cannot handle the behavior, define the temporary boundary, preserve SurrealDB-owned state/provenance/permissions/audit, and include the migration path back into SurrealDB.
+
+```text
+No quorum, no exception.
+```
+
+## Design Change Control
+
+Any design change, architecture deviation, runtime-layer deviation, data-ownership change, policy-location change, business-logic placement change, API ownership change, or source-of-truth change requires quorum consensus before implementation.
+
+Every approved design change must record the current approved design, proposed deviation, reason, rejected alternatives, impact on SurrealDB/SurrealML ownership, impact on provenance/audit/permissions/runtime state, rollback or migration path, and quorum approvers.
+
+```text
+No quorum, no design change.
+```
+
+## Language, Vocabulary, and Ontology Change Control
+
+Any grammar, vocabulary, ontology, taxonomy, schema-language, naming, semantic-model, domain-term, relation, entity-type, record-type, edge-type, JSON-LD context, or meaning change requires quorum consensus before implementation.
+
+Every approved language or ontology change must record the current term or structure, proposed term or structure, exact semantic meaning, affected SurrealDB tables/fields/functions/events/APIs/permissions, affected JSON-LD/context mappings, affected docs/UI labels, migration path for existing records, compatibility impact, and quorum approvers.
+
+```text
+No quorum, no vocabulary change.
+```
+
 ## What AGenNext Must Own
 
 AGenNext owns:
@@ -150,6 +186,8 @@ SurrealDB + Agent-Traces + Agent-Knowledge + Agent-Platform
 ```
 
 Upstream tools may cache, visualize, prototype, or operate on derived/approved data.
+
+Business decisions belong to SurrealDB or SurrealML, not upstream tools or application code.
 
 ## Risk Controls
 
