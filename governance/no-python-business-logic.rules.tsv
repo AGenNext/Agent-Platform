@@ -3,4 +3,4 @@ content	Python HTTP business endpoints are prohibited. Use SurrealDB DEFINE API.
 content	Python must not own business decisions, scoring, gates, or routing.	DEFAULT_|threshold|score|scoring|passed|verified|fallback|budget|route|routing|policy|gate|approval|trust|eval|lifecycle|status =|status:
 content	Python must not mutate runtime/product state. Use SurrealQL functions/events.	\.(create|merge|update|delete|query)\(
 content	Python must not define agent/runtime/product domain models. Use AgentQL/SurrealDB schema.	class .*BaseModel|class .*Record|class .*Create
-path	Python business modules under agent-knowledge are prohibited after SurrealDB API migration.	^docker/agent-knowledge/app/(agent_team|eval|frameworks|model_router|models|trust|routes)/
+path	Python business modules under agent-knowledge are prohibited after SurrealDB API migration.	^containers/agent-knowledge/app/(agent_team|eval|frameworks|model_router|models|trust|routes)/
