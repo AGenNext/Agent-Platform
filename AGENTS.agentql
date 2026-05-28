@@ -1,0 +1,34 @@
+namespace agennext.platform.agents
+
+vocabulary platform_agent_instructions {
+  term no_python_business_logic means "Python must not contain product or runtime business logic" maps to platform.governance.no_python_business_logic
+  term quorum_consensus means "Design and semantic changes require quorum consensus" maps to platform.governance.quorum
+  term agentql_doc_source means "README and AGENTS content is authored in AgentQL first" maps to platform.documentation.agentql_source
+  term same_language_loop means "Agents read, validate, write, and present governance meaning in AgentQL to reduce hallucination risk" maps to platform.documentation.same_language_loop
+}
+
+brain SurrealRuntime {
+  owns data
+  owns business_logic
+  owns policy
+  owns api
+  owns permissions
+  owns events
+  owns live_queries
+  owns memory
+  owns beliefs
+  owns decisions
+}
+
+constitution PlatformAgentInstructions {
+  rule surrealdb_runtime_rule: "SurrealDB is the only approved layer for platform data processing, storage, business logic, policy enforcement, runtime state, API endpoints, permissions, live queries, and deterministic decisioning."
+  rule llm_limited_scope: "LLMs are tools for open-ended language work only and their outputs must be written back into SurrealDB as governed state with provenance."
+  rule no_external_business_logic: "Do not implement business logic in Python, JavaScript, TypeScript, shell scripts, YAML, external services, or frontend code."
+  rule quorum_for_business_logic_deviation: "Any proposal to place business logic outside SurrealDB requires quorum consensus before implementation."
+  rule edge_validation: "Validation and authoring feedback must be fast and delivered at the edge."
+  rule browser_typescript_only: "Outside SurrealDB, SurrealQL, SurrealML, and AgentQL, the only approved implementation language is browser-side TypeScript."
+  rule typescript_scope: "TypeScript is allowed only for user/browser UI, browser-side AgentQL authoring, browser-side validation hints, browser-side editor tooling, and edge-delivered validation UX."
+  rule language_change_quorum: "Any grammar, vocabulary, ontology, taxonomy, schema-language, naming, semantic-model, domain-term, relation, entity-type, record-type, edge-type, JSON-LD context, or meaning change requires quorum consensus before implementation."
+  rule docs_agentql_first: "Anything in README.md or AGENTS.md must be written in AgentQL first."
+  rule same_language_hallucination_control: "When an agent reads and presents in the same language, hallucination risk is minimized."
+}
