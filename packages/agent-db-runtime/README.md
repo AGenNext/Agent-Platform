@@ -2,6 +2,10 @@
 
 The Agent DB Runtime is the SurrealDB-backed operational kernel for AGenNext.
 
+> **Status: committed but untested.**
+>
+> The schema files, loader script, static validator, Podman compose file, and Makefile are committed. They have **not yet been successfully applied to a live SurrealDB server**. Treat this package as schema-first draft infrastructure until `make apply` passes against the pinned SurrealDB version.
+
 It treats the database as a governed state machine for agents, humans, tools, workflows, decisions, policies, trust, memory, knowledge, commerce, and collaboration.
 
 ```txt
@@ -69,6 +73,30 @@ schema/core/
 ```
 
 See [`schema/load-order.md`](./schema/load-order.md) for the required application order.
+
+## Validation Status
+
+Current validation status:
+
+```txt
+Committed to repository: yes
+Static validation script added: yes
+Podman SurrealDB runtime added: yes
+Live SurrealDB apply tested: no
+Known-good production status: no
+```
+
+Required proof command:
+
+```bash
+cd packages/agent-db-runtime
+make install
+make up
+make validate
+make apply
+```
+
+The package should not be considered runtime-ready until `make apply` succeeds against the pinned SurrealDB server version.
 
 ## Layered Architecture
 
@@ -184,25 +212,21 @@ Current package state.
 
 ### Phase 2 — Schema Runtime
 
-Next implementation phase.
+Current implementation phase.
 
 ```txt
 scripts/
 ├── apply-schema.ts
-├── seed.ts
-├── snapshot.ts
-├── restore.ts
-└── validate-schema.ts
+├── validate-schema.ts
+└── seed.ts (declared but not yet implemented)
 ```
 
 Expected commands:
 
 ```bash
+npm run db:validate
 npm run db:apply
 npm run db:seed
-npm run db:validate
-npm run db:snapshot
-npm run db:restore
 ```
 
 ### Phase 3 — Kernel APIs
@@ -283,4 +307,4 @@ Agent-RAG
 
 ## Current Status
 
-This package is schema-first. The next high-value step is to add the schema application runner and validation tooling.
+This package is schema-first and **untested against live SurrealDB**. The next high-value step is to run the schema application runner against the pinned local SurrealDB instance and fix the first failing schema file.
