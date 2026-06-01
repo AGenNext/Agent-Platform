@@ -1,0 +1,219 @@
+specVersion: 1.0
+id: agennext-agent-db-runtime-value-loop-events-v0.1
+type: agennext.runtime.value_loop.events.catalog
+source: agennext://agent-db-runtime/contracts/value-loop-events.yaml
+subject: Agent DB Runtime Value Loop CloudEvents Contract
+version: 0.1.0
+status: draft
+note: >
+  Phase 1 value-loop event contract. Design artifact only.
+  Runtime event publishing is not validated until Agent DB Runtime gates pass.
+
+cloudEvents:
+  base:
+    specversion: "1.0"
+    source: agennext://agent-db-runtime/value-loop
+    datacontenttype: application/json
+
+  eventTypes:
+    - type: agennext.output.recorded.v0
+      subject: output
+      description: A task, project, or milestone output was recorded.
+      dataSchema: '#/schemas/OutputEventData'
+
+    - type: agennext.outcome.recorded.v0
+      subject: outcome
+      description: An outcome was observed and recorded for an output, task, project, or objective.
+      dataSchema: '#/schemas/OutcomeEventData'
+
+    - type: agennext.value.realized.v0
+      subject: value-realization
+      description: Value realization was recorded for an outcome.
+      dataSchema: '#/schemas/ValueRealizationEventData'
+
+    - type: agennext.learning.recorded.v0
+      subject: learning
+      description: Learning was recorded from outcome, value, evidence, decision, or evaluation.
+      dataSchema: '#/schemas/LearningEventData'
+
+    - type: agennext.improvement.created.v0
+      subject: improvement
+      description: Improvement was proposed or created from learning.
+      dataSchema: '#/schemas/ImprovementEventData'
+
+    - type: agennext.improvement.applied.v0
+      subject: improvement
+      description: Improvement was applied to a target object, workflow, policy, tool, skill, operator, or runtime component.
+      dataSchema: '#/schemas/ImprovementEventData'
+
+    - type: agennext.improvement.validated.v0
+      subject: improvement
+      description: Applied improvement was validated with evidence.
+      dataSchema: '#/schemas/ImprovementEventData'
+
+schemas:
+  BaseValueLoopEventData:
+    type: object
+    required: [eventId, occurredAt]
+    properties:
+      eventId:
+        type: string
+      occurredAt:
+        type: string
+        format: date-time
+      tenantId:
+        type: string
+      organizationId:
+        type: string
+      projectId:
+        type: string
+      milestoneId:
+        type: string
+      taskId:
+        type: string
+      operatorId:
+        type: string
+      evidenceIds:
+        type: array
+        items:
+          type: string
+
+  OutputEventData:
+    allOf:
+      - $ref: '#/schemas/BaseValueLoopEventData'
+      - type: object
+        required: [outputId, outputType, title]
+        properties:
+          outputId:
+            type: string
+          outputType:
+            type: string
+            enum: [document, code, report, decision_record, validation_result, artifact, configuration, dataset, workflow]
+          title:
+            type: string
+          artifactId:
+            type: string
+          createdById:
+            type: string
+
+  OutcomeEventData:
+    allOf:
+      - $ref: '#/schemas/BaseValueLoopEventData'
+      - type: object
+        required: [outcomeId, outcomeType, title]
+        properties:
+          outcomeId:
+            type: string
+          outputId:
+            type: string
+          objectiveId:
+            type: string
+          outcomeType:
+            type: string
+            enum: [achieved, partially_achieved, not_achieved, exceeded, blocked, unintended]
+          title:
+            type: string
+          evaluationId:
+            type: string
+          observedById:
+            type: string
+
+  ValueRealizationEventData:
+    allOf:
+      - $ref: '#/schemas/BaseValueLoopEventData'
+      - type: object
+        required: [valueRealizationId, outcomeId, valueType, state]
+        properties:
+          valueRealizationId:
+            type: string
+          outcomeId:
+            type: string
+          beneficiaryId:
+            type: string
+          valueType:
+            type: string
+            enum: [financial, operational, user, compliance, trust, knowledge, risk_reduction, time_saved, quality_improvement, reliability_improvement]
+          state:
+            type: string
+            enum: [not_started, measuring, realized, partially_realized, not_realized, disputed]
+          metricName:
+            type: string
+          baselineValue:
+            type: number
+          targetValue:
+            type: number
+          realizedValue:
+            type: number
+          unit:
+            type: string
+          cost:
+            type: number
+          valueEfficiency:
+            type: number
+          evaluationId:
+            type: string
+          trustAssessmentId:
+            type: string
+          measuredById:
+            type: string
+
+  LearningEventData:
+    allOf:
+      - $ref: '#/schemas/BaseValueLoopEventData'
+      - type: object
+        required: [learningId, learningType, title]
+        properties:
+          learningId:
+            type: string
+          valueRealizationId:
+            type: string
+          outcomeId:
+            type: string
+          decisionId:
+            type: string
+          learningType:
+            type: string
+            enum: [decision_learning, skill_learning, tool_learning, operator_learning, policy_learning, recommendation_learning, selection_learning, trust_learning, knowledge_learning, workflow_learning, cost_learning, risk_learning, quality_learning]
+          title:
+            type: string
+          insight:
+            type: string
+          confidence:
+            type: number
+          knowledgeCandidateId:
+            type: string
+          recordedById:
+            type: string
+
+  ImprovementEventData:
+    allOf:
+      - $ref: '#/schemas/BaseValueLoopEventData'
+      - type: object
+        required: [improvementId, improvementType, state, title]
+        properties:
+          improvementId:
+            type: string
+          learningId:
+            type: string
+          improvementType:
+            type: string
+            enum: [strategy_update, objective_update, policy_update, work_definition_update, skill_update, tool_update, operator_update, workflow_update, knowledge_update, runtime_fix, risk_mitigation]
+          state:
+            type: string
+            enum: [proposed, accepted, rejected, planned, in_progress, applied, validated]
+          title:
+            type: string
+          targetObjectType:
+            type: string
+          targetObjectId:
+            type: string
+          ownerId:
+            type: string
+          decisionId:
+            type: string
+          appliedAt:
+            type: string
+            format: date-time
+          validatedAt:
+            type: string
+            format: date-time
