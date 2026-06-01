@@ -1,0 +1,85 @@
+name: Agent DB Runtime Gates
+
+on:
+  pull_request:
+    paths:
+      - "packages/agent-db-runtime/**"
+      - ".github/workflows/agent-db-runtime-gates.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "packages/agent-db-runtime/**"
+      - ".github/workflows/agent-db-runtime-gates.yml"
+  workflow_dispatch:
+
+jobs:
+  validate-agent-db-runtime:
+    name: Validate Agent DB Runtime
+    runs-on: ubuntu-24.04
+
+    services:
+      surrealdb:
+        image: surrealdb/surrealdb:v2.3.10
+        ports:
+          - 8000:8000
+        options: >-
+          --health-cmd "surreal isready --conn http://127.0.0.1:8000"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+        env:
+          SURREAL_USER: root
+          SURREAL_PASS: root
+        command: >-
+          start
+          --user root
+          --pass root
+          memory
+
+    defaults:
+      run:
+        working-directory: packages/agent-db-runtime
+
+    env:
+      SURREAL_URL: http://127.0.0.1:8000/rpc
+      SURREAL_USER: root
+      SURREAL_PASS: root
+      SURREAL_NS: agennext
+      SURREAL_DB: agent_runtime_ci
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: packages/agent-db-runtime/.nvmrc
+          cache: npm
+          cache-dependency-path: packages/agent-db-runtime/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Static schema validation
+        run: npm run db:validate
+
+      - name: Wait for SurrealDB
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8000/health >/dev/null 2>&1; then
+              echo "SurrealDB is healthy"
+              exit 0
+            fi
+            echo "Waiting for SurrealDB..."
+            sleep 2
+          done
+          echo "SurrealDB did not become healthy"
+          exit 1
+
+      - name: Apply schema to live SurrealDB
+        run: npm run db:apply
