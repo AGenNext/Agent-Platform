@@ -7,6 +7,7 @@
     "db:apply": "tsx scripts/apply-schema.ts",
     "db:validate": "tsx scripts/validate-schema.ts",
     "db:seed": "tsx scripts/seed.ts",
+    "db:smoke": "tsx scripts/smoke-test.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
