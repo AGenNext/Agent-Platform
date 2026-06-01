@@ -6,7 +6,18 @@ Status: draft, aligned with Frozen Framework v0.1.
 
 Everything has a card.
 
-A card is the portable identity, description, governance, provenance, and operational metadata document for a runtime object.
+A card is the portable identity, description, governance, provenance, signature, verification, and operational metadata document for a runtime object.
+
+```txt
+Signed Card
+  = registry-issued card with signature and provenance
+
+Verified Capability
+  = capability whose card is signed by the Registry Platform and whose evidence passes verification
+
+Registry Platform
+  = issuer of signed cards and authority for registry publication, certification, deprecation, and revocation
+```
 
 ```txt
 Entity
@@ -50,7 +61,9 @@ A card answers:
 ```txt
 What is it?
 Who owns it?
-Who published it?
+Who issued the card?
+Who signed it?
+Who verified it?
 Who can use it?
 What version is it?
 What status is it in?
@@ -71,6 +84,7 @@ Authoring language: YAML
 Machine format: JSON / JSON-LD
 Schema vocabulary: schema.org + AGenNext runtime schema
 Version: agennext.io/card/v0.1
+Issuer: Registry Platform
 ```
 
 ## Base card shape
@@ -85,14 +99,34 @@ metadata:
   displayName: string
   description: string
   version: string
-  status: draft | active | deprecated | archived
+  status: draft | active | deprecated | archived | revoked
   owner: string
+  issuer: registry-platform
   publisher: string
   provider: string
   createdAt: datetime
   updatedAt: datetime
   tags: []
   labels: []
+
+signature:
+  signed: false
+  issuer: registry-platform
+  issuerCard: platform-card:registry-platform
+  signatureRef: null
+  signedAt: null
+  signingKeyRef: null
+  signatureAlgorithm: null
+  digest: null
+
+verification:
+  verified: false
+  verifiedBy: null
+  verifiedAt: null
+  verificationMethod: null
+  verificationEvidence: []
+  capabilityVerified: false
+  verificationState: unverified | pending | verified | disputed | revoked
 
 governance:
   policies: []
@@ -114,7 +148,6 @@ provenance:
 trust:
   trustLevel: unknown | low | medium | high | verified
   score: number
-  verificationState: unverified | pending | verified | disputed | revoked
   lastEvaluatedAt: datetime
 
 evidence:
@@ -134,6 +167,7 @@ relationships: []
 
 ```txt
 PlatformCard
+RegistryPlatformCard
 EntityCard
 ArtifactCard
 ToolCard
@@ -178,22 +212,58 @@ metadata.version
 metadata.status
 ```
 
-### 3. Cards must carry ownership
+### 3. Cards must be issued by the Registry Platform
+
+A card can be drafted by a user, operator, or system, but it becomes an official runtime card only when issued by the Registry Platform.
+
+```txt
+Draft Card
+  -> Submitted Card
+    -> Registry Platform Review
+      -> Signed Card
+        -> Verified Capability when evidence passes
+```
+
+### 4. Signed cards represent registry acceptance
+
+A signed card means:
+
+```txt
+Registry Platform issued this card.
+Card identity and provenance were recorded.
+Card version is known.
+Card lifecycle is now governed.
+```
+
+A signed card does not automatically mean the capability is verified.
+
+### 5. Verified capability requires signed card plus evidence
+
+```txt
+Verified Capability
+  = Signed Card
+  + Verification Evidence
+  + Passing Evaluation
+  + Governance Approval when required
+```
+
+### 6. Cards must carry ownership
 
 Every card must identify:
 
 ```txt
 owner
+issuer
 publisher
 provider
 accountable authority when applicable
 ```
 
-### 4. Cards must carry governance
+### 7. Cards must carry governance
 
 Cards must link to governing policies and evidence requirements.
 
-### 5. Cards are not knowledge by default
+### 8. Cards are not knowledge by default
 
 A card can describe a knowledge artifact, but the card itself does not automatically make something knowledge.
 
@@ -209,9 +279,44 @@ governance approval
 canonical source anchor when available
 ```
 
-### 6. Cards support portability
+### 9. Cards support portability
 
 Cards help avoid vendor lock-in by keeping runtime semantics outside a single database engine.
+
+## RegistryPlatformCard
+
+```yaml
+apiVersion: agennext.io/card/v0.1
+kind: RegistryPlatformCard
+
+metadata:
+  id: platform-card:registry-platform
+  name: registry-platform
+  displayName: Registry Platform
+  version: 0.1.0
+  status: validation
+  owner: AGenNext
+  issuer: registry-platform
+
+registryPlatform:
+  role: card-issuer
+  responsibilities:
+    - issue-cards
+    - sign-cards
+    - verify-capabilities
+    - publish-registry-entries
+    - certify-registry-entries
+    - deprecate-registry-entries
+    - revoke-cards
+  signaturePolicy:
+    required: true
+    algorithm: TBD
+    keyManagement: TBD
+  verificationPolicy:
+    evidenceRequired: true
+    evaluationRequired: true
+    governanceApprovalRequiredWhenRiskHigh: true
+```
 
 ## ArtifactCard
 
@@ -226,8 +331,19 @@ metadata:
   version: 0.1.0
   status: draft
   owner: identity:owner
+  issuer: registry-platform
   publisher: identity:publisher
   provider: identity:provider
+
+signature:
+  signed: false
+  issuer: registry-platform
+  signatureRef: null
+
+verification:
+  verified: false
+  capabilityVerified: false
+  verificationState: unverified
 
 artifact:
   artifactType: document
@@ -262,8 +378,23 @@ metadata:
   version: 0.1.0
   status: active
   owner: identity:platform
+  issuer: registry-platform
   publisher: identity:platform
   provider: GitHub
+
+signature:
+  signed: true
+  issuer: registry-platform
+  signatureRef: signature:github-tool-card-v0.1
+
+verification:
+  verified: true
+  verifiedBy: registry-platform
+  verificationEvidence:
+    - artifact:github-docs-source-anchor
+    - evaluation:github-tool-smoke-test
+  capabilityVerified: true
+  verificationState: verified
 
 tool:
   toolType: external-system
@@ -308,6 +439,17 @@ metadata:
   version: 0.1.0
   status: draft
   owner: identity:platform
+  issuer: registry-platform
+
+signature:
+  signed: false
+  issuer: registry-platform
+  signatureRef: null
+
+verification:
+  verified: false
+  capabilityVerified: false
+  verificationState: pending
 
 skill:
   description: Create, update, triage, and link GitHub issues using documented GitHub tool behavior.
@@ -339,6 +481,17 @@ metadata:
   version: 0.1.0
   status: active
   owner: identity:platform
+  issuer: registry-platform
+
+signature:
+  signed: true
+  issuer: registry-platform
+  signatureRef: signature:agent-issue-operator-card-v0.1
+
+verification:
+  verified: true
+  capabilityVerified: true
+  verificationState: verified
 
 operator:
   operatorType: agent
@@ -365,6 +518,17 @@ metadata:
   version: 0.1.0
   status: active
   owner: identity:platform
+  issuer: registry-platform
+
+signature:
+  signed: true
+  issuer: registry-platform
+  signatureRef: signature:agent-db-runtime-validation-project-card-v0.1
+
+verification:
+  verified: true
+  capabilityVerified: false
+  verificationState: verified
 
 project:
   scope: packages/agent-db-runtime
@@ -400,6 +564,17 @@ metadata:
   displayName: Runtime Validation v0.1
   version: 0.1.0
   status: active
+  issuer: registry-platform
+
+signature:
+  signed: true
+  issuer: registry-platform
+  signatureRef: signature:runtime-validation-v0.1-milestone-card
+
+verification:
+  verified: true
+  capabilityVerified: false
+  verificationState: verified
 
 milestone:
   project: project:agent-db-runtime-validation
@@ -424,6 +599,17 @@ metadata:
   displayName: Run make check
   version: 0.1.0
   status: open
+  issuer: registry-platform
+
+signature:
+  signed: true
+  issuer: registry-platform
+  signatureRef: signature:run-make-check-task-card-v0.1
+
+verification:
+  verified: true
+  capabilityVerified: false
+  verificationState: verified
 
 task:
   project: project:agent-db-runtime-validation
@@ -450,6 +636,17 @@ metadata:
   displayName: Example Knowledge
   version: 0.1.0
   status: candidate
+  issuer: registry-platform
+
+signature:
+  signed: true
+  issuer: registry-platform
+  signatureRef: signature:knowledge-card-example-v0.1
+
+verification:
+  verified: false
+  capabilityVerified: false
+  verificationState: pending
 
 knowledge:
   sourceArtifact: artifact:example
@@ -472,6 +669,17 @@ metadata:
   displayName: Runtime Validation Work Definition
   version: 0.1.0
   status: active
+  issuer: registry-platform
+
+signature:
+  signed: true
+  issuer: registry-platform
+  signatureRef: signature:runtime-validation-work-definition-card-v0.1
+
+verification:
+  verified: true
+  capabilityVerified: false
+  verificationState: verified
 
 workDefinition:
   organization: AGenNext
@@ -499,7 +707,18 @@ metadata:
   version: 0.1.0
   status: validation
   owner: AGenNext
+  issuer: registry-platform
   repository: AGenNext/Agent-Platform
+
+signature:
+  signed: true
+  issuer: registry-platform
+  signatureRef: signature:agennext-agent-platform-card-v0.1
+
+verification:
+  verified: true
+  capabilityVerified: false
+  verificationState: verified
 
 platform:
   primaryPackage: packages/agent-db-runtime
@@ -513,6 +732,9 @@ platform:
 
 ```txt
 Everything has a card.
+The Registry Platform is the issuer of signed cards.
+A signed card means the card is accepted into registry governance.
+A verified capability means the signed card has passed evidence-based verification.
 Cards describe identity, governance, provenance, evidence, trust, interfaces, protocols, dependencies, and lifecycle.
 Cards do not automatically create knowledge.
 Knowledge still requires signed, verified, governed artifact promotion.
