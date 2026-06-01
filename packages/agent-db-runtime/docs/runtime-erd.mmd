@@ -1,0 +1,159 @@
+erDiagram
+  ORGANIZATION ||--o{ WORK_DEFINITION : defines
+  WORK_DEFINITION ||--o{ UNIT_OF_WORK : defines
+  ORGANIZATION ||--o{ PROJECT : owns
+  PROJECT ||--o{ MILESTONE : contains
+  PROJECT ||--o{ TASK : scopes
+  MILESTONE ||--o{ TASK : constrains
+  TASK ||--o{ TASK_EVENT : records
+  TASK ||--o{ ACTION_INVOCATION : invokes
+  TASK ||--o{ DECISION : requires
+  TASK ||--o{ EVIDENCE : produces
+
+  IDENTITY ||--o{ CREDENTIAL : has
+  IDENTITY ||--o{ OPERATOR : becomes
+  OPERATOR ||--o{ ACTION_INVOCATION : executes
+  OPERATOR }o--o{ SKILL : performs
+  SKILL }o--o{ INTERFACE : requires
+  INTERFACE ||--o{ API : exposed_by
+  API }o--o{ PROTOCOL : speaks
+  TOOLKIT ||--o{ TOOL : contains
+  TOOL }o--o{ INTERFACE : supports
+  TOOL }o--o{ PROTOCOL : uses
+  OPERATOR }o--o{ TOOL : uses
+
+  REGISTRY_PLATFORM ||--o{ CARD : issues
+  CARD ||--o{ SIGNATURE : signed_by
+  CARD ||--o{ VERIFICATION : verifies
+  CARD ||--o{ CERTIFICATION : certifies
+  IDENTITY ||--o{ ACCREDITATION : authority_for
+  CARD ||--o{ RECOGNITION : recognized_by
+  CARD ||--o{ REVIEW : reviewed_by
+  CARD ||--o{ RATING : rated_by
+  CARD ||--o{ SCORE : scored_by
+
+  REGISTRY ||--o{ REGISTRY_ENTRY : contains
+  REGISTRY_ENTRY ||--|| CARD : describes
+  DISCOVERY_QUERY ||--o{ DISCOVERY_CANDIDATE : returns
+  DISCOVERY_CANDIDATE }o--|| CARD : candidate
+  DISCOVERY_CANDIDATE ||--o{ QUALIFICATION : qualifies
+  QUALIFICATION ||--o{ ELIGIBILITY : checks
+  ELIGIBILITY ||--o{ RECOMMENDATION : informs
+  RECOMMENDATION ||--o{ SELECTION : selects
+  RECOMMENDATION ||--o{ REJECTION : rejects
+  SELECTION }o--|| CARD : selected_card
+  REJECTION }o--|| CARD : rejected_card
+
+  ACTION_INVOCATION ||--o{ PROTOCOL_MESSAGE : emits
+  ACTION_INVOCATION ||--o{ EVIDENCE : logs
+  DECISION ||--o{ EVIDENCE : supported_by
+  DECISION ||--o{ ARTIFACT : records
+  EVIDENCE }o--o{ ARTIFACT : attached_to
+  ARTIFACT ||--o{ VERIFICATION : verified_by
+  ARTIFACT ||--o{ KNOWLEDGE_CANDIDATE : may_promote
+  KNOWLEDGE_CANDIDATE ||--o{ KNOWLEDGE : approved_as
+  KNOWLEDGE }o--|| SOURCE_ANCHOR : anchored_to
+
+  MEMORY }o--o{ SOURCE_ANCHOR : reconstructs_from
+  MEMORY }o--o{ ARTIFACT : points_to
+  MEMORY }o--o{ KNOWLEDGE : points_to
+  RAG_INDEX }o--o{ ARTIFACT : indexes
+  RAG_INDEX }o--o{ KNOWLEDGE : indexes
+  RAG_INDEX }o--o{ SOURCE_ANCHOR : anchors
+
+  TASK ||--o{ EVALUATION : evaluated_by
+  ACTION_INVOCATION ||--o{ EVALUATION : evaluated_by
+  EVALUATION ||--o{ SCORE : produces
+  EVALUATION ||--o{ TRUST_ASSESSMENT : updates
+  TRUST_ASSESSMENT ||--o{ TRUST_EVENT : records
+
+  INCIDENT }o--o{ EVIDENCE : supported_by
+  INCIDENT }o--o{ SLA : breaches
+  SLA }o--o{ COMMITMENT : governs
+  COMMITMENT }o--o{ DUTY : creates
+  DUTY }o--o{ RESPONSIBILITY : assigned_to
+  RESPONSIBILITY }o--|| IDENTITY : accountable_party
+  ASSURANCE }o--o{ COMMITMENT : supports
+  INSURANCE }o--o{ ASSURANCE : transfers_risk
+  CLAIM }o--o{ EVIDENCE : supported_by
+  CLAIM }o--o{ RESOLUTION : closed_by
+
+  ORGANIZATION {
+    string id
+    string name
+    string industry
+    string status
+  }
+
+  WORK_DEFINITION {
+    string id
+    string organization
+    string unit_name
+    string measurement_rule
+    string version
+  }
+
+  UNIT_OF_WORK {
+    string id
+    string work_definition
+    number planned_units
+    number completed_units
+  }
+
+  PROJECT {
+    string id
+    string scope
+    string owner
+    string status
+  }
+
+  MILESTONE {
+    string id
+    string project
+    datetime deadline
+    string status
+  }
+
+  TASK {
+    string id
+    string project
+    string milestone
+    string status
+    number progress
+  }
+
+  CARD {
+    string id
+    string kind
+    string issuer
+    string status
+    string version
+  }
+
+  TOOL {
+    string id
+    string tool_type
+    boolean outside_kernel
+    boolean data_source
+  }
+
+  OPERATOR {
+    string id
+    string operator_type
+    string identity
+    string status
+  }
+
+  SKILL {
+    string id
+    string name
+    string version
+    string status
+  }
+
+  KNOWLEDGE {
+    string id
+    string source_artifact
+    string verification_state
+    string canonical_source_anchor
+  }
