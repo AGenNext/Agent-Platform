@@ -89,3 +89,14 @@ jobs:
 
       - name: Run smoke tests
         run: npm run db:smoke
+
+      - name: Validate value loop
+        run: npm run db:validate-value-loop
+
+      - name: Upload value-loop evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: value-loop-validation-output
+          path: packages/agent-db-runtime/reports/evidence/value-loop-validation-output.json
+          if-no-files-found: warn
