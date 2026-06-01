@@ -22,6 +22,9 @@ services:
   agent_dashboard:
     repo: AGenNext/Agent-Dashboard
     role: authenticated_visibility_control_ui
+  agent_chat:
+    repo: AGenNext/Agent-Chat
+    role: conversational_chat_ui_surface
   agent_site:
     repo: AGenNext/Agent-Site
     role: public_website_docs_marketing
@@ -30,17 +33,49 @@ packages:
   agent_team:
     repo: AGenNext/Agent-Team
     role: reusable_goal_oriented_agents
+  agent_framework:
+    repo: AGenNext/Agent-Framework
+    role: agennext_core_runtime_framework
   agent_frameworks:
     repo: AGenNext/Agent-Frameworks
-    role: langgraph_runtime_adapters
+    role: external_framework_adapters
+  agent_kernel:
+    repo: AGenNext/Agent-Kernel
+    role: native_low_level_execution_and_sandboxing
   agent_graph:
     repo: AGenNext/Agent-Graph
     role: artifact_schemas
+  agent_speech:
+    repo: AGenNext/Agent-Speech
+    role: speech_to_text_and_text_to_speech
+  model_repository:
+    repo: AGenNext/model-repository
+    role: model_storage_versioning_and_registry
 
 contracts:
   agent_objective: AGenNext/Agent-Objective
   agent_blueprint: AGenNext/Agent-Blueprint
   agent_constraints: AGenNext/Agent-Constraints
+  aagfe: AGenNext/AAGFE
+  agent_policies: AGenNext/Agent-Policies
+  agent_guard: AGenNext/Agent-Guard
+  agent_cognitive_guard: AGenNext/Agent-Cognitive-Guard
+  agent_belief: AGenNext/Agent-Belief
+  agent_mind: AGenNext/Agent-Mind
+  agent_context: AGenNext/Agent-Context
+  agent_data: AGenNext/Agent-Data
+  agent_drive: AGenNext/Agent-Drive
+  agent_channel: AGenNext/Agent-Channel
+  agent_hooks: AGenNext/Agent-Hooks
+  agent_commit: AGenNext/Agent-Commit
+  agent_standard: AGenNext/Agent-Standard
+  agent_handoff: AGenNext/Agent-Handoff
+  agent_health: AGenNext/Agent-Health
+  agent_iga: AGenNext/Agent-IGA
+  agent_lcm: AGenNext/Agent-LCM
+  agent_optimize: AGenNext/Agent-Optimize
+  agent_input: AGenNext/Agent-Input
+  agent_output: AGenNext/Agent-Output
   agent_secrets: AGenNext/Agent-Secrets
   agent_skills: AGenNext/Agent-Skills
   model_router: AGenNext/Model-Router
@@ -48,11 +83,32 @@ contracts:
   agent_eval: AGenNext/Agent-Eval
   agent_trust: AGenNext/Agent-Trust
   agent_traces: AGenNext/Agent-Traces
+  agent_monitor: AGenNext/Agent-Monitor
   agent_analytics: AGenNext/Agent-Analytics
+  agent_runs: AGenNext/Agent-Runs
   agent_finops: AGenNext/Agent-FinOps
   agent_research: AGenNext/Agent-Research
   agent_maturity: AGenNext/Agent-Maturity
   agent_deploy: AGenNext/Agent-deploy
+  agent_kube: AGenNext/AgentKube
+  agent_flow: AGenNext/Agent-Flow
+  agent_memory: AGenNext/Agent-Memory
+  agent_rag: AGenNext/Agent-Rag
+  agent_security: AGenNext/Agent-Security
+  agent_review: AGenNext/Agent-Review
+  agent_decisions: AGenNext/Agent-Decisions
+  agent_community: AGenNext/Agent-Community
+  agent_insights: AGenNext/Agent-Insights
+  agent_connect: AGenNext/Agent-Connect
+  agent_fabric: AGenNext/Agent-Fabric
+  agent_letters: AGenNext/Agent-Letters
+# Research and future repos — not currently part of the platform
+research:
+  agent_world:
+    repo: AGenNext/Agent-World
+    role: autonomous_multi_agent_evolution_open_ended_discovery
+    status: research_not_in_platform
+    reference: https://www.microsoft.com/en-us/research/publication/coral-towards-autonomous-multi-agent-evolution-for-open-ended-discovery/
 
 runtime:
   database: surrealdb
