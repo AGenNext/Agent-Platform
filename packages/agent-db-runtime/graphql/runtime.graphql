@@ -1,0 +1,718 @@
+"""
+Agent DB Runtime GraphQL Schema
+Status: draft design artifact. Not deployment-ready until SurrealDB runtime gates pass.
+"""
+scalar DateTime
+scalar JSON
+
+interface Node {
+  id: ID!
+}
+
+interface CardBacked {
+  card: Card
+}
+
+enum LifecycleStatus {
+  DRAFT
+  SUBMITTED
+  ACTIVE
+  SUSPENDED
+  DEPRECATED
+  ARCHIVED
+  REVOKED
+}
+
+enum VerificationState {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  DISPUTED
+  REVOKED
+}
+
+enum CertificationState {
+  NOT_CERTIFIED
+  REQUESTED
+  UNDER_REVIEW
+  CERTIFIED
+  CONDITIONALLY_CERTIFIED
+  REJECTED
+  SUSPENDED
+  REVOKED
+  EXPIRED
+  REQUIRES_RECERTIFICATION
+}
+
+enum AccreditationState {
+  NOT_ACCREDITED
+  REQUESTED
+  UNDER_REVIEW
+  ACCREDITED
+  CONDITIONALLY_ACCREDITED
+  REJECTED
+  SUSPENDED
+  REVOKED
+  EXPIRED
+  REQUIRES_REACCREDITATION
+}
+
+enum RecognitionState {
+  UNKNOWN
+  EMERGING
+  RECOGNIZED
+  WIDELY_RECOGNIZED
+  CONTESTED
+  DECLINING
+  STALE
+  REVOKED
+}
+
+enum QualificationState {
+  UNKNOWN
+  QUALIFIED
+  NOT_QUALIFIED
+  NEEDS_MORE_INFORMATION
+  INSUFFICIENT_DOCUMENTATION
+  INSUFFICIENT_EVIDENCE
+  WRONG_SCOPE
+  WRONG_INTERFACE
+  WRONG_DOMAIN
+  REVOKED
+}
+
+enum EligibilityState {
+  UNKNOWN
+  ELIGIBLE
+  INELIGIBLE
+  CONDITIONALLY_ELIGIBLE
+  SUSPENDED
+}
+
+enum SelectionState {
+  NOT_SELECTED
+  SELECTED
+  REJECTED
+}
+
+type Organization implements Node {
+  id: ID!
+  name: String!
+  industry: String
+  status: LifecycleStatus!
+  workDefinitions: [WorkDefinition!]!
+  projects: [Project!]!
+}
+
+type WorkDefinition implements Node & CardBacked {
+  id: ID!
+  organization: Organization!
+  unitName: String!
+  unitDescription: String
+  measurementRule: String!
+  evidenceRequired: [String!]!
+  completionCriteria: [String!]!
+  version: String!
+  card: Card
+}
+
+type UnitOfWork implements Node {
+  id: ID!
+  workDefinition: WorkDefinition!
+  plannedUnits: Float!
+  completedUnits: Float!
+  progress: Float!
+}
+
+type Project implements Node & CardBacked {
+  id: ID!
+  name: String!
+  scope: String!
+  owner: Identity
+  status: LifecycleStatus!
+  milestones: [Milestone!]!
+  tasks: [Task!]!
+  card: Card
+}
+
+type Milestone implements Node & CardBacked {
+  id: ID!
+  project: Project!
+  name: String!
+  deadline: DateTime
+  status: LifecycleStatus!
+  tasks: [Task!]!
+  card: Card
+}
+
+type Task implements Node & CardBacked {
+  id: ID!
+  project: Project!
+  milestone: Milestone
+  workDefinition: WorkDefinition
+  title: String!
+  status: LifecycleStatus!
+  plannedUnits: Float
+  completedUnits: Float
+  progress: Float!
+  owner: Identity
+  assignee: Identity
+  evidence: [Evidence!]!
+  decisions: [Decision!]!
+  evaluations: [Evaluation!]!
+  card: Card
+}
+
+type Identity implements Node & CardBacked {
+  id: ID!
+  identityType: String!
+  displayName: String!
+  credentials: [Credential!]!
+  operator: Operator
+  trustAssessments: [TrustAssessment!]!
+  card: Card
+}
+
+type Credential implements Node {
+  id: ID!
+  identity: Identity!
+  credentialType: String!
+  issuer: String
+  verificationState: VerificationState!
+}
+
+type Operator implements Node & CardBacked {
+  id: ID!
+  operatorType: String!
+  identity: Identity!
+  skills: [Skill!]!
+  allowedTools: [Tool!]!
+  trustRequired: String
+  card: Card
+}
+
+type Skill implements Node & CardBacked {
+  id: ID!
+  name: String!
+  version: String!
+  requiredTools: [Tool!]!
+  requiredInterfaces: [RuntimeInterface!]!
+  requiredOperators: [Operator!]!
+  evaluationCriteria: [String!]!
+  card: Card
+}
+
+type RuntimeInterface implements Node & CardBacked {
+  id: ID!
+  name: String!
+  version: String
+  apis: [RuntimeApi!]!
+  card: Card
+}
+
+type RuntimeApi implements Node & CardBacked {
+  id: ID!
+  name: String!
+  apiType: String!
+  protocols: [Protocol!]!
+  interfaces: [RuntimeInterface!]!
+  card: Card
+}
+
+type Protocol implements Node & CardBacked {
+  id: ID!
+  name: String!
+  version: String
+  bindings: [ProtocolBinding!]!
+  card: Card
+}
+
+type ProtocolBinding implements Node {
+  id: ID!
+  protocol: Protocol!
+  entityId: ID!
+  conformanceState: VerificationState!
+}
+
+type Toolkit implements Node & CardBacked {
+  id: ID!
+  name: String!
+  tools: [Tool!]!
+  card: Card
+}
+
+type Tool implements Node & CardBacked {
+  id: ID!
+  name: String!
+  toolType: String!
+  outsideKernel: Boolean!
+  dataSource: Boolean!
+  evidenceSource: Boolean!
+  reconstructionSource: Boolean!
+  documentationSource: String
+  supportedOperations: [String!]!
+  interfaces: [RuntimeInterface!]!
+  protocols: [Protocol!]!
+  card: Card
+}
+
+type RegistryPlatform implements Node & CardBacked {
+  id: ID!
+  name: String!
+  cardsIssued: [Card!]!
+  registries: [Registry!]!
+  card: Card
+}
+
+type Registry implements Node & CardBacked {
+  id: ID!
+  name: String!
+  entries: [RegistryEntry!]!
+  card: Card
+}
+
+type RegistryEntry implements Node {
+  id: ID!
+  registry: Registry!
+  card: Card!
+  status: LifecycleStatus!
+}
+
+type Card implements Node {
+  id: ID!
+  kind: String!
+  name: String!
+  displayName: String
+  version: String!
+  status: LifecycleStatus!
+  owner: Identity
+  issuer: RegistryPlatform
+  signature: Signature
+  verification: Verification
+  certification: Certification
+  accreditation: Accreditation
+  recognition: Recognition
+  qualification: Qualification
+  eligibility: Eligibility
+  scores: [Score!]!
+  ratings: [Rating!]!
+  reviews: [Review!]!
+  evidence: [Evidence!]!
+  dependencies: [Card!]!
+}
+
+type Signature implements Node {
+  id: ID!
+  signed: Boolean!
+  issuer: RegistryPlatform
+  signatureRef: String
+  signedAt: DateTime
+  signingKeyRef: String
+  digest: String
+}
+
+type Verification implements Node {
+  id: ID!
+  verified: Boolean!
+  verifiedBy: Identity
+  verifiedAt: DateTime
+  verificationMethod: String
+  evidence: [Evidence!]!
+  capabilityVerified: Boolean!
+  verificationState: VerificationState!
+}
+
+type Certification implements Node {
+  id: ID!
+  certified: Boolean!
+  certificationState: CertificationState!
+  certifiedBy: Identity
+  certifiedAt: DateTime
+  expiresAt: DateTime
+  scope: JSON
+  evidence: [Evidence!]!
+  conditions: [String!]!
+  rejectionReasons: [String!]!
+}
+
+type Accreditation implements Node {
+  id: ID!
+  accredited: Boolean!
+  accreditationState: AccreditationState!
+  accreditedBy: Identity
+  accreditedAt: DateTime
+  expiresAt: DateTime
+  scope: JSON
+  evidence: [Evidence!]!
+  conditions: [String!]!
+  rejectionReasons: [String!]!
+}
+
+type Recognition implements Node {
+  id: ID!
+  recognitionState: RecognitionState!
+  recognizedBy: [Identity!]!
+  scope: JSON
+  signals: [String!]!
+  score: Float
+  evidence: [Evidence!]!
+  biasRisk: String
+  lastAssessedAt: DateTime
+}
+
+type Qualification implements Node {
+  id: ID!
+  qualified: Boolean!
+  qualificationState: QualificationState!
+  qualifiedFor: [String!]!
+  evidence: [Evidence!]!
+  qualificationReasons: [String!]!
+  disqualificationReasons: [String!]!
+}
+
+type Eligibility implements Node {
+  id: ID!
+  eligible: Boolean!
+  eligibilityState: EligibilityState!
+  eligibleFor: [String!]!
+  requiredConditions: [String!]!
+  blockingConditions: [String!]!
+  rejectionReasons: [String!]!
+}
+
+type DiscoveryQuery implements Node {
+  id: ID!
+  need: String!
+  project: Project
+  task: Task
+  candidates: [DiscoveryCandidate!]!
+}
+
+type DiscoveryCandidate implements Node {
+  id: ID!
+  query: DiscoveryQuery!
+  card: Card!
+  qualification: Qualification
+  eligibility: Eligibility
+}
+
+type Recommendation implements Node {
+  id: ID!
+  request: String!
+  candidates: [Card!]!
+  recommendedCard: Card
+  confidence: Float
+  rationale: String
+  alternativesConsidered: [Card!]!
+  tradeoffs: [String!]!
+  risks: [String!]!
+  evidence: [Evidence!]!
+}
+
+type Selection implements Node {
+  id: ID!
+  selectedCard: Card!
+  selectedBy: Identity
+  selectedAt: DateTime
+  selectedFor: String
+  selectionReason: String!
+  evidence: [Evidence!]!
+}
+
+type Rejection implements Node {
+  id: ID!
+  rejectedCard: Card!
+  rejectedBy: Identity
+  rejectedAt: DateTime
+  rejectionReasons: [String!]!
+  alternativesConsidered: [Card!]!
+  evidence: [Evidence!]!
+}
+
+type ActionInvocation implements Node {
+  id: ID!
+  operator: Operator
+  tool: Tool
+  task: Task
+  operation: String!
+  status: LifecycleStatus!
+  evidence: [Evidence!]!
+  protocolMessages: [ProtocolMessage!]!
+}
+
+type ProtocolMessage implements Node {
+  id: ID!
+  protocol: Protocol!
+  actionInvocation: ActionInvocation
+  direction: String!
+  payloadRef: String
+  evidence: [Evidence!]!
+}
+
+type Decision implements Node & CardBacked {
+  id: ID!
+  task: Task
+  rationale: String!
+  selectedOption: String
+  tradeoffs: [String!]!
+  evidence: [Evidence!]!
+  artifacts: [Artifact!]!
+  card: Card
+}
+
+type Evidence implements Node & CardBacked {
+  id: ID!
+  evidenceType: String!
+  source: String
+  artifact: Artifact
+  sourceAnchor: SourceAnchor
+  createdAt: DateTime!
+  card: Card
+}
+
+type Artifact implements Node & CardBacked {
+  id: ID!
+  artifactType: String!
+  uri: String
+  hash: String
+  signed: Boolean!
+  verificationState: VerificationState!
+  sourceAnchor: SourceAnchor
+  card: Card
+}
+
+type KnowledgeCandidate implements Node {
+  id: ID!
+  artifact: Artifact!
+  evidence: [Evidence!]!
+  verificationState: VerificationState!
+}
+
+type Knowledge implements Node & CardBacked {
+  id: ID!
+  sourceArtifact: Artifact!
+  canonicalSourceAnchor: SourceAnchor
+  verificationState: VerificationState!
+  governanceApproved: Boolean!
+  card: Card
+}
+
+type SourceAnchor implements Node {
+  id: ID!
+  sourceUrl: String
+  sourceType: String
+  sourceAuthority: String
+  sourcePublisher: String
+  sourceVersion: String
+  sourcePublishedAt: DateTime
+  sourceAccessedAt: DateTime
+  sourceHash: String
+  sourceConfidence: Float
+}
+
+type Memory implements Node {
+  id: ID!
+  memoryType: String!
+  summary: String
+  artifactPointers: [Artifact!]!
+  knowledgePointers: [Knowledge!]!
+  sourceAnchors: [SourceAnchor!]!
+  reconstructionInstruction: String
+  retentionPolicy: String
+}
+
+type RagIndex implements Node {
+  id: ID!
+  name: String!
+  artifacts: [Artifact!]!
+  knowledge: [Knowledge!]!
+  sourceAnchors: [SourceAnchor!]!
+  chunkMetadata: JSON
+}
+
+type Evaluation implements Node {
+  id: ID!
+  subjectId: ID!
+  evaluator: Identity
+  status: LifecycleStatus!
+  evidence: [Evidence!]!
+  scores: [Score!]!
+  trustAssessment: TrustAssessment
+}
+
+type Score implements Node {
+  id: ID!
+  dimension: String!
+  value: Float!
+  method: String
+  evidence: [Evidence!]!
+  scoredAt: DateTime
+}
+
+type Rating implements Node {
+  id: ID!
+  rater: Identity
+  value: Float!
+  comment: String
+  ratedAt: DateTime
+}
+
+type Review implements Node {
+  id: ID!
+  reviewer: Identity
+  rating: Rating
+  comments: String
+  recommendation: String
+  evidence: [Evidence!]!
+  reviewedAt: DateTime
+}
+
+type TrustAssessment implements Node {
+  id: ID!
+  subjectId: ID!
+  trustLevel: String!
+  score: Float!
+  evidence: [Evidence!]!
+  events: [TrustEvent!]!
+}
+
+type TrustEvent implements Node {
+  id: ID!
+  trustAssessment: TrustAssessment!
+  eventType: String!
+  delta: Float
+  evidence: [Evidence!]!
+  createdAt: DateTime!
+}
+
+type Incident implements Node & CardBacked {
+  id: ID!
+  severity: String!
+  status: LifecycleStatus!
+  evidence: [Evidence!]!
+  slaBreaches: [Sla!]!
+  card: Card
+}
+
+type Sla implements Node & CardBacked {
+  id: ID!
+  name: String!
+  threshold: String!
+  commitments: [Commitment!]!
+  card: Card
+}
+
+type Commitment implements Node & CardBacked {
+  id: ID!
+  statement: String!
+  duties: [Duty!]!
+  card: Card
+}
+
+type Duty implements Node {
+  id: ID!
+  description: String!
+  responsibilities: [Responsibility!]!
+}
+
+type Responsibility implements Node {
+  id: ID!
+  accountableParty: Identity!
+  description: String!
+}
+
+type Assurance implements Node & CardBacked {
+  id: ID!
+  assuranceType: String!
+  commitments: [Commitment!]!
+  card: Card
+}
+
+type Insurance implements Node & CardBacked {
+  id: ID!
+  assurance: Assurance!
+  riskTransferred: String!
+  card: Card
+}
+
+type Claim implements Node {
+  id: ID!
+  claimType: String!
+  statement: String!
+  evidence: [Evidence!]!
+  resolution: Resolution
+}
+
+type Resolution implements Node {
+  id: ID!
+  resolutionType: String!
+  outcome: String!
+  evidence: [Evidence!]!
+}
+
+type Query {
+  card(id: ID!): Card
+  cards(kind: String, status: LifecycleStatus): [Card!]!
+  project(id: ID!): Project
+  task(id: ID!): Task
+  tool(id: ID!): Tool
+  skill(id: ID!): Skill
+  operator(id: ID!): Operator
+  knowledge(id: ID!): Knowledge
+  discover(input: DiscoveryInput!): DiscoveryQuery!
+  recommend(input: RecommendationInput!): Recommendation!
+}
+
+input DiscoveryInput {
+  need: String!
+  projectId: ID
+  taskId: ID
+  requiredInterfaces: [String!]
+  requiredProtocols: [String!]
+  allowedTools: [ID!]
+  allowedOperators: [ID!]
+}
+
+input RecommendationInput {
+  need: String!
+  candidateCardIds: [ID!]!
+  projectId: ID
+  taskId: ID
+  criteria: JSON
+}
+
+type Mutation {
+  submitCard(input: SubmitCardInput!): Card!
+  signCard(cardId: ID!): Card!
+  verifyCapability(cardId: ID!, evidenceIds: [ID!]!): Verification!
+  certifyCapability(cardId: ID!, scope: JSON!, evidenceIds: [ID!]!): Certification!
+  accreditAuthority(identityId: ID!, scope: JSON!, evidenceIds: [ID!]!): Accreditation!
+  selectCard(cardId: ID!, reason: String!, evidenceIds: [ID!]): Selection!
+  rejectCard(cardId: ID!, reasons: [String!]!, evidenceIds: [ID!]): Rejection!
+  recordEvidence(input: EvidenceInput!): Evidence!
+  recordDecision(input: DecisionInput!): Decision!
+}
+
+input SubmitCardInput {
+  kind: String!
+  name: String!
+  displayName: String
+  version: String!
+  ownerId: ID
+  body: JSON!
+}
+
+input EvidenceInput {
+  evidenceType: String!
+  source: String
+  artifactId: ID
+  sourceAnchorId: ID
+}
+
+input DecisionInput {
+  taskId: ID
+  rationale: String!
+  selectedOption: String
+  tradeoffs: [String!]
+  evidenceIds: [ID!]
+}
