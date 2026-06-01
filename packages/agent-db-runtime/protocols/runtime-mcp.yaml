@@ -1,0 +1,213 @@
+apiVersion: agennext.io/protocol-map/v0.1
+kind: RuntimeMcpProtocolMap
+metadata:
+  name: agent-db-runtime-mcp
+  version: 0.1.0
+  status: draft
+  repository: AGenNext/Agent-Platform
+  package: packages/agent-db-runtime
+
+purpose: |
+  MCP exposes runtime tools, resources, and prompts to model-driven clients.
+  This is a design artifact and is not validated until the runtime gates pass.
+
+principles:
+  - Everything outside the kernel is a Tool.
+  - Every agent is an Operator.
+  - MCP Tool maps to Tool + Operator + ActionInvocation.
+  - MCP Resource maps to Artifact, Knowledge, Memory, Evidence, Card, or RegistryEntry.
+  - MCP Prompt maps to Skill, Artifact, or governed prompt template.
+  - Every MCP call must log evidence.
+  - Tool output is not knowledge until promoted through signed, verified, governed artifacts.
+
+mappings:
+  mcpServer:
+    mapsTo:
+      - RuntimeApi
+      - ProtocolBinding
+      - Toolkit
+      - RegistryEntry
+    requiredEvidence:
+      - protocol-binding
+      - tool-schema
+      - access-policy
+
+  mcpTool:
+    mapsTo:
+      - Tool
+      - Operator
+      - ActionInvocation
+      - Task
+      - Evidence
+    lifecycle:
+      - discovered
+      - qualified
+      - eligible
+      - recommended
+      - selected
+      - invoked
+      - evaluated
+
+  mcpResource:
+    mapsTo:
+      - Artifact
+      - Knowledge
+      - Memory
+      - Evidence
+      - Card
+      - RegistryEntry
+      - SourceAnchor
+    accessPolicy:
+      required: true
+
+  mcpPrompt:
+    mapsTo:
+      - Skill
+      - Artifact
+      - PolicyGovernedTemplate
+      - DecisionPattern
+    requirements:
+      - versioned
+      - governed
+      - evidence-linked
+
+runtimeTools:
+  - name: card.search
+    description: Search signed/runtime cards.
+    inputSchema:
+      type: object
+      properties:
+        kind: { type: string }
+        query: { type: string }
+        status: { type: string }
+    outputMapsTo: RegistryEntry
+    evidenceRequired: true
+
+  - name: card.get
+    description: Fetch a card by ID.
+    inputSchema:
+      type: object
+      required: [cardId]
+      properties:
+        cardId: { type: string }
+    outputMapsTo: Card
+    evidenceRequired: true
+
+  - name: discovery.run
+    description: Run governed discovery over cards.
+    inputSchema:
+      type: object
+      required: [need]
+      properties:
+        need: { type: string }
+        projectId: { type: string }
+        taskId: { type: string }
+        requiredInterfaces:
+          type: array
+          items: { type: string }
+        requiredProtocols:
+          type: array
+          items: { type: string }
+    outputMapsTo: DiscoveryQuery
+    evidenceRequired: true
+
+  - name: recommendation.create
+    description: Recommend candidate cards with rationale and confidence.
+    inputSchema:
+      type: object
+      required: [need, candidateCardIds]
+      properties:
+        need: { type: string }
+        candidateCardIds:
+          type: array
+          items: { type: string }
+    outputMapsTo: Recommendation
+    evidenceRequired: true
+
+  - name: evidence.record
+    description: Record runtime evidence.
+    inputSchema:
+      type: object
+      required: [evidenceType]
+      properties:
+        evidenceType: { type: string }
+        source: { type: string }
+        artifactId: { type: string }
+        sourceAnchorId: { type: string }
+    outputMapsTo: Evidence
+    evidenceRequired: true
+
+  - name: decision.record
+    description: Record decision rationale, selected option, tradeoffs, and evidence.
+    inputSchema:
+      type: object
+      required: [rationale]
+      properties:
+        taskId: { type: string }
+        rationale: { type: string }
+        selectedOption: { type: string }
+        tradeoffs:
+          type: array
+          items: { type: string }
+        evidenceIds:
+          type: array
+          items: { type: string }
+    outputMapsTo: Decision
+    evidenceRequired: true
+
+runtimeResources:
+  - uriTemplate: agennext://cards/{cardId}
+    mapsTo: Card
+    accessPolicyRequired: true
+
+  - uriTemplate: agennext://registry/{registryId}/entries
+    mapsTo: RegistryEntry
+    accessPolicyRequired: true
+
+  - uriTemplate: agennext://artifacts/{artifactId}
+    mapsTo: Artifact
+    accessPolicyRequired: true
+
+  - uriTemplate: agennext://knowledge/{knowledgeId}
+    mapsTo: Knowledge
+    accessPolicyRequired: true
+
+  - uriTemplate: agennext://evidence/{evidenceId}
+    mapsTo: Evidence
+    accessPolicyRequired: true
+
+runtimePrompts:
+  - name: explain-selection
+    mapsTo: Skill
+    purpose: Explain why a card was selected and why alternatives were rejected.
+    requiredInputs:
+      - selectedCardId
+      - alternativeCardIds
+      - evidenceIds
+
+  - name: produce-validation-report
+    mapsTo: Skill
+    purpose: Produce Agent DB Runtime Validation Report v0.1 from make check output.
+    requiredInputs:
+      - commandOutputArtifactId
+      - failingGate
+      - evidenceIds
+
+evidenceEvents:
+  emitted:
+    - agennext.action.invoked.v0
+    - agennext.evidence.recorded.v0
+    - agennext.decision.recorded.v0
+    - agennext.recommendation.created.v0
+    - agennext.selection.created.v0
+
+security:
+  authorizationRequired: true
+  recommendedAuthorizationProtocols:
+    - AuthZEN
+    - OpenFGA
+    - OPA
+
+validation:
+  status: unvalidated
+  requiredGate: packages/agent-db-runtime make check
