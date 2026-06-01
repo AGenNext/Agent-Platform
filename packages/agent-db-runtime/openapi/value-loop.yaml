@@ -1,0 +1,293 @@
+openapi: 3.1.0
+info:
+  title: Agent DB Runtime Value Loop API
+  version: 0.1.0
+  description: Draft Phase 1 value-loop API contract. Not deployment-ready until runtime gates pass.
+servers:
+  - url: https://api.example.local/agent-runtime/v0.1
+tags:
+  - name: Outputs
+  - name: Outcomes
+  - name: ValueRealizations
+  - name: Learnings
+  - name: Improvements
+paths:
+  /outputs:
+    post:
+      tags: [Outputs]
+      summary: Record output
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordOutputRequest' }
+      responses:
+        '201':
+          description: Output recorded
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Output' }
+    get:
+      tags: [Outputs]
+      summary: List outputs
+      parameters:
+        - { name: projectId, in: query, schema: { type: string } }
+        - { name: taskId, in: query, schema: { type: string } }
+        - { name: outputType, in: query, schema: { $ref: '#/components/schemas/OutputType' } }
+      responses:
+        '200':
+          description: Outputs returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Output' }
+  /outcomes:
+    post:
+      tags: [Outcomes]
+      summary: Record outcome
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordOutcomeRequest' }
+      responses:
+        '201':
+          description: Outcome recorded
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Outcome' }
+    get:
+      tags: [Outcomes]
+      summary: List outcomes
+      parameters:
+        - { name: projectId, in: query, schema: { type: string } }
+        - { name: taskId, in: query, schema: { type: string } }
+        - { name: outcomeType, in: query, schema: { $ref: '#/components/schemas/OutcomeType' } }
+      responses:
+        '200':
+          description: Outcomes returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Outcome' }
+  /value-realizations:
+    post:
+      tags: [ValueRealizations]
+      summary: Record value realization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordValueRealizationRequest' }
+      responses:
+        '201':
+          description: Value realization recorded
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ValueRealization' }
+    get:
+      tags: [ValueRealizations]
+      summary: List value realizations
+      parameters:
+        - { name: projectId, in: query, schema: { type: string } }
+        - { name: valueType, in: query, schema: { $ref: '#/components/schemas/ValueType' } }
+        - { name: state, in: query, schema: { $ref: '#/components/schemas/ValueRealizationState' } }
+      responses:
+        '200':
+          description: Value realizations returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ValueRealization' }
+  /learnings:
+    post:
+      tags: [Learnings]
+      summary: Record learning
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordLearningRequest' }
+      responses:
+        '201':
+          description: Learning recorded
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Learning' }
+    get:
+      tags: [Learnings]
+      summary: List learnings
+      parameters:
+        - { name: projectId, in: query, schema: { type: string } }
+        - { name: learningType, in: query, schema: { $ref: '#/components/schemas/LearningType' } }
+      responses:
+        '200':
+          description: Learnings returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Learning' }
+  /improvements:
+    post:
+      tags: [Improvements]
+      summary: Create improvement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateImprovementRequest' }
+      responses:
+        '201':
+          description: Improvement created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Improvement' }
+    get:
+      tags: [Improvements]
+      summary: List improvements
+      parameters:
+        - { name: projectId, in: query, schema: { type: string } }
+        - { name: improvementType, in: query, schema: { $ref: '#/components/schemas/ImprovementType' } }
+        - { name: state, in: query, schema: { $ref: '#/components/schemas/ImprovementState' } }
+      responses:
+        '200':
+          description: Improvements returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Improvement' }
+components:
+  schemas:
+    OutputType:
+      type: string
+      enum: [document, code, report, decision_record, validation_result, artifact, configuration, dataset, workflow]
+    OutcomeType:
+      type: string
+      enum: [achieved, partially_achieved, not_achieved, exceeded, blocked, unintended]
+    ValueType:
+      type: string
+      enum: [financial, operational, user, compliance, trust, knowledge, risk_reduction, time_saved, quality_improvement, reliability_improvement]
+    ValueRealizationState:
+      type: string
+      enum: [not_started, measuring, realized, partially_realized, not_realized, disputed]
+    LearningType:
+      type: string
+      enum: [decision_learning, skill_learning, tool_learning, operator_learning, policy_learning, recommendation_learning, selection_learning, trust_learning, knowledge_learning, workflow_learning, cost_learning, risk_learning, quality_learning]
+    ImprovementType:
+      type: string
+      enum: [strategy_update, objective_update, policy_update, work_definition_update, skill_update, tool_update, operator_update, workflow_update, knowledge_update, runtime_fix, risk_mitigation]
+    ImprovementState:
+      type: string
+      enum: [proposed, accepted, rejected, planned, in_progress, applied, validated]
+    Output:
+      type: object
+      required: [id, title, outputType, status, createdAt]
+      properties:
+        id: { type: string }
+        taskId: { type: string }
+        projectId: { type: string }
+        milestoneId: { type: string }
+        title: { type: string }
+        description: { type: string }
+        outputType: { $ref: '#/components/schemas/OutputType' }
+        status: { type: string }
+        artifactId: { type: string }
+        evidenceIds: { type: array, items: { type: string } }
+        createdAt: { type: string, format: date-time }
+        createdById: { type: string }
+    Outcome:
+      type: object
+      required: [id, title, outcomeType, observedAt]
+      properties:
+        id: { type: string }
+        outputId: { type: string }
+        taskId: { type: string }
+        projectId: { type: string }
+        objectiveId: { type: string }
+        title: { type: string }
+        description: { type: string }
+        outcomeType: { $ref: '#/components/schemas/OutcomeType' }
+        evidenceIds: { type: array, items: { type: string } }
+        evaluationId: { type: string }
+        observedAt: { type: string, format: date-time }
+        observedById: { type: string }
+    ValueRealization:
+      type: object
+      required: [id, outcomeId, valueType, state]
+      properties:
+        id: { type: string }
+        outcomeId: { type: string }
+        projectId: { type: string }
+        beneficiaryId: { type: string }
+        valueType: { $ref: '#/components/schemas/ValueType' }
+        state: { $ref: '#/components/schemas/ValueRealizationState' }
+        metricName: { type: string }
+        baselineValue: { type: number }
+        targetValue: { type: number }
+        realizedValue: { type: number }
+        unit: { type: string }
+        cost: { type: number }
+        valueEfficiency: { type: number }
+        evidenceIds: { type: array, items: { type: string } }
+        evaluationId: { type: string }
+        trustAssessmentId: { type: string }
+        measuredAt: { type: string, format: date-time }
+        measuredById: { type: string }
+    Learning:
+      type: object
+      required: [id, learningType, title, insight, recordedAt]
+      properties:
+        id: { type: string }
+        valueRealizationId: { type: string }
+        outcomeId: { type: string }
+        taskId: { type: string }
+        projectId: { type: string }
+        decisionId: { type: string }
+        learningType: { $ref: '#/components/schemas/LearningType' }
+        title: { type: string }
+        insight: { type: string }
+        evidenceIds: { type: array, items: { type: string } }
+        confidence: { type: number }
+        knowledgeCandidateId: { type: string }
+        recordedAt: { type: string, format: date-time }
+        recordedById: { type: string }
+    Improvement:
+      type: object
+      required: [id, improvementType, state, title, createdAt]
+      properties:
+        id: { type: string }
+        learningId: { type: string }
+        projectId: { type: string }
+        taskId: { type: string }
+        improvementType: { $ref: '#/components/schemas/ImprovementType' }
+        state: { $ref: '#/components/schemas/ImprovementState' }
+        title: { type: string }
+        description: { type: string }
+        targetObjectType: { type: string }
+        targetObjectId: { type: string }
+        ownerId: { type: string }
+        evidenceIds: { type: array, items: { type: string } }
+        decisionId: { type: string }
+        createdAt: { type: string, format: date-time }
+        appliedAt: { type: string, format: date-time }
+        validatedAt: { type: string, format: date-time }
+    RecordOutputRequest:
+      allOf:
+        - $ref: '#/components/schemas/Output'
+    RecordOutcomeRequest:
+      allOf:
+        - $ref: '#/components/schemas/Outcome'
+    RecordValueRealizationRequest:
+      allOf:
+        - $ref: '#/components/schemas/ValueRealization'
+    RecordLearningRequest:
+      allOf:
+        - $ref: '#/components/schemas/Learning'
+    CreateImprovementRequest:
+      allOf:
+        - $ref: '#/components/schemas/Improvement'
