@@ -1,0 +1,273 @@
+"""
+Agent DB Runtime Phase 1 Value Loop GraphQL Contract
+Status: draft design artifact. Not deployment-ready until runtime gates pass.
+
+Chain:
+Task -> Output -> Outcome -> ValueRealization -> Learning -> Improvement
+"""
+scalar DateTime
+scalar JSON
+
+enum OutputType {
+  DOCUMENT
+  CODE
+  REPORT
+  DECISION_RECORD
+  VALIDATION_RESULT
+  ARTIFACT
+  CONFIGURATION
+  DATASET
+  WORKFLOW
+}
+
+enum OutcomeType {
+  ACHIEVED
+  PARTIALLY_ACHIEVED
+  NOT_ACHIEVED
+  EXCEEDED
+  BLOCKED
+  UNINTENDED
+}
+
+enum ValueType {
+  FINANCIAL
+  OPERATIONAL
+  USER
+  COMPLIANCE
+  TRUST
+  KNOWLEDGE
+  RISK_REDUCTION
+  TIME_SAVED
+  QUALITY_IMPROVEMENT
+  RELIABILITY_IMPROVEMENT
+}
+
+enum ValueRealizationState {
+  NOT_STARTED
+  MEASURING
+  REALIZED
+  PARTIALLY_REALIZED
+  NOT_REALIZED
+  DISPUTED
+}
+
+enum LearningType {
+  DECISION_LEARNING
+  SKILL_LEARNING
+  TOOL_LEARNING
+  OPERATOR_LEARNING
+  POLICY_LEARNING
+  RECOMMENDATION_LEARNING
+  SELECTION_LEARNING
+  TRUST_LEARNING
+  KNOWLEDGE_LEARNING
+  WORKFLOW_LEARNING
+  COST_LEARNING
+  RISK_LEARNING
+  QUALITY_LEARNING
+}
+
+enum ImprovementType {
+  STRATEGY_UPDATE
+  OBJECTIVE_UPDATE
+  POLICY_UPDATE
+  WORK_DEFINITION_UPDATE
+  SKILL_UPDATE
+  TOOL_UPDATE
+  OPERATOR_UPDATE
+  WORKFLOW_UPDATE
+  KNOWLEDGE_UPDATE
+  RUNTIME_FIX
+  RISK_MITIGATION
+}
+
+enum ImprovementState {
+  PROPOSED
+  ACCEPTED
+  REJECTED
+  PLANNED
+  IN_PROGRESS
+  APPLIED
+  VALIDATED
+}
+
+type Output implements Node {
+  id: ID!
+  task: Task
+  project: Project
+  milestone: Milestone
+  title: String!
+  description: String
+  outputType: OutputType!
+  status: LifecycleStatus!
+  artifact: Artifact
+  evidence: [Evidence!]!
+  createdAt: DateTime!
+  createdBy: Identity
+}
+
+type Outcome implements Node {
+  id: ID!
+  output: Output
+  task: Task
+  project: Project
+  objectiveId: String
+  title: String!
+  description: String
+  outcomeType: OutcomeType!
+  evidence: [Evidence!]!
+  evaluation: Evaluation
+  observedAt: DateTime!
+  observedBy: Identity
+}
+
+type ValueRealization implements Node {
+  id: ID!
+  outcome: Outcome!
+  project: Project
+  beneficiaryId: String
+  valueType: ValueType!
+  state: ValueRealizationState!
+  metricName: String
+  baselineValue: Float
+  targetValue: Float
+  realizedValue: Float
+  unit: String
+  cost: Float
+  valueEfficiency: Float
+  evidence: [Evidence!]!
+  evaluation: Evaluation
+  trustAssessment: TrustAssessment
+  measuredAt: DateTime
+  measuredBy: Identity
+}
+
+type Learning implements Node {
+  id: ID!
+  valueRealization: ValueRealization
+  outcome: Outcome
+  task: Task
+  project: Project
+  decision: Decision
+  learningType: LearningType!
+  title: String!
+  insight: String!
+  evidence: [Evidence!]!
+  confidence: Float
+  knowledgeCandidate: KnowledgeCandidate
+  recordedAt: DateTime!
+  recordedBy: Identity
+}
+
+type Improvement implements Node {
+  id: ID!
+  learning: Learning
+  project: Project
+  task: Task
+  improvementType: ImprovementType!
+  state: ImprovementState!
+  title: String!
+  description: String
+  targetObjectType: String
+  targetObjectId: String
+  owner: Identity
+  evidence: [Evidence!]!
+  decision: Decision
+  createdAt: DateTime!
+  appliedAt: DateTime
+  validatedAt: DateTime
+}
+
+extend type Query {
+  output(id: ID!): Output
+  outputs(projectId: ID, taskId: ID, outputType: OutputType): [Output!]!
+  outcome(id: ID!): Outcome
+  outcomes(projectId: ID, taskId: ID, outcomeType: OutcomeType): [Outcome!]!
+  valueRealization(id: ID!): ValueRealization
+  valueRealizations(projectId: ID, valueType: ValueType, state: ValueRealizationState): [ValueRealization!]!
+  learning(id: ID!): Learning
+  learnings(projectId: ID, learningType: LearningType): [Learning!]!
+  improvement(id: ID!): Improvement
+  improvements(projectId: ID, improvementType: ImprovementType, state: ImprovementState): [Improvement!]!
+}
+
+extend type Mutation {
+  recordOutput(input: RecordOutputInput!): Output!
+  recordOutcome(input: RecordOutcomeInput!): Outcome!
+  recordValueRealization(input: RecordValueRealizationInput!): ValueRealization!
+  recordLearning(input: RecordLearningInput!): Learning!
+  createImprovement(input: CreateImprovementInput!): Improvement!
+}
+
+input RecordOutputInput {
+  taskId: ID
+  projectId: ID
+  milestoneId: ID
+  title: String!
+  description: String
+  outputType: OutputType!
+  artifactId: ID
+  evidenceIds: [ID!]
+  createdById: ID
+}
+
+input RecordOutcomeInput {
+  outputId: ID
+  taskId: ID
+  projectId: ID
+  objectiveId: String
+  title: String!
+  description: String
+  outcomeType: OutcomeType!
+  evidenceIds: [ID!]
+  evaluationId: ID
+  observedById: ID
+}
+
+input RecordValueRealizationInput {
+  outcomeId: ID!
+  projectId: ID
+  beneficiaryId: String
+  valueType: ValueType!
+  state: ValueRealizationState!
+  metricName: String
+  baselineValue: Float
+  targetValue: Float
+  realizedValue: Float
+  unit: String
+  cost: Float
+  evidenceIds: [ID!]
+  evaluationId: ID
+  trustAssessmentId: ID
+  measuredById: ID
+}
+
+input RecordLearningInput {
+  valueRealizationId: ID
+  outcomeId: ID
+  taskId: ID
+  projectId: ID
+  decisionId: ID
+  learningType: LearningType!
+  title: String!
+  insight: String!
+  evidenceIds: [ID!]
+  confidence: Float
+  knowledgeCandidateId: ID
+  recordedById: ID
+}
+
+input CreateImprovementInput {
+  learningId: ID
+  projectId: ID
+  taskId: ID
+  improvementType: ImprovementType!
+  state: ImprovementState = PROPOSED
+  title: String!
+  description: String
+  targetObjectType: String
+  targetObjectId: String
+  ownerId: ID
+  evidenceIds: [ID!]
+  decisionId: ID
+}
