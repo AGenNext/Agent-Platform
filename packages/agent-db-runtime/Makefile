@@ -4,7 +4,7 @@ COMPOSE_FILE ?= podman-compose.yml
 NPM ?= npm
 PODMAN_COMPOSE ?= podman compose
 
-.PHONY: install up down restart logs ps validate apply seed check clean
+.PHONY: install up down restart logs ps validate apply seed smoke check clean
 
 install:
 	$(NPM) ci
@@ -32,7 +32,10 @@ apply:
 seed:
 	$(NPM) run db:seed
 
-check: install validate apply
+smoke:
+	$(NPM) run db:smoke
+
+check: install validate apply seed smoke
 
 clean:
 	$(PODMAN_COMPOSE) -f $(COMPOSE_FILE) down -v
