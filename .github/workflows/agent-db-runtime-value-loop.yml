@@ -1,0 +1,67 @@
+name: Agent DB Runtime Value Loop Validation
+
+on:
+  push:
+    paths:
+      - 'packages/agent-db-runtime/**'
+      - '.github/workflows/agent-db-runtime-value-loop.yml'
+  pull_request:
+    paths:
+      - 'packages/agent-db-runtime/**'
+      - '.github/workflows/agent-db-runtime-value-loop.yml'
+  workflow_dispatch:
+
+jobs:
+  value-loop-validation:
+    name: Validate value loop runtime slice
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/agent-db-runtime
+    env:
+      SURREAL_URL: http://127.0.0.1:8000/rpc
+      SURREAL_USER: root
+      SURREAL_PASS: root
+      SURREAL_NS: agennext
+      SURREAL_DB: agent_runtime
+    services:
+      surrealdb:
+        image: surrealdb/surrealdb:v2.1.4
+        ports:
+          - 8000:8000
+        options: >-
+          --health-cmd "wget -qO- http://127.0.0.1:8000/health || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+        command: start --user root --pass root memory
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: packages/agent-db-runtime/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Static schema validation
+        run: npm run db:validate
+
+      - name: Validate value loop
+        run: npm run db:validate-value-loop
+
+      - name: Upload value-loop evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: value-loop-validation-output
+          path: packages/agent-db-runtime/reports/evidence/value-loop-validation-output.json
+          if-no-files-found: warn
