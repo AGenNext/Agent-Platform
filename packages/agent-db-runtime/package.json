@@ -8,6 +8,7 @@
     "db:validate": "tsx scripts/validate-schema.ts",
     "db:seed": "tsx scripts/seed.ts",
     "db:smoke": "tsx scripts/smoke-test.ts",
+    "db:validate-value-loop": "tsx scripts/validate-value-loop.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
