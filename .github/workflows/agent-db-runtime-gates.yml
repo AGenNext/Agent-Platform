@@ -83,3 +83,9 @@ jobs:
 
       - name: Apply schema to live SurrealDB
         run: npm run db:apply
+
+      - name: Seed bootstrap records
+        run: npm run db:seed
+
+      - name: Run smoke tests
+        run: npm run db:smoke
