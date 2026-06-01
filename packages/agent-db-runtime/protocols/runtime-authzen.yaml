@@ -1,0 +1,162 @@
+apiVersion: agennext.io/protocol-map/v0.1
+kind: RuntimeAuthZENProtocolMap
+metadata:
+  name: agent-db-runtime-authzen
+  version: 0.1.0
+  status: draft
+  repository: AGenNext/Agent-Platform
+  package: packages/agent-db-runtime
+
+purpose: |
+  AuthZEN maps runtime authorization requests into a standard authorization
+  decision flow. This contract is a design artifact and is not validated until
+  Agent DB Runtime gates pass.
+
+principles:
+  - Runtime enforces authorization before meaningful action.
+  - Organization defines allowed protocols and policy posture.
+  - Authorization decisions must be logged as evidence.
+  - Authorization does not replace certification, eligibility, or trust; it enforces access at action time.
+  - Denials must record rejection reasons.
+
+authorizationFlow:
+  - receive-request
+  - identify-subject
+  - identify-action
+  - identify-resource
+  - load-context
+  - evaluate-policy
+  - evaluate-relationships
+  - evaluate-card-eligibility
+  - produce-decision
+  - log-evidence
+  - emit-event
+
+mappings:
+  subject:
+    mapsTo:
+      - Identity
+      - Operator
+      - Credential
+      - SecuritySession
+
+  action:
+    mapsTo:
+      - Action
+      - ActionInvocation
+      - OperatorAction
+      - ToolOperation
+
+  resource:
+    mapsTo:
+      - Card
+      - Tool
+      - Skill
+      - Artifact
+      - Knowledge
+      - Task
+      - Project
+      - RegistryEntry
+
+  context:
+    mapsTo:
+      - Project
+      - Milestone
+      - Task
+      - WorkDefinition
+      - ProtocolBinding
+      - Certification
+      - Accreditation
+      - Recognition
+      - TrustAssessment
+      - SLA
+      - Incident
+
+  decision:
+    mapsTo:
+      - AuthorizationDecision
+      - Decision
+      - Evidence
+      - PolicyEvaluation
+
+requestShape:
+  subject:
+    id: identity-or-operator-id
+    type: human | agent | service | workflow | system
+    credentials: []
+  action:
+    name: string
+    operation: string
+  resource:
+    id: string
+    kind: string
+  context:
+    organizationId: string
+    projectId: string
+    taskId: string
+    environment: string
+    protocol: string
+    riskLevel: string
+    requestedAt: datetime
+
+responseShape:
+  decision: allow | deny | conditional | require-approval
+  reasons: []
+  obligations: []
+  advice: []
+  evidenceId: string
+  policyEvaluationId: string
+
+checks:
+  - subject-is-authenticated
+  - subject-has-valid-credential
+  - subject-is-operator-when-executing
+  - action-is-declared
+  - resource-has-card
+  - card-is-not-revoked
+  - protocol-is-allowed-by-organization
+  - tool-is-allowed-in-project
+  - operator-is-allowed-in-project
+  - skill-is-allowed-in-project
+  - capability-is-verified-when-required
+  - capability-is-certified-when-required
+  - authority-is-accredited-when-required
+  - trust-threshold-satisfied
+  - sla-state-acceptable
+  - no-blocking-incident
+  - data-access-allowed
+
+decisionOutcomes:
+  allow:
+    meaning: Authorized for requested action.
+    requiredLogging:
+      - authorization-decision
+      - evidence
+  deny:
+    meaning: Not authorized.
+    requiredLogging:
+      - authorization-decision
+      - rejection-reason
+      - evidence
+  conditional:
+    meaning: Authorized only if obligations are fulfilled.
+    requiredLogging:
+      - authorization-decision
+      - obligations
+      - evidence
+  require-approval:
+    meaning: Human/governance approval required before execution.
+    requiredLogging:
+      - authorization-decision
+      - approval-request
+      - evidence
+
+events:
+  emitted:
+    - agennext.evidence.recorded.v0
+    - agennext.decision.recorded.v0
+    - agennext.action.invoked.v0
+
+validation:
+  status: unvalidated
+  requiredGate: packages/agent-db-runtime make check
