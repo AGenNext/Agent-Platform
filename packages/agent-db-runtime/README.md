@@ -4,7 +4,7 @@ The Agent DB Runtime is the SurrealDB-backed operational kernel for AGenNext.
 
 > **Status: committed but untested.**
 >
-> The schema files, loader script, static validator, Podman compose file, and Makefile are committed. They have **not yet been successfully applied to a live SurrealDB server**. Treat this package as schema-first draft infrastructure until `make apply` passes against the pinned SurrealDB version.
+> The schema files, loader script, static validator, Podman compose file, Makefile, and CI gates are committed. They have **not yet been successfully applied to a live SurrealDB server**. Treat this package as schema-first draft infrastructure until `make apply` and the `Agent DB Runtime Gates` workflow pass against the pinned SurrealDB version.
 
 It treats the database as a governed state machine for agents, humans, tools, workflows, decisions, policies, trust, memory, knowledge, commerce, and collaboration.
 
@@ -82,11 +82,13 @@ Current validation status:
 Committed to repository: yes
 Static validation script added: yes
 Podman SurrealDB runtime added: yes
+CI deployment gates added: yes
 Live SurrealDB apply tested: no
 Known-good production status: no
+Deployment-ready: no
 ```
 
-Required proof command:
+Required local proof command:
 
 ```bash
 cd packages/agent-db-runtime
@@ -97,6 +99,48 @@ make apply
 ```
 
 The package should not be considered runtime-ready until `make apply` succeeds against the pinned SurrealDB server version.
+
+## Deployment Readiness Gates
+
+Deployment is blocked unless all of the following pass:
+
+```txt
+Gate 1: npm ci succeeds
+Gate 2: TypeScript typecheck succeeds
+Gate 3: Static schema validation succeeds
+Gate 4: Pinned SurrealDB server starts successfully
+Gate 5: Schema apply succeeds against live SurrealDB
+Gate 6: Seed script exists and succeeds
+Gate 7: Smoke queries pass
+Gate 8: Backup/restore path is documented and tested
+```
+
+Current implemented gates:
+
+```txt
+✓ npm ci
+✓ npm run typecheck
+✓ npm run db:validate
+✓ Start surrealdb/surrealdb:v2.3.10 in CI
+✓ npm run db:apply
+```
+
+Current missing gates:
+
+```txt
+✗ seed.ts implementation
+✗ smoke query test
+✗ backup/restore test
+✗ upgrade/migration test
+```
+
+The GitHub Actions workflow is:
+
+```txt
+.github/workflows/agent-db-runtime-gates.yml
+```
+
+A green static validator alone is **not** deployment readiness. The live SurrealDB apply gate must also pass.
 
 ## Layered Architecture
 
@@ -307,4 +351,4 @@ Agent-RAG
 
 ## Current Status
 
-This package is schema-first and **untested against live SurrealDB**. The next high-value step is to run the schema application runner against the pinned local SurrealDB instance and fix the first failing schema file.
+This package is schema-first and **untested against live SurrealDB**. The next high-value step is to run the schema application runner against the pinned local SurrealDB instance or CI gate and fix the first failing schema file.
