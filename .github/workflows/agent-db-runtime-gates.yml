@@ -18,25 +18,6 @@ jobs:
     name: Validate Agent DB Runtime
     runs-on: ubuntu-24.04
 
-    services:
-      surrealdb:
-        image: surrealdb/surrealdb:v2.3.10
-        ports:
-          - 8000:8000
-        options: >-
-          --health-cmd "surreal isready --conn http://127.0.0.1:8000"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-        env:
-          SURREAL_USER: root
-          SURREAL_PASS: root
-        command: >-
-          start
-          --user root
-          --pass root
-          memory
-
     defaults:
       run:
         working-directory: packages/agent-db-runtime
@@ -55,9 +36,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: packages/agent-db-runtime/.nvmrc
-          cache: npm
-          cache-dependency-path: packages/agent-db-runtime/package-lock.json
+          node-version: '22'
 
       - name: Install dependencies
         run: npm ci
@@ -68,6 +47,15 @@ jobs:
       - name: Static schema validation
         run: npm run db:validate
 
+      - name: Start SurrealDB
+        run: |
+          docker run -d \
+            --name surrealdb \
+            -p 8000:8000 \
+            surrealdb/surrealdb:v2.3.10 \
+            start --user root --pass root memory
+          docker ps -a
+
       - name: Wait for SurrealDB
         run: |
           for i in $(seq 1 30); do
@@ -76,9 +64,11 @@ jobs:
               exit 0
             fi
             echo "Waiting for SurrealDB..."
+            docker logs surrealdb || true
             sleep 2
           done
           echo "SurrealDB did not become healthy"
+          docker logs surrealdb || true
           exit 1
 
       - name: Apply schema to live SurrealDB
