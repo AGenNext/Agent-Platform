@@ -1,0 +1,4 @@
+node_modules/
+backups/
+reports/evidence/
+*.log

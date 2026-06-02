@@ -16,7 +16,7 @@ const packageRoot = repoRoot.endsWith("agent-db-runtime")
 
 const findings: Finding[] = [];
 
-const definePattern = /DEFINE\s+(?:TABLE|FIELD|INDEX|FUNCTION|EVENT)\s+([A-Za-z0-9_:.-]+)/gi;
+const definePattern = /DEFINE\s+(TABLE|FIELD|INDEX|FUNCTION|EVENT)\s+([A-Za-z0-9_:.-]+)(?:\s+ON\s+([A-Za-z0-9_:.-]+))?/gi;
 const tablePattern = /DEFINE\s+TABLE\s+([A-Za-z0-9_:.-]+)/gi;
 const fieldOnPattern = /DEFINE\s+FIELD\s+[A-Za-z0-9_:.-]+\s+ON\s+([A-Za-z0-9_:.-]+)/gi;
 const relationPattern = /DEFINE\s+TABLE\s+([A-Za-z0-9_:.-]+)\s+TYPE\s+RELATION\s+IN\s+([A-Za-z0-9_:.-]+)\s+OUT\s+([A-Za-z0-9_:.-]+)/gi;
@@ -86,7 +86,12 @@ async function main(): Promise<void> {
       definedTables.add(table);
     }
 
-    for (const [, definition] of collectMatches(definePattern, content)) {
+    for (const [, kind, name, onTable] of collectMatches(definePattern, content)) {
+      // FIELD/INDEX/EVENT definitions are scoped to a table, so qualify them by
+      // their ON target. Without this, common field names (name, status,
+      // completed_at, ...) would be flagged as cross-file duplicates even though
+      // they legitimately belong to different tables.
+      const definition = onTable ? `${kind} ${name} ON ${onTable}` : `${kind} ${name}`;
       const files = allDefinitions.get(definition) ?? [];
       files.push(file);
       allDefinitions.set(definition, files);
