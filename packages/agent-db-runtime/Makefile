@@ -1,13 +1,23 @@
 SHELL := /bin/sh
 
+# Agent DB Runtime is SurrealDB-first: the only runtime tool is the SurrealDB
+# CLI (`surreal`). No Node/npm/TypeScript tooling is used or permitted here.
+
 COMPOSE_FILE ?= podman-compose.yml
-NPM ?= npm
 PODMAN_COMPOSE ?= podman compose
+SURREAL ?= surreal
 
-.PHONY: install up down restart logs ps validate apply seed smoke validate-value-loop check clean
+SURREAL_ENDPOINT ?= http://127.0.0.1:8000
+SURREAL_USER ?= root
+SURREAL_PASS ?= root
+SURREAL_NS ?= agennext
+SURREAL_DB ?= agent_runtime
 
-install:
-	$(NPM) ci
+CONN := --endpoint $(SURREAL_ENDPOINT) --username $(SURREAL_USER) --password $(SURREAL_PASS) --namespace $(SURREAL_NS) --database $(SURREAL_DB)
+
+LOAD_ORDER := schema/load-order.txt
+
+.PHONY: up down restart logs ps apply seed smoke value-loop check clean
 
 up:
 	$(PODMAN_COMPOSE) -f $(COMPOSE_FILE) up -d
@@ -23,22 +33,26 @@ logs:
 ps:
 	$(PODMAN_COMPOSE) -f $(COMPOSE_FILE) ps
 
-validate:
-	$(NPM) run db:validate
-
 apply:
-	$(NPM) run db:apply
+	@while read -r f; do \
+		[ -z "$$f" ] && continue; \
+		echo "apply $$f"; \
+		$(SURREAL) import $(CONN) "$$f" || exit 1; \
+	done < $(LOAD_ORDER)
 
 seed:
-	$(NPM) run db:seed
+	$(SURREAL) import $(CONN) schema/seed.surql
 
 smoke:
-	$(NPM) run db:smoke
+	$(SURREAL) import $(CONN) tests/smoke.surql
 
-validate-value-loop:
-	$(NPM) run db:validate-value-loop
+value-loop:
+	$(SURREAL) import $(CONN) schema/design/runtime-meta-model.surql
+	$(SURREAL) import $(CONN) schema/design/value-loop-phase1.surql
+	$(SURREAL) import $(CONN) tests/value-loop-smoke.surql
+	$(SURREAL) import $(CONN) tests/value-loop-asserts.surql
 
-check: install validate apply seed smoke
+check: apply seed smoke
 
 clean:
 	$(PODMAN_COMPOSE) -f $(COMPOSE_FILE) down -v

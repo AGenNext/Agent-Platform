@@ -14,49 +14,56 @@ on:
 jobs:
   value-loop-validation:
     name: Validate value loop runtime slice
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: packages/agent-db-runtime
     env:
-      SURREAL_URL: http://127.0.0.1:8000/rpc
-      SURREAL_USER: root
-      SURREAL_PASS: root
-      SURREAL_NS: agennext
-      SURREAL_DB: agent_runtime
-    services:
-      surrealdb:
-        image: surrealdb/surrealdb:v2.1.4
-        ports:
-          - 8000:8000
-        options: >-
-          --health-cmd "wget -qO- http://127.0.0.1:8000/health || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-        command: start --user root --pass root memory
+      SURREAL_VERSION: v2.3.10
+      SURREAL_CONN: --endpoint http://127.0.0.1:8000 --username root --password root --namespace agennext --database agent_runtime_value_loop
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: packages/agent-db-runtime/package-lock.json
+      - name: Install SurrealDB CLI
+        working-directory: /tmp
+        run: |
+          curl -sSL "https://github.com/surrealdb/surrealdb/releases/download/${SURREAL_VERSION}/surreal-${SURREAL_VERSION}.linux-amd64.tgz" | tar xz
+          sudo install -m 0755 surreal /usr/local/bin/surreal
+          surreal version
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Start SurrealDB (in-memory)
+        run: |
+          surreal start --user root --pass root memory &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8000/health >/dev/null 2>&1; then
+              echo "SurrealDB is healthy"
+              exit 0
+            fi
+            echo "Waiting for SurrealDB..."
+            sleep 1
+          done
+          echo "SurrealDB did not become healthy"
+          exit 1
 
-      - name: Typecheck
-        run: npm run typecheck
+      - name: Apply value-loop design schema
+        run: |
+          surreal import $SURREAL_CONN schema/design/runtime-meta-model.surql
+          surreal import $SURREAL_CONN schema/design/value-loop-phase1.surql
 
-      - name: Static schema validation
-        run: npm run db:validate
+      - name: Run value-loop smoke script
+        run: surreal import $SURREAL_CONN tests/value-loop-smoke.surql
 
-      - name: Validate value loop
-        run: npm run db:validate-value-loop
+      - name: Assert value-loop records
+        run: surreal import $SURREAL_CONN tests/value-loop-asserts.surql
+
+      - name: Capture value-loop evidence
+        if: always()
+        run: |
+          mkdir -p reports/evidence
+          printf 'SELECT count() AS count FROM output GROUP ALL;SELECT count() AS count FROM outcome GROUP ALL;SELECT count() AS count FROM value_realization GROUP ALL;SELECT count() AS count FROM learning GROUP ALL;SELECT count() AS count FROM improvement GROUP ALL;' \
+            | surreal sql $SURREAL_CONN --json > reports/evidence/value-loop-validation-output.json || true
 
       - name: Upload value-loop evidence
         if: always()

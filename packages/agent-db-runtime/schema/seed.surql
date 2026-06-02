@@ -1,6 +1,8 @@
-import { connectAgentDbRuntime, closeAgentDbRuntime, healthcheckAgentDbRuntime, readAgentDbRuntimeEnv } from "../src/db.js";
+-- Agent DB Runtime bootstrap seed
+-- Applied with: surreal import <conn> schema/seed.surql
+-- Creates the default tenant, system admin identity, default agent registry,
+-- and default runtime policy used by local and CI validation.
 
-const seedSql = String.raw`
 LET $tenant_entity = UPSERT entity:default_tenant CONTENT {
   entity_type: "organization",
   entity_subtype: "tenant",
@@ -129,33 +131,3 @@ RETURN {
   registry: registry:default_agent_registry,
   policy: governance_object:default_runtime_policy
 };
-`;
-
-async function main(): Promise<void> {
-  const env = readAgentDbRuntimeEnv();
-
-  console.log("Seeding Agent DB Runtime...");
-  console.log(`SurrealDB: ${env.url}`);
-  console.log(`Namespace: ${env.namespace}`);
-  console.log(`Database: ${env.database}\n`);
-
-  const db = await connectAgentDbRuntime(env);
-
-  try {
-    const healthy = await healthcheckAgentDbRuntime(db);
-    if (!healthy) {
-      throw new Error("SurrealDB healthcheck failed.");
-    }
-
-    await db.query(seedSql);
-    console.log("✓ Seed complete");
-  } finally {
-    await closeAgentDbRuntime(db);
-  }
-}
-
-main().catch((error) => {
-  console.error("\nSeed failed.");
-  console.error(error);
-  process.exit(1);
-});

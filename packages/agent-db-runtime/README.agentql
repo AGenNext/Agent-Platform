@@ -4,8 +4,8 @@ vocabulary agent_db_runtime_readme {
   term governed_state_machine means "The database is a governed state machine for agents, humans, tools, workflows, decisions, policies, trust, memory, knowledge, commerce, and collaboration" maps to runtime.kernel.governed_state_machine
   term operational_kernel means "Agent DB Runtime is the SurrealDB-backed operational kernel for AGenNext" maps to runtime.kernel.surrealdb
   term operational_language means "The package defines the common operational language used by the platform" maps to runtime.kernel.language
-  term schema_first_draft means "Schema files, loader, validator, compose, Makefile, and CI gates are committed but not yet applied to a live SurrealDB server" maps to runtime.kernel.status.schema_first
-  term deployment_gates means "Deployment is blocked until install, typecheck, static validation, live apply, seed, smoke, and backup gates pass" maps to runtime.kernel.deployment_gates
+  term surrealdb_cli_only means "The only runtime tool is the SurrealDB CLI; there is no Node, npm, or TypeScript tooling in the package" maps to runtime.kernel.tooling.surreal_cli
+  term deployment_gates means "Deployment is blocked until SurrealDB CLI install, server start, core schema apply, seed, smoke assertions, and value-loop assertions pass" maps to runtime.kernel.deployment_gates
   term database_as_agents means "Agents propose, policies govern, humans approve, workers execute, and the database reconciles" maps to runtime.kernel.database_as_agents
 }
 
@@ -38,7 +38,7 @@ constitution AgentDbRuntimeReadme {
   rule explicit_human_approval: "Human approval is explicit, not hidden inside prompts."
   rule provenance_required: "Everything important has lifecycle, ownership, time, evidence, and provenance."
   rule memory_not_canonical: "Memory is not canonical knowledge; knowledge requires provenance, verification, and dispute handling."
-  rule schema_first_until_proven: "The package is schema-first draft infrastructure until live apply and the Agent DB Runtime Gates workflow pass against the pinned SurrealDB version."
+  rule surreal_cli_only: "The only runtime tool is the SurrealDB CLI; no Node, npm, or TypeScript tooling is used or permitted in the package."
   rule deployment_gated: "A green static validator alone is not deployment readiness; the live SurrealDB apply gate must also pass."
   rule same_language_hallucination_control: "When an agent reads and presents in the same language, hallucination risk is minimized."
 }

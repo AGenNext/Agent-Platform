@@ -9,6 +9,12 @@
 -- and environments. This lets the runtime reason about what things are,
 -- what they inherit, what values are allowed, and which rules govern them.
 
+-- Full-text search analyzer used by SEARCH indexes across the core schema
+-- (registry, protocol, knowledge, memory, assurance, artifact, ...).
+-- Defined here in the meta-model layer so it exists before any downstream
+-- DEFINE INDEX ... SEARCH ANALYZER ascii statement is applied.
+DEFINE ANALYZER OVERWRITE ascii TOKENIZERS class FILTERS lowercase, ascii;
+
 DEFINE TABLE schema_definition SCHEMAFULL;
 
 DEFINE FIELD entity ON schema_definition TYPE record<entity>;

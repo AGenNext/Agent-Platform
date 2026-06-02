@@ -222,7 +222,7 @@ DEFINE FUNCTION fn::accept_handoff(
   RETURN UPDATE $handoff SET
     status = "accepted",
     accepted_at = time::now(),
-    metadata = object::extend(IF metadata = NONE THEN {} ELSE metadata END, { accepted_by: $actor });
+    metadata = object::from_entries(array::concat(object::entries(IF metadata = NONE THEN {} ELSE metadata END), object::entries({ accepted_by: $actor })));
 };
 
 DEFINE FUNCTION fn::complete_handoff(
@@ -234,5 +234,5 @@ DEFINE FUNCTION fn::complete_handoff(
     status = "completed",
     completed_at = time::now(),
     evidence = $evidence,
-    metadata = object::extend(IF metadata = NONE THEN {} ELSE metadata END, { completed_by: $actor });
+    metadata = object::from_entries(array::concat(object::entries(IF metadata = NONE THEN {} ELSE metadata END), object::entries({ completed_by: $actor })));
 };
