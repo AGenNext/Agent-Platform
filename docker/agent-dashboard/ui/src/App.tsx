@@ -1,17 +1,19 @@
 import { useState } from 'react'
-import { Activity, Bot, Box, Flag, GitBranch, LayoutDashboard, LayoutGrid, MessageSquare, Radio, Search, Wand2 } from 'lucide-react'
+import { Activity, Bot, Box, Boxes, Flag, GitBranch, GraduationCap, LayoutDashboard, LayoutGrid, MessageSquare, Radio, Search, Wand2 } from 'lucide-react'
 import { SpacesView } from './views/SpacesView'
 import { ChannelsView } from './views/ChannelsView'
 import { AgentsView } from './views/AgentsView'
 import { ComposerView } from './views/ComposerView'
 import { AiGatewayView } from './views/AiGatewayView'
+import { ArtifactHubView } from './views/ArtifactHubView'
+import { LearningPathsView } from './views/LearningPathsView'
 import { MilestonesView } from './views/MilestonesView'
 import { HealthView } from './views/HealthView'
 import { ObjectivesView } from './views/ObjectivesView'
 import { ArtifactsView } from './views/ArtifactsView'
 import { TraceView } from './views/TraceView'
 
-type View = 'spaces' | 'chat' | 'agents' | 'composer' | 'milestones' | 'objectives' | 'artifacts' | 'trace' | 'gateway' | 'health'
+type View = 'spaces' | 'chat' | 'agents' | 'composer' | 'milestones' | 'objectives' | 'artifacts' | 'trace' | 'hub' | 'learning' | 'gateway' | 'health'
 
 type NavItem = { id: View; label: string; icon: React.ReactNode; hint: string }
 
@@ -32,6 +34,13 @@ const sections: { heading: string; items: NavItem[] }[] = [
       { id: 'objectives', label: 'Objectives', icon: <LayoutDashboard size={17} />, hint: 'Goals & runs' },
       { id: 'artifacts',  label: 'Artifacts',  icon: <Box size={17} />,             hint: 'Outputs, eval & trust' },
       { id: 'trace',      label: 'A2A Trace',  icon: <GitBranch size={17} />,       hint: 'Agent handoff chains' },
+    ],
+  },
+  {
+    heading: 'Library',
+    items: [
+      { id: 'hub',      label: 'Artifact Hub',   icon: <Boxes size={17} />,         hint: 'Catalog of agent outputs' },
+      { id: 'learning', label: 'Learning Paths', icon: <GraduationCap size={17} />, hint: 'Guided tracks & onboarding' },
     ],
   },
   {
@@ -133,6 +142,8 @@ export default function App() {
             {view === 'objectives' && <ObjectivesView />}
             {view === 'artifacts'  && <ArtifactsView />}
             {view === 'trace'      && <TraceView />}
+            {view === 'hub'        && <ArtifactHubView />}
+            {view === 'learning'   && <LearningPathsView />}
             {view === 'gateway'    && <AiGatewayView />}
             {view === 'health'     && <HealthView />}
           </div>

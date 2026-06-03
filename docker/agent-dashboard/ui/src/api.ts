@@ -17,6 +17,8 @@ export const api = {
   listMilestones: () => req<Milestone[]>('GET', '/milestones'),
   agentRoster: () => req<AgentProfile[]>('GET', '/agents/roster'),
   gatewayRoutes: () => req<ModelRoute[]>('GET', '/model-router/routes'),
+  hubArtifacts: () => req<HubArtifact[]>('GET', '/artifacts/hub'),
+  learningPaths: () => req<LearningPath[]>('GET', '/learning/paths'),
   listObjectives: (status?: string) =>
     req<Objective[]>('GET', `/objectives${status ? `?status=${status}` : ''}`),
   createObjective: (payload: { title: string; objective_type: string; payload?: unknown }) =>
@@ -70,6 +72,35 @@ export interface ModelRoute {
   error_rate: number
   share: number
   status: string
+}
+
+export interface HubArtifact {
+  id: string
+  title: string
+  artifact_type: 'deck' | 'doc' | 'dataset' | 'code' | 'report'
+  space: string
+  version: string
+  eval_score: number
+  trust: number
+  status: string
+  downloads: number
+  updated_at: string
+}
+
+export interface LearningModule {
+  title: string
+  done: boolean
+}
+
+export interface LearningPath {
+  id: string
+  title: string
+  description: string
+  level: 'Beginner' | 'Intermediate' | 'Advanced'
+  duration_min: number
+  enrolled: number
+  progress: number
+  modules: LearningModule[]
 }
 
 export interface AgentProfile {
