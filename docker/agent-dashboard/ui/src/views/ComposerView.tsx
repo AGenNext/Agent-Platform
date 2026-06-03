@@ -81,7 +81,7 @@ export function ComposerView() {
       </div>
 
       {/* Code panel */}
-      <div className="rounded-xl border border-line bg-[#0b0f17] flex flex-col overflow-hidden">
+      <div className="glow-border bg-[#0b0f17] flex flex-col overflow-hidden">
         <div className="px-4 py-2.5 border-b border-line flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs">
             <span className="w-2.5 h-2.5 rounded-full bg-bad/70" />

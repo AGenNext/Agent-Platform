@@ -16,6 +16,7 @@ export const api = {
   listChannels: () => req<Channel[]>('GET', '/channels'),
   listMilestones: () => req<Milestone[]>('GET', '/milestones'),
   agentRoster: () => req<AgentProfile[]>('GET', '/agents/roster'),
+  gatewayRoutes: () => req<ModelRoute[]>('GET', '/model-router/routes'),
   listObjectives: (status?: string) =>
     req<Objective[]>('GET', `/objectives${status ? `?status=${status}` : ''}`),
   createObjective: (payload: { title: string; objective_type: string; payload?: unknown }) =>
@@ -57,6 +58,18 @@ export interface Channel {
   last_message: string
   last_at: string
   active: boolean
+}
+
+export interface ModelRoute {
+  id: string
+  provider: string
+  model: string
+  requests: number
+  cost_usd: number
+  p95_ms: number
+  error_rate: number
+  share: number
+  status: string
 }
 
 export interface AgentProfile {

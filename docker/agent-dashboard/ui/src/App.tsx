@@ -1,16 +1,17 @@
 import { useState } from 'react'
-import { Activity, Bot, Box, Flag, GitBranch, LayoutDashboard, LayoutGrid, MessageSquare, Search, Wand2 } from 'lucide-react'
+import { Activity, Bot, Box, Flag, GitBranch, LayoutDashboard, LayoutGrid, MessageSquare, Radio, Search, Wand2 } from 'lucide-react'
 import { SpacesView } from './views/SpacesView'
 import { ChannelsView } from './views/ChannelsView'
 import { AgentsView } from './views/AgentsView'
 import { ComposerView } from './views/ComposerView'
+import { AiGatewayView } from './views/AiGatewayView'
 import { MilestonesView } from './views/MilestonesView'
 import { HealthView } from './views/HealthView'
 import { ObjectivesView } from './views/ObjectivesView'
 import { ArtifactsView } from './views/ArtifactsView'
 import { TraceView } from './views/TraceView'
 
-type View = 'spaces' | 'chat' | 'agents' | 'composer' | 'milestones' | 'objectives' | 'artifacts' | 'trace' | 'health'
+type View = 'spaces' | 'chat' | 'agents' | 'composer' | 'milestones' | 'objectives' | 'artifacts' | 'trace' | 'gateway' | 'health'
 
 type NavItem = { id: View; label: string; icon: React.ReactNode; hint: string }
 
@@ -34,9 +35,10 @@ const sections: { heading: string; items: NavItem[] }[] = [
     ],
   },
   {
-    heading: 'System',
+    heading: 'Platform',
     items: [
-      { id: 'health', label: 'Health', icon: <Activity size={17} />, hint: 'Platform status & usage' },
+      { id: 'gateway', label: 'AI Gateway', icon: <Radio size={17} />,   hint: 'Model routing, cost & latency' },
+      { id: 'health',  label: 'Health',     icon: <Activity size={17} />, hint: 'Platform status & usage' },
     ],
   },
 ]
@@ -131,6 +133,7 @@ export default function App() {
             {view === 'objectives' && <ObjectivesView />}
             {view === 'artifacts'  && <ArtifactsView />}
             {view === 'trace'      && <TraceView />}
+            {view === 'gateway'    && <AiGatewayView />}
             {view === 'health'     && <HealthView />}
           </div>
         </div>
