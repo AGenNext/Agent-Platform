@@ -40,9 +40,9 @@ DEFINE FIELD status ON workflow TYPE string DEFAULT "draft"
   ASSERT $value IN ["draft", "active", "inactive", "deprecated", "archived"];
 
 DEFINE FIELD version ON workflow TYPE string DEFAULT "0.1.0";
-DEFINE FIELD definition ON workflow TYPE object DEFAULT {};
-DEFINE FIELD input_schema ON workflow TYPE option<object>;
-DEFINE FIELD output_schema ON workflow TYPE option<object>;
+DEFINE FIELD definition ON workflow FLEXIBLE TYPE object DEFAULT {};
+DEFINE FIELD input_schema ON workflow FLEXIBLE TYPE option<object>;
+DEFINE FIELD output_schema ON workflow FLEXIBLE TYPE option<object>;
 DEFINE FIELD policy_refs ON workflow TYPE array<record<governance_object>> DEFAULT [];
 DEFINE FIELD protocol_refs ON workflow TYPE array<string> DEFAULT [];
 DEFINE FIELD tags ON workflow TYPE array<string> DEFAULT [];
@@ -51,7 +51,7 @@ DEFINE FIELD created_at ON workflow TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON workflow TYPE datetime VALUE time::now();
 DEFINE FIELD valid_from ON workflow TYPE datetime DEFAULT time::now();
 DEFINE FIELD valid_to ON workflow TYPE option<datetime>;
-DEFINE FIELD metadata ON workflow TYPE option<object>;
+DEFINE FIELD metadata ON workflow FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX workflow_entity_idx ON workflow FIELDS entity UNIQUE;
 DEFINE INDEX workflow_type_idx ON workflow FIELDS workflow_type;
@@ -97,16 +97,16 @@ DEFINE FIELD step_type ON workflow_step TYPE string
   ];
 
 DEFINE FIELD action ON workflow_step TYPE option<record<action>>;
-DEFINE FIELD task_template ON workflow_step TYPE option<object>;
-DEFINE FIELD condition ON workflow_step TYPE option<object>;
-DEFINE FIELD retry_policy ON workflow_step TYPE option<object>;
-DEFINE FIELD timeout_policy ON workflow_step TYPE option<object>;
+DEFINE FIELD task_template ON workflow_step FLEXIBLE TYPE option<object>;
+DEFINE FIELD condition ON workflow_step FLEXIBLE TYPE option<object>;
+DEFINE FIELD retry_policy ON workflow_step FLEXIBLE TYPE option<object>;
+DEFINE FIELD timeout_policy ON workflow_step FLEXIBLE TYPE option<object>;
 DEFINE FIELD compensation_step ON workflow_step TYPE option<record<workflow_step>>;
 DEFINE FIELD rollback_step ON workflow_step TYPE option<record<workflow_step>>;
 DEFINE FIELD approval_required ON workflow_step TYPE bool DEFAULT false;
 DEFINE FIELD human_required ON workflow_step TYPE bool DEFAULT false;
 DEFINE FIELD risk_level ON workflow_step TYPE string DEFAULT "low" ASSERT $value IN ["low", "medium", "high", "critical"];
-DEFINE FIELD metadata ON workflow_step TYPE option<object>;
+DEFINE FIELD metadata ON workflow_step FLEXIBLE TYPE option<object>;
 DEFINE FIELD created_at ON workflow_step TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON workflow_step TYPE datetime VALUE time::now();
 
@@ -141,10 +141,10 @@ DEFINE FIELD edge_type ON workflow_edge TYPE string DEFAULT "sequence"
     "compensation"
   ];
 
-DEFINE FIELD condition ON workflow_edge TYPE option<object>;
+DEFINE FIELD condition ON workflow_edge FLEXIBLE TYPE option<object>;
 DEFINE FIELD priority ON workflow_edge TYPE int DEFAULT 0;
 DEFINE FIELD created_at ON workflow_edge TYPE datetime DEFAULT time::now();
-DEFINE FIELD metadata ON workflow_edge TYPE option<object>;
+DEFINE FIELD metadata ON workflow_edge FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX workflow_edge_workflow_idx ON workflow_edge FIELDS workflow;
 DEFINE INDEX workflow_edge_type_idx ON workflow_edge FIELDS edge_type;
@@ -174,23 +174,23 @@ DEFINE FIELD status ON workflow_run TYPE string DEFAULT "queued"
     "compensated"
   ];
 
-DEFINE FIELD input ON workflow_run TYPE object DEFAULT {};
-DEFINE FIELD output ON workflow_run TYPE option<object>;
-DEFINE FIELD context ON workflow_run TYPE object DEFAULT {};
+DEFINE FIELD input ON workflow_run FLEXIBLE TYPE object DEFAULT {};
+DEFINE FIELD output ON workflow_run FLEXIBLE TYPE option<object>;
+DEFINE FIELD context ON workflow_run FLEXIBLE TYPE object DEFAULT {};
 DEFINE FIELD current_steps ON workflow_run TYPE array<record<workflow_step>> DEFAULT [];
 DEFINE FIELD completed_steps ON workflow_run TYPE array<record<workflow_step>> DEFAULT [];
 DEFINE FIELD failed_steps ON workflow_run TYPE array<record<workflow_step>> DEFAULT [];
 DEFINE FIELD decisions ON workflow_run TYPE array<record<decision>> DEFAULT [];
 DEFINE FIELD tasks ON workflow_run TYPE array<record<task>> DEFAULT [];
 DEFINE FIELD approvals ON workflow_run TYPE array<record<governance_approval>> DEFAULT [];
-DEFINE FIELD error ON workflow_run TYPE option<object>;
+DEFINE FIELD error ON workflow_run FLEXIBLE TYPE option<object>;
 DEFINE FIELD confidence ON workflow_run TYPE option<number> ASSERT $value = NONE OR ($value >= 0 AND $value <= 1);
 
 DEFINE FIELD started_at ON workflow_run TYPE option<datetime>;
 DEFINE FIELD completed_at ON workflow_run TYPE option<datetime>;
 DEFINE FIELD created_at ON workflow_run TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON workflow_run TYPE datetime VALUE time::now();
-DEFINE FIELD metadata ON workflow_run TYPE option<object>;
+DEFINE FIELD metadata ON workflow_run FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX workflow_run_workflow_idx ON workflow_run FIELDS workflow;
 DEFINE INDEX workflow_run_entity_idx ON workflow_run FIELDS entity UNIQUE;
@@ -232,9 +232,9 @@ DEFINE FIELD event_type ON workflow_run_event TYPE string
 DEFINE FIELD step ON workflow_run_event TYPE option<record<workflow_step>>;
 DEFINE FIELD actor ON workflow_run_event TYPE option<record<identity>>;
 DEFINE FIELD reason ON workflow_run_event TYPE option<string>;
-DEFINE FIELD payload ON workflow_run_event TYPE object DEFAULT {};
+DEFINE FIELD payload ON workflow_run_event FLEXIBLE TYPE object DEFAULT {};
 DEFINE FIELD created_at ON workflow_run_event TYPE datetime DEFAULT time::now();
-DEFINE FIELD metadata ON workflow_run_event TYPE option<object>;
+DEFINE FIELD metadata ON workflow_run_event FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX workflow_run_event_run_idx ON workflow_run_event FIELDS workflow_run;
 DEFINE INDEX workflow_run_event_type_idx ON workflow_run_event FIELDS event_type;

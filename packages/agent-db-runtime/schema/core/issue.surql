@@ -66,9 +66,9 @@ DEFINE FIELD title ON issue TYPE string;
 DEFINE FIELD description ON issue TYPE option<string>;
 DEFINE FIELD severity ON issue TYPE string DEFAULT "medium" ASSERT $value IN ["info", "low", "medium", "high", "critical"];
 DEFINE FIELD priority ON issue TYPE string DEFAULT "medium" ASSERT $value IN ["low", "medium", "high", "critical"];
-DEFINE FIELD impact ON issue TYPE option<object>;
-DEFINE FIELD root_cause ON issue TYPE option<object>;
-DEFINE FIELD evidence ON issue TYPE option<object>;
+DEFINE FIELD impact ON issue FLEXIBLE TYPE option<object>;
+DEFINE FIELD root_cause ON issue FLEXIBLE TYPE option<object>;
+DEFINE FIELD evidence ON issue FLEXIBLE TYPE option<object>;
 DEFINE FIELD policy_evaluations ON issue TYPE array<record<policy_evaluation>> DEFAULT [];
 DEFINE FIELD validation_results ON issue TYPE array<record<validation_result>> DEFAULT [];
 DEFINE FIELD labels ON issue TYPE array<string> DEFAULT [];
@@ -77,7 +77,7 @@ DEFINE FIELD resolved_at ON issue TYPE option<datetime>;
 DEFINE FIELD closed_at ON issue TYPE option<datetime>;
 DEFINE FIELD created_at ON issue TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON issue TYPE datetime VALUE time::now();
-DEFINE FIELD metadata ON issue TYPE option<object>;
+DEFINE FIELD metadata ON issue FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX issue_entity_idx ON issue FIELDS entity UNIQUE;
 DEFINE INDEX issue_type_idx ON issue FIELDS issue_type;
@@ -116,12 +116,12 @@ DEFINE FIELD status ON operational_claim TYPE string DEFAULT "claimed"
   ASSERT $value IN ["draft", "claimed", "verified", "rejected", "disputed", "superseded", "archived"];
 
 DEFINE FIELD statement ON operational_claim TYPE string;
-DEFINE FIELD evidence ON operational_claim TYPE option<object>;
-DEFINE FIELD verification_result ON operational_claim TYPE option<object>;
+DEFINE FIELD evidence ON operational_claim FLEXIBLE TYPE option<object>;
+DEFINE FIELD verification_result ON operational_claim FLEXIBLE TYPE option<object>;
 DEFINE FIELD confidence ON operational_claim TYPE option<number> ASSERT $value = NONE OR ($value >= 0 AND $value <= 1);
 DEFINE FIELD created_at ON operational_claim TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON operational_claim TYPE datetime VALUE time::now();
-DEFINE FIELD metadata ON operational_claim TYPE option<object>;
+DEFINE FIELD metadata ON operational_claim FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX operational_claim_entity_idx ON operational_claim FIELDS entity UNIQUE;
 DEFINE INDEX operational_claim_issue_idx ON operational_claim FIELDS issue;
@@ -163,14 +163,14 @@ DEFINE FIELD status ON resolution TYPE string DEFAULT "proposed"
 DEFINE FIELD summary ON resolution TYPE string;
 DEFINE FIELD actions ON resolution TYPE array<object> DEFAULT [];
 DEFINE FIELD linked_tasks ON resolution TYPE array<record<task>> DEFAULT [];
-DEFINE FIELD evidence ON resolution TYPE option<object>;
-DEFINE FIELD verification_result ON resolution TYPE option<object>;
+DEFINE FIELD evidence ON resolution FLEXIBLE TYPE option<object>;
+DEFINE FIELD verification_result ON resolution FLEXIBLE TYPE option<object>;
 DEFINE FIELD due_at ON resolution TYPE option<datetime>;
 DEFINE FIELD implemented_at ON resolution TYPE option<datetime>;
 DEFINE FIELD verified_at ON resolution TYPE option<datetime>;
 DEFINE FIELD created_at ON resolution TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON resolution TYPE datetime VALUE time::now();
-DEFINE FIELD metadata ON resolution TYPE option<object>;
+DEFINE FIELD metadata ON resolution FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX resolution_entity_idx ON resolution FIELDS entity UNIQUE;
 DEFINE INDEX resolution_issue_idx ON resolution FIELDS issue;
@@ -205,9 +205,9 @@ DEFINE FIELD actor ON issue_event TYPE option<record<identity>>;
 DEFINE FIELD from_status ON issue_event TYPE option<string>;
 DEFINE FIELD to_status ON issue_event TYPE option<string>;
 DEFINE FIELD reason ON issue_event TYPE option<string>;
-DEFINE FIELD payload ON issue_event TYPE object DEFAULT {};
+DEFINE FIELD payload ON issue_event FLEXIBLE TYPE object DEFAULT {};
 DEFINE FIELD created_at ON issue_event TYPE datetime DEFAULT time::now();
-DEFINE FIELD metadata ON issue_event TYPE option<object>;
+DEFINE FIELD metadata ON issue_event FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX issue_event_issue_idx ON issue_event FIELDS issue;
 DEFINE INDEX issue_event_type_idx ON issue_event FIELDS event_type;

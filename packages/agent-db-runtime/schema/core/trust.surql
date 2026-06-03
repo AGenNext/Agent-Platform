@@ -47,16 +47,16 @@ DEFINE FIELD risk_level ON trust_assessment TYPE string DEFAULT "medium" ASSERT 
 
 DEFINE FIELD claims ON trust_assessment TYPE array<object> DEFAULT [];
 DEFINE FIELD attestations ON trust_assessment TYPE array<object> DEFAULT [];
-DEFINE FIELD evidence ON trust_assessment TYPE option<object>;
-DEFINE FIELD verification_result ON trust_assessment TYPE option<object>;
+DEFINE FIELD evidence ON trust_assessment FLEXIBLE TYPE option<object>;
+DEFINE FIELD verification_result ON trust_assessment FLEXIBLE TYPE option<object>;
 DEFINE FIELD reason ON trust_assessment TYPE option<string>;
-DEFINE FIELD scope ON trust_assessment TYPE object DEFAULT {};
+DEFINE FIELD scope ON trust_assessment FLEXIBLE TYPE object DEFAULT {};
 
 DEFINE FIELD valid_from ON trust_assessment TYPE datetime DEFAULT time::now();
 DEFINE FIELD valid_to ON trust_assessment TYPE option<datetime>;
 DEFINE FIELD created_at ON trust_assessment TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON trust_assessment TYPE datetime VALUE time::now();
-DEFINE FIELD metadata ON trust_assessment TYPE option<object>;
+DEFINE FIELD metadata ON trust_assessment FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX trust_entity_idx ON trust_assessment FIELDS entity UNIQUE;
 DEFINE INDEX trust_subject_idx ON trust_assessment FIELDS subject;
@@ -91,9 +91,9 @@ DEFINE FIELD actor ON trust_event TYPE option<record<identity>>;
 DEFINE FIELD previous_score ON trust_event TYPE option<number>;
 DEFINE FIELD new_score ON trust_event TYPE option<number>;
 DEFINE FIELD reason ON trust_event TYPE option<string>;
-DEFINE FIELD evidence ON trust_event TYPE option<object>;
+DEFINE FIELD evidence ON trust_event FLEXIBLE TYPE option<object>;
 DEFINE FIELD created_at ON trust_event TYPE datetime DEFAULT time::now();
-DEFINE FIELD metadata ON trust_event TYPE option<object>;
+DEFINE FIELD metadata ON trust_event FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX trust_event_assessment_idx ON trust_event FIELDS trust_assessment;
 DEFINE INDEX trust_event_type_idx ON trust_event FIELDS event_type;

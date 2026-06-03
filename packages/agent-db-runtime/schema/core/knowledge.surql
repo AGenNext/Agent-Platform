@@ -53,15 +53,15 @@ DEFINE FIELD status ON knowledge_item TYPE string DEFAULT "draft"
 
 DEFINE FIELD title ON knowledge_item TYPE string;
 DEFINE FIELD summary ON knowledge_item TYPE option<string>;
-DEFINE FIELD content ON knowledge_item TYPE object DEFAULT {};
+DEFINE FIELD content ON knowledge_item FLEXIBLE TYPE object DEFAULT {};
 DEFINE FIELD statement ON knowledge_item TYPE option<string>;
 DEFINE FIELD language ON knowledge_item TYPE string DEFAULT "en";
 
 DEFINE FIELD source_refs ON knowledge_item TYPE array<string> DEFAULT [];
 DEFINE FIELD citations ON knowledge_item TYPE array<object> DEFAULT [];
-DEFINE FIELD evidence ON knowledge_item TYPE option<object>;
-DEFINE FIELD provenance ON knowledge_item TYPE option<object>;
-DEFINE FIELD verification_result ON knowledge_item TYPE option<object>;
+DEFINE FIELD evidence ON knowledge_item FLEXIBLE TYPE option<object>;
+DEFINE FIELD provenance ON knowledge_item FLEXIBLE TYPE option<object>;
+DEFINE FIELD verification_result ON knowledge_item FLEXIBLE TYPE option<object>;
 
 DEFINE FIELD confidence ON knowledge_item TYPE option<number> ASSERT $value = NONE OR ($value >= 0 AND $value <= 1);
 DEFINE FIELD trust_assessment ON knowledge_item TYPE option<record<trust_assessment>>;
@@ -74,7 +74,7 @@ DEFINE FIELD valid_from ON knowledge_item TYPE datetime DEFAULT time::now();
 DEFINE FIELD valid_to ON knowledge_item TYPE option<datetime>;
 DEFINE FIELD created_at ON knowledge_item TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON knowledge_item TYPE datetime VALUE time::now();
-DEFINE FIELD metadata ON knowledge_item TYPE option<object>;
+DEFINE FIELD metadata ON knowledge_item FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX knowledge_entity_idx ON knowledge_item FIELDS entity UNIQUE;
 DEFINE INDEX knowledge_owner_idx ON knowledge_item FIELDS owner;
@@ -109,9 +109,9 @@ DEFINE FIELD relation_type ON knowledge_relation TYPE string
   ];
 
 DEFINE FIELD confidence ON knowledge_relation TYPE option<number> ASSERT $value = NONE OR ($value >= 0 AND $value <= 1);
-DEFINE FIELD evidence ON knowledge_relation TYPE option<object>;
+DEFINE FIELD evidence ON knowledge_relation FLEXIBLE TYPE option<object>;
 DEFINE FIELD created_at ON knowledge_relation TYPE datetime DEFAULT time::now();
-DEFINE FIELD metadata ON knowledge_relation TYPE option<object>;
+DEFINE FIELD metadata ON knowledge_relation FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX knowledge_relation_type_idx ON knowledge_relation FIELDS relation_type;
 
@@ -140,9 +140,9 @@ DEFINE FIELD event_type ON knowledge_event TYPE string
 
 DEFINE FIELD actor ON knowledge_event TYPE option<record<identity>>;
 DEFINE FIELD reason ON knowledge_event TYPE option<string>;
-DEFINE FIELD payload ON knowledge_event TYPE object DEFAULT {};
+DEFINE FIELD payload ON knowledge_event FLEXIBLE TYPE object DEFAULT {};
 DEFINE FIELD created_at ON knowledge_event TYPE datetime DEFAULT time::now();
-DEFINE FIELD metadata ON knowledge_event TYPE option<object>;
+DEFINE FIELD metadata ON knowledge_event FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX knowledge_event_item_idx ON knowledge_event FIELDS knowledge_item;
 DEFINE INDEX knowledge_event_type_idx ON knowledge_event FIELDS event_type;

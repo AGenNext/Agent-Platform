@@ -52,18 +52,18 @@ DEFINE FIELD assurance_level ON identity TYPE string DEFAULT "low"
 DEFINE FIELD verified ON identity TYPE bool DEFAULT false;
 DEFINE FIELD verified_at ON identity TYPE option<datetime>;
 DEFINE FIELD verification_method ON identity TYPE option<string>;
-DEFINE FIELD verification_evidence ON identity TYPE option<object>;
+DEFINE FIELD verification_evidence ON identity FLEXIBLE TYPE option<object>;
 
 DEFINE FIELD did ON identity TYPE option<string>;
 DEFINE FIELD public_keys ON identity TYPE array<object> DEFAULT [];
-DEFINE FIELD claims ON identity TYPE object DEFAULT {};
-DEFINE FIELD attributes ON identity TYPE object DEFAULT {};
+DEFINE FIELD claims ON identity FLEXIBLE TYPE object DEFAULT {};
+DEFINE FIELD attributes ON identity FLEXIBLE TYPE object DEFAULT {};
 
 DEFINE FIELD created_at ON identity TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON identity TYPE datetime VALUE time::now();
 DEFINE FIELD valid_from ON identity TYPE datetime DEFAULT time::now();
 DEFINE FIELD valid_to ON identity TYPE option<datetime>;
-DEFINE FIELD metadata ON identity TYPE option<object>;
+DEFINE FIELD metadata ON identity FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX identity_subject_idx ON identity FIELDS subject UNIQUE;
 DEFINE INDEX identity_type_idx ON identity FIELDS identity_type;
@@ -100,19 +100,19 @@ DEFINE FIELD issuer ON credential TYPE option<string>;
 DEFINE FIELD subject ON credential TYPE string;
 DEFINE FIELD audience ON credential TYPE array<string> DEFAULT [];
 DEFINE FIELD scopes ON credential TYPE array<string> DEFAULT [];
-DEFINE FIELD claims ON credential TYPE object DEFAULT {};
+DEFINE FIELD claims ON credential FLEXIBLE TYPE object DEFAULT {};
 
 -- Never store raw secrets here. Store only references to a vault/secret manager.
 DEFINE FIELD secret_ref ON credential TYPE option<string>;
 DEFINE FIELD fingerprint ON credential TYPE option<string>;
-DEFINE FIELD proof ON credential TYPE option<object>;
+DEFINE FIELD proof ON credential FLEXIBLE TYPE option<object>;
 
 DEFINE FIELD issued_at ON credential TYPE datetime DEFAULT time::now();
 DEFINE FIELD expires_at ON credential TYPE option<datetime>;
 DEFINE FIELD revoked_at ON credential TYPE option<datetime>;
 DEFINE FIELD created_at ON credential TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON credential TYPE datetime VALUE time::now();
-DEFINE FIELD metadata ON credential TYPE option<object>;
+DEFINE FIELD metadata ON credential FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX credential_identity_idx ON credential FIELDS identity;
 DEFINE INDEX credential_subject_idx ON credential FIELDS subject;
@@ -145,13 +145,13 @@ DEFINE FIELD relation ON auth_binding TYPE string
   ];
 
 DEFINE FIELD object ON auth_binding TYPE record<entity>;
-DEFINE FIELD condition ON auth_binding TYPE option<object>;
+DEFINE FIELD condition ON auth_binding FLEXIBLE TYPE option<object>;
 DEFINE FIELD source ON auth_binding TYPE option<string>;
 DEFINE FIELD valid_from ON auth_binding TYPE datetime DEFAULT time::now();
 DEFINE FIELD valid_to ON auth_binding TYPE option<datetime>;
 DEFINE FIELD created_at ON auth_binding TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON auth_binding TYPE datetime VALUE time::now();
-DEFINE FIELD metadata ON auth_binding TYPE option<object>;
+DEFINE FIELD metadata ON auth_binding FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX auth_binding_subject_idx ON auth_binding FIELDS subject;
 DEFINE INDEX auth_binding_object_idx ON auth_binding FIELDS object;
@@ -169,11 +169,11 @@ DEFINE FIELD status ON identity_verification TYPE string
 
 DEFINE FIELD method ON identity_verification TYPE string;
 DEFINE FIELD verifier ON identity_verification TYPE option<string>;
-DEFINE FIELD evidence ON identity_verification TYPE option<object>;
+DEFINE FIELD evidence ON identity_verification FLEXIBLE TYPE option<object>;
 DEFINE FIELD claims_checked ON identity_verification TYPE array<string> DEFAULT [];
-DEFINE FIELD result ON identity_verification TYPE object DEFAULT {};
+DEFINE FIELD result ON identity_verification FLEXIBLE TYPE object DEFAULT {};
 DEFINE FIELD created_at ON identity_verification TYPE datetime DEFAULT time::now();
-DEFINE FIELD metadata ON identity_verification TYPE option<object>;
+DEFINE FIELD metadata ON identity_verification FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX identity_verification_identity_idx ON identity_verification FIELDS identity;
 DEFINE INDEX identity_verification_status_idx ON identity_verification FIELDS status;

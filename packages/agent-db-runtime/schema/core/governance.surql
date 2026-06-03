@@ -46,7 +46,7 @@ DEFINE FIELD priority ON governance_object TYPE option<string>
 DEFINE FIELD applies_to_entity_types ON governance_object TYPE array<string> DEFAULT [];
 DEFINE FIELD applies_to_actions ON governance_object TYPE array<string> DEFAULT [];
 DEFINE FIELD applies_to_environments ON governance_object TYPE array<string> DEFAULT [];
-DEFINE FIELD rule ON governance_object TYPE option<object>;
+DEFINE FIELD rule ON governance_object FLEXIBLE TYPE option<object>;
 DEFINE FIELD expression_language ON governance_object TYPE option<string>
   ASSERT $value = NONE OR $value IN ["surrealql", "rego", "cel", "jsonlogic", "authzen", "openfga", "natural_language"];
 
@@ -56,7 +56,7 @@ DEFINE FIELD created_at ON governance_object TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON governance_object TYPE datetime VALUE time::now();
 DEFINE FIELD valid_from ON governance_object TYPE datetime DEFAULT time::now();
 DEFINE FIELD valid_to ON governance_object TYPE option<datetime>;
-DEFINE FIELD metadata ON governance_object TYPE option<object>;
+DEFINE FIELD metadata ON governance_object FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX governance_entity_idx ON governance_object FIELDS entity UNIQUE;
 DEFINE INDEX governance_type_idx ON governance_object FIELDS governance_type;
@@ -73,7 +73,7 @@ DEFINE FIELD governance_object ON policy_evaluation TYPE record<governance_objec
 DEFINE FIELD subject ON policy_evaluation TYPE option<record<identity>>;
 DEFINE FIELD action ON policy_evaluation TYPE option<string>;
 DEFINE FIELD resource ON policy_evaluation TYPE option<record<entity>>;
-DEFINE FIELD environment ON policy_evaluation TYPE option<object>;
+DEFINE FIELD environment ON policy_evaluation FLEXIBLE TYPE option<object>;
 
 DEFINE FIELD decision ON policy_evaluation TYPE string
   ASSERT $value IN ["allow", "deny", "abstain", "needs_approval", "needs_more_context"];
@@ -84,12 +84,12 @@ DEFINE FIELD confidence ON policy_evaluation TYPE option<number>
 DEFINE FIELD reason ON policy_evaluation TYPE option<string>;
 DEFINE FIELD obligations ON policy_evaluation TYPE array<object> DEFAULT [];
 DEFINE FIELD advice ON policy_evaluation TYPE array<object> DEFAULT [];
-DEFINE FIELD evidence ON policy_evaluation TYPE option<object>;
+DEFINE FIELD evidence ON policy_evaluation FLEXIBLE TYPE option<object>;
 DEFINE FIELD engine ON policy_evaluation TYPE option<string>
   ASSERT $value = NONE OR $value IN ["surrealdb", "opa", "openfga", "authzen", "manual", "external"];
 
 DEFINE FIELD created_at ON policy_evaluation TYPE datetime DEFAULT time::now();
-DEFINE FIELD metadata ON policy_evaluation TYPE option<object>;
+DEFINE FIELD metadata ON policy_evaluation FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX policy_eval_governance_idx ON policy_evaluation FIELDS governance_object;
 DEFINE INDEX policy_eval_subject_idx ON policy_evaluation FIELDS subject;
@@ -116,7 +116,7 @@ DEFINE FIELD expires_at ON governance_approval TYPE option<datetime>;
 DEFINE FIELD decided_at ON governance_approval TYPE option<datetime>;
 DEFINE FIELD created_at ON governance_approval TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON governance_approval TYPE datetime VALUE time::now();
-DEFINE FIELD metadata ON governance_approval TYPE option<object>;
+DEFINE FIELD metadata ON governance_approval FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX governance_approval_status_idx ON governance_approval FIELDS status;
 DEFINE INDEX governance_approval_resource_idx ON governance_approval FIELDS resource;

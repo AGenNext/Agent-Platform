@@ -60,8 +60,8 @@ DEFINE FIELD description ON action TYPE option<string>;
 DEFINE FIELD status ON action TYPE string DEFAULT "draft"
   ASSERT $value IN ["draft", "active", "inactive", "deprecated", "archived"];
 
-DEFINE FIELD input_schema ON action TYPE option<object>;
-DEFINE FIELD output_schema ON action TYPE option<object>;
+DEFINE FIELD input_schema ON action FLEXIBLE TYPE option<object>;
+DEFINE FIELD output_schema ON action FLEXIBLE TYPE option<object>;
 DEFINE FIELD preconditions ON action TYPE array<object> DEFAULT [];
 DEFINE FIELD postconditions ON action TYPE array<object> DEFAULT [];
 DEFINE FIELD invariants ON action TYPE array<object> DEFAULT [];
@@ -84,7 +84,7 @@ DEFINE FIELD created_at ON action TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON action TYPE datetime VALUE time::now();
 DEFINE FIELD valid_from ON action TYPE datetime DEFAULT time::now();
 DEFINE FIELD valid_to ON action TYPE option<datetime>;
-DEFINE FIELD metadata ON action TYPE option<object>;
+DEFINE FIELD metadata ON action FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX action_entity_idx ON action FIELDS entity UNIQUE;
 DEFINE INDEX action_type_idx ON action FIELDS action_type;
@@ -114,22 +114,22 @@ DEFINE FIELD status ON action_invocation TYPE string DEFAULT "requested"
     "needs_more_context"
   ];
 
-DEFINE FIELD input ON action_invocation TYPE object DEFAULT {};
-DEFINE FIELD output ON action_invocation TYPE option<object>;
+DEFINE FIELD input ON action_invocation FLEXIBLE TYPE object DEFAULT {};
+DEFINE FIELD output ON action_invocation FLEXIBLE TYPE option<object>;
 DEFINE FIELD error ON action_invocation TYPE option<string>;
 DEFINE FIELD confidence ON action_invocation TYPE option<number>
   ASSERT $value = NONE OR ($value >= 0 AND $value <= 1);
 
 DEFINE FIELD policy_evaluations ON action_invocation TYPE array<record<policy_evaluation>> DEFAULT [];
 DEFINE FIELD approval ON action_invocation TYPE option<record<governance_approval>>;
-DEFINE FIELD evidence ON action_invocation TYPE option<object>;
-DEFINE FIELD trace ON action_invocation TYPE option<object>;
+DEFINE FIELD evidence ON action_invocation FLEXIBLE TYPE option<object>;
+DEFINE FIELD trace ON action_invocation FLEXIBLE TYPE option<object>;
 
 DEFINE FIELD requested_at ON action_invocation TYPE datetime DEFAULT time::now();
 DEFINE FIELD started_at ON action_invocation TYPE option<datetime>;
 DEFINE FIELD completed_at ON action_invocation TYPE option<datetime>;
 DEFINE FIELD updated_at ON action_invocation TYPE datetime VALUE time::now();
-DEFINE FIELD metadata ON action_invocation TYPE option<object>;
+DEFINE FIELD metadata ON action_invocation FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX action_invocation_action_idx ON action_invocation FIELDS action;
 DEFINE INDEX action_invocation_subject_idx ON action_invocation FIELDS subject;

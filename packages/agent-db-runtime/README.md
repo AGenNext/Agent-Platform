@@ -4,7 +4,7 @@ The Agent DB Runtime is the SurrealDB-backed operational kernel for AGenNext.
 
 > **Status: committed but untested.**
 >
-> The schema files, loader script, static validator, Podman compose file, Makefile, and CI gates are committed. They have **not yet been successfully applied to a live SurrealDB server**. Treat this package as schema-first draft infrastructure until `make apply` and the `Agent DB Runtime Gates` workflow pass against the pinned SurrealDB version.
+> The schema files, SurrealQL seed/smoke scripts, Podman compose file, Makefile, and CI gates are committed and verified against SurrealDB `v2.3.10` via the `surreal` CLI. This package is SurrealDB-first: the only runtime tool is the SurrealDB CLI — there is no Node/npm/TypeScript tooling.
 
 It treats the database as a governed state machine for agents, humans, tools, workflows, decisions, policies, trust, memory, knowledge, commerce, and collaboration.
 
@@ -80,10 +80,10 @@ Current validation status:
 
 ```txt
 Committed to repository: yes
-Static validation script added: yes
+SurrealQL seed + smoke scripts added: yes
 Podman SurrealDB runtime added: yes
 CI deployment gates added: yes
-Live SurrealDB apply tested: no
+Live SurrealDB apply tested: yes (surreal v2.3.10)
 Known-good production status: no
 Deployment-ready: no
 ```
@@ -92,10 +92,10 @@ Required local proof command:
 
 ```bash
 cd packages/agent-db-runtime
-make install
 make up
-make validate
 make apply
+make seed
+make smoke
 ```
 
 The package should not be considered runtime-ready until `make apply` succeeds against the pinned SurrealDB server version.
@@ -105,33 +105,43 @@ The package should not be considered runtime-ready until `make apply` succeeds a
 Deployment is blocked unless all of the following pass:
 
 ```txt
-Gate 1: npm ci succeeds
-Gate 2: TypeScript typecheck succeeds
-Gate 3: Static schema validation succeeds
-Gate 4: Pinned SurrealDB server starts successfully
-Gate 5: Schema apply succeeds against live SurrealDB
-Gate 6: Seed script exists and succeeds
-Gate 7: Smoke queries pass
-Gate 8: Backup/restore path is documented and tested
+Gate 1: SurrealDB CLI (surreal v2.3.10) installs successfully
+Gate 2: Pinned SurrealDB server starts successfully
+Gate 3: Core schema applies against live SurrealDB (load order)
+Gate 4: Seed bootstrap records apply successfully
+Gate 5: Smoke assertions pass (THROW on missing records)
+Gate 6: Regression tests pass (THROW on regressions)
+Gate 7: Value-loop slice applies and asserts records
+Gate 8: Backup + disaster-recovery restore verified
+Gate 9: File-backed persistence survives a restart
+Gate 10: Upgrade/migration path is documented and tested
 ```
 
 Current implemented gates:
 
 ```txt
-✓ npm ci
-✓ npm run typecheck
-✓ npm run db:validate
-✓ Start surrealdb/surrealdb:v2.3.10 in CI
-✓ npm run db:apply
+✓ Install surreal v2.3.10 CLI in CI
+✓ Start surreal in-memory server in CI
+✓ surreal import core schema (schema/load-order.txt)
+✓ surreal import schema/seed.surql
+✓ surreal import tests/smoke.surql (asserts via THROW)
+✓ surreal import tests/regression.surql (asserts via THROW)
+✓ surreal import value-loop slice + tests/value-loop-asserts.surql
+✓ Backup (surreal export) + restore (schema-from-repo + data) verified
+✓ File-backed (rocksdb) persistence verified across a restart
 ```
 
 Current missing gates:
 
 ```txt
-✗ seed.ts implementation
-✗ smoke query test
-✗ backup/restore test
-✗ upgrade/migration test
+✗ upgrade/migration test (schema change over existing seeded data)
+```
+
+Backup and restore locally:
+
+```bash
+make backup                          # surreal export -> backups/agent-runtime-backup.surql
+SURREAL_DB=agent_runtime_dr make restore-check   # schema from repo + data from backup, then verify
 ```
 
 The GitHub Actions workflow is:
@@ -140,7 +150,7 @@ The GitHub Actions workflow is:
 .github/workflows/agent-db-runtime-gates.yml
 ```
 
-A green static validator alone is **not** deployment readiness. The live SurrealDB apply gate must also pass.
+A green parse alone is **not** deployment readiness. The live SurrealDB apply, seed, and smoke gates must also pass.
 
 ## Layered Architecture
 
@@ -259,18 +269,23 @@ Current package state.
 Current implementation phase.
 
 ```txt
-scripts/
-├── apply-schema.ts
-├── validate-schema.ts
-└── seed.ts (declared but not yet implemented)
+schema/
+├── load-order.txt        (core schema apply order)
+├── seed.surql            (bootstrap records)
+└── design/               (value-loop design slice)
+tests/
+├── smoke.surql           (core bootstrap assertions)
+├── value-loop-smoke.surql
+└── value-loop-asserts.surql
 ```
 
-Expected commands:
+Expected commands (SurrealDB CLI via make):
 
 ```bash
-npm run db:validate
-npm run db:apply
-npm run db:seed
+make apply        # surreal import core schema in load order
+make seed         # surreal import schema/seed.surql
+make smoke        # surreal import tests/smoke.surql
+make value-loop   # apply + assert the value-loop slice
 ```
 
 ### Phase 3 — Kernel APIs

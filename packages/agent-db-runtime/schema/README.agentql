@@ -1,0 +1,18 @@
+namespace agennext.platform.agent_db_runtime.schema.readme
+
+vocabulary agent_db_runtime_schema_readme {
+  term canonical_schema means "This directory defines the canonical SurrealDB schema for the AGenNext agent runtime kernel" maps to runtime.schema.canonical
+  term one_concept_one_owner means "One concept maps to one owner file with many references" maps to runtime.schema.ownership
+  term ownership_boundaries means "Each domain concept has a single owning schema file to prevent duplicate concepts across files" maps to runtime.schema.boundaries
+  term intentional_overlap means "Some concepts intentionally appear in multiple layers with different meanings, such as verification, claim, and authorization" maps to runtime.schema.intentional_overlap
+  term addition_checklist means "Before adding a new schema file or table, confirm ownership, modeling shape, provenance needs, overlaps, discoverability, and policy needs" maps to runtime.schema.addition_checklist
+}
+
+constitution AgentDbRuntimeSchemaReadme {
+  rule one_concept_one_owner: "Do not add a new schema file for a concept already owned by an existing file unless that file is intentionally refactored."
+  rule documented_ownership: "Every domain concept has a single documented owner file in core/."
+  rule intentional_overlap_is_documented: "Concepts that recur across layers, such as verification, claim, and authorization, must document their distinct meaning per layer."
+  rule check_before_adding: "Before adding a schema file or table, verify existing ownership, modeling shape, provenance, overlap, discoverability, and policy or approval needs."
+  rule load_order_authority: "Schema application order is governed by load-order.md."
+  rule same_language_hallucination_control: "When an agent reads and presents in the same language, hallucination risk is minimized."
+}

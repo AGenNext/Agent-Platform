@@ -1,35 +1,47 @@
 -- Agent DB Runtime Value Loop Smoke Test
--- Status: design smoke script. Requires schema/design/value-loop-phase1.surql to be applied.
+-- Status: design smoke script. Requires schema/design/runtime-meta-model.surql
+-- and schema/design/value-loop-phase1.surql to be applied first.
 -- Purpose: prove Task -> Output -> Outcome -> ValueRealization -> Learning -> Improvement can be created and queried.
+--
+-- Note: SurrealDB CREATE returns an array of created records, so each statement
+-- is wrapped in (...)[0] to bind a single record. The schema fields below expect
+-- single record links (e.g. record<identity>, record<project>), not arrays.
 
 BEGIN TRANSACTION;
 
-LET $identity = CREATE identity CONTENT {
-  identity_type: 'human',
-  display_name: 'Value Loop Smoke Tester',
+LET $entity = (CREATE entity CONTENT {
+  entity_type: 'human',
+  name: 'Value Loop Smoke Tester',
   status: 'active'
-};
+})[0];
 
-LET $org = CREATE organization CONTENT {
+LET $identity = (CREATE identity CONTENT {
+  entity: $entity.id,
+  identity_type: 'human',
+  subject: 'smoke:value-loop-tester',
+  display_name: 'Value Loop Smoke Tester'
+})[0];
+
+LET $org = (CREATE organization CONTENT {
   name: 'AGenNext Runtime Validation',
   industry: 'software',
   status: 'active'
-};
+})[0];
 
-LET $project = CREATE project CONTENT {
+LET $project = (CREATE project CONTENT {
   name: 'Value Loop Smoke Project',
   scope: 'Validate value loop phase 1 design schema',
   owner: $identity.id,
   status: 'active'
-};
+})[0];
 
-LET $milestone = CREATE milestone CONTENT {
+LET $milestone = (CREATE milestone CONTENT {
   project: $project.id,
   name: 'Phase 1 smoke milestone',
   status: 'active'
-};
+})[0];
 
-LET $task = CREATE task CONTENT {
+LET $task = (CREATE task CONTENT {
   project: $project.id,
   milestone: $milestone.id,
   title: 'Create value loop validation output',
@@ -37,15 +49,15 @@ LET $task = CREATE task CONTENT {
   progress: 1,
   owner: $identity.id,
   assignee: $identity.id
-};
+})[0];
 
-LET $evidence = CREATE evidence CONTENT {
+LET $evidence = (CREATE evidence CONTENT {
   evidence_type: 'validation_report',
   source: 'tests/value-loop-smoke.surql',
   created_at: time::now()
-};
+})[0];
 
-LET $output = CREATE output CONTENT {
+LET $output = (CREATE output CONTENT {
   task: $task.id,
   project: $project.id,
   milestone: $milestone.id,
@@ -55,9 +67,9 @@ LET $output = CREATE output CONTENT {
   status: 'active',
   evidence: [$evidence.id],
   created_by: $identity.id
-};
+})[0];
 
-LET $outcome = CREATE outcome CONTENT {
+LET $outcome = (CREATE outcome CONTENT {
   output: $output.id,
   task: $task.id,
   project: $project.id,
@@ -66,9 +78,9 @@ LET $outcome = CREATE outcome CONTENT {
   outcome_type: 'achieved',
   evidence: [$evidence.id],
   observed_by: $identity.id
-};
+})[0];
 
-LET $value = CREATE value_realization CONTENT {
+LET $value = (CREATE value_realization CONTENT {
   outcome: $outcome.id,
   project: $project.id,
   value_type: 'operational',
@@ -83,9 +95,9 @@ LET $value = CREATE value_realization CONTENT {
   evidence: [$evidence.id],
   measured_at: time::now(),
   measured_by: $identity.id
-};
+})[0];
 
-LET $learning = CREATE learning CONTENT {
+LET $learning = (CREATE learning CONTENT {
   value_realization: $value.id,
   outcome: $outcome.id,
   task: $task.id,
@@ -96,9 +108,9 @@ LET $learning = CREATE learning CONTENT {
   evidence: [$evidence.id],
   confidence: 0.8,
   recorded_by: $identity.id
-};
+})[0];
 
-LET $improvement = CREATE improvement CONTENT {
+LET $improvement = (CREATE improvement CONTENT {
   learning: $learning.id,
   project: $project.id,
   task: $task.id,
@@ -110,7 +122,7 @@ LET $improvement = CREATE improvement CONTENT {
   target_object_id: 'make check',
   owner: $identity.id,
   evidence: [$evidence.id]
-};
+})[0];
 
 RETURN {
   identity: $identity.id,

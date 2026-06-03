@@ -43,13 +43,13 @@ DEFINE FIELD decision_type ON decision TYPE string
 
 DEFINE FIELD title ON decision TYPE string;
 DEFINE FIELD question ON decision TYPE option<string>;
-DEFINE FIELD context ON decision TYPE object DEFAULT {};
+DEFINE FIELD context ON decision FLEXIBLE TYPE object DEFAULT {};
 DEFINE FIELD intent ON decision TYPE option<string>;
 DEFINE FIELD constraints ON decision TYPE array<object> DEFAULT [];
 DEFINE FIELD objectives ON decision TYPE array<object> DEFAULT [];
 DEFINE FIELD options ON decision TYPE array<object> DEFAULT [];
 DEFINE FIELD tradeoffs ON decision TYPE array<object> DEFAULT [];
-DEFINE FIELD selected_option ON decision TYPE option<object>;
+DEFINE FIELD selected_option ON decision FLEXIBLE TYPE option<object>;
 DEFINE FIELD rejected_options ON decision TYPE array<object> DEFAULT [];
 
 DEFINE FIELD status ON decision TYPE string DEFAULT "proposed"
@@ -64,9 +64,9 @@ DEFINE FIELD status ON decision TYPE string DEFAULT "proposed"
     "archived"
   ];
 
-DEFINE FIELD outcome ON decision TYPE option<object>;
+DEFINE FIELD outcome ON decision FLEXIBLE TYPE option<object>;
 DEFINE FIELD reason_summary ON decision TYPE string;
-DEFINE FIELD evidence ON decision TYPE option<object>;
+DEFINE FIELD evidence ON decision FLEXIBLE TYPE option<object>;
 DEFINE FIELD policy_evaluations ON decision TYPE array<record<policy_evaluation>> DEFAULT [];
 DEFINE FIELD approval ON decision TYPE option<record<governance_approval>>;
 
@@ -83,7 +83,7 @@ DEFINE FIELD decided_by ON decision TYPE option<record<identity>>;
 DEFINE FIELD decided_at ON decision TYPE datetime DEFAULT time::now();
 DEFINE FIELD created_at ON decision TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON decision TYPE datetime VALUE time::now();
-DEFINE FIELD metadata ON decision TYPE option<object>;
+DEFINE FIELD metadata ON decision FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX decision_entity_idx ON decision FIELDS entity UNIQUE;
 DEFINE INDEX decision_task_idx ON decision FIELDS task;
@@ -119,9 +119,9 @@ DEFINE FIELD actor ON decision_event TYPE option<record<identity>>;
 DEFINE FIELD from_status ON decision_event TYPE option<string>;
 DEFINE FIELD to_status ON decision_event TYPE option<string>;
 DEFINE FIELD reason ON decision_event TYPE option<string>;
-DEFINE FIELD payload ON decision_event TYPE object DEFAULT {};
+DEFINE FIELD payload ON decision_event FLEXIBLE TYPE object DEFAULT {};
 DEFINE FIELD created_at ON decision_event TYPE datetime DEFAULT time::now();
-DEFINE FIELD metadata ON decision_event TYPE option<object>;
+DEFINE FIELD metadata ON decision_event FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX decision_event_decision_idx ON decision_event FIELDS decision;
 DEFINE INDEX decision_event_type_idx ON decision_event FIELDS event_type;

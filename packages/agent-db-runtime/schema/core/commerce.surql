@@ -35,7 +35,7 @@ DEFINE FIELD status ON commerce_account TYPE string DEFAULT "active"
 DEFINE FIELD currency ON commerce_account TYPE string DEFAULT "USD";
 DEFINE FIELD balance_ref ON commerce_account TYPE option<string>;
 DEFINE FIELD provider_ref ON commerce_account TYPE option<string>;
-DEFINE FIELD metadata ON commerce_account TYPE option<object>;
+DEFINE FIELD metadata ON commerce_account FLEXIBLE TYPE option<object>;
 DEFINE FIELD created_at ON commerce_account TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON commerce_account TYPE datetime VALUE time::now();
 
@@ -100,7 +100,7 @@ DEFINE FIELD tax_amount ON commercial_document TYPE number DEFAULT 0;
 DEFINE FIELD discount_amount ON commercial_document TYPE number DEFAULT 0;
 DEFINE FIELD total_amount ON commercial_document TYPE number DEFAULT 0;
 DEFINE FIELD currency ON commercial_document TYPE string DEFAULT "USD";
-DEFINE FIELD terms ON commercial_document TYPE option<object>;
+DEFINE FIELD terms ON commercial_document FLEXIBLE TYPE option<object>;
 DEFINE FIELD assurance_bindings ON commercial_document TYPE array<record<assurance_binding>> DEFAULT [];
 DEFINE FIELD due_at ON commercial_document TYPE option<datetime>;
 DEFINE FIELD issued_at ON commercial_document TYPE option<datetime>;
@@ -108,7 +108,7 @@ DEFINE FIELD accepted_at ON commercial_document TYPE option<datetime>;
 DEFINE FIELD paid_at ON commercial_document TYPE option<datetime>;
 DEFINE FIELD created_at ON commercial_document TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON commercial_document TYPE datetime VALUE time::now();
-DEFINE FIELD metadata ON commercial_document TYPE option<object>;
+DEFINE FIELD metadata ON commercial_document FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX commercial_document_entity_idx ON commercial_document FIELDS entity UNIQUE;
 DEFINE INDEX commercial_document_type_idx ON commercial_document FIELDS document_type;
@@ -153,7 +153,7 @@ DEFINE FIELD amount ON usage_record TYPE option<number>;
 DEFINE FIELD currency ON usage_record TYPE string DEFAULT "USD";
 DEFINE FIELD occurred_at ON usage_record TYPE datetime DEFAULT time::now();
 DEFINE FIELD billing_ref ON usage_record TYPE option<string>;
-DEFINE FIELD metadata ON usage_record TYPE option<object>;
+DEFINE FIELD metadata ON usage_record FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX usage_record_entity_idx ON usage_record FIELDS entity UNIQUE;
 DEFINE INDEX usage_record_subject_idx ON usage_record FIELDS subject;
@@ -214,12 +214,12 @@ DEFINE FIELD currency ON commerce_transaction TYPE string DEFAULT "USD";
 DEFINE FIELD provider ON commerce_transaction TYPE option<string>;
 DEFINE FIELD provider_transaction_ref ON commerce_transaction TYPE option<string>;
 DEFINE FIELD idempotency_key ON commerce_transaction TYPE option<string>;
-DEFINE FIELD evidence ON commerce_transaction TYPE option<object>;
-DEFINE FIELD error ON commerce_transaction TYPE option<object>;
+DEFINE FIELD evidence ON commerce_transaction FLEXIBLE TYPE option<object>;
+DEFINE FIELD error ON commerce_transaction FLEXIBLE TYPE option<object>;
 DEFINE FIELD created_at ON commerce_transaction TYPE datetime DEFAULT time::now();
 DEFINE FIELD processed_at ON commerce_transaction TYPE option<datetime>;
 DEFINE FIELD settled_at ON commerce_transaction TYPE option<datetime>;
-DEFINE FIELD metadata ON commerce_transaction TYPE option<object>;
+DEFINE FIELD metadata ON commerce_transaction FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX commerce_transaction_entity_idx ON commerce_transaction FIELDS entity UNIQUE;
 DEFINE INDEX commerce_transaction_type_idx ON commerce_transaction FIELDS transaction_type;
@@ -243,14 +243,14 @@ DEFINE FIELD status ON subscription TYPE string DEFAULT "active"
   ASSERT $value IN ["trialing", "active", "past_due", "paused", "cancelled", "expired", "archived"];
 
 DEFINE FIELD plan_ref ON subscription TYPE option<string>;
-DEFINE FIELD pricing ON subscription TYPE object DEFAULT {};
+DEFINE FIELD pricing ON subscription FLEXIBLE TYPE object DEFAULT {};
 DEFINE FIELD billing_period ON subscription TYPE string DEFAULT "monthly" ASSERT $value IN ["daily", "weekly", "monthly", "quarterly", "yearly", "usage_based", "custom"];
 DEFINE FIELD current_period_start ON subscription TYPE datetime DEFAULT time::now();
 DEFINE FIELD current_period_end ON subscription TYPE option<datetime>;
 DEFINE FIELD cancelled_at ON subscription TYPE option<datetime>;
 DEFINE FIELD created_at ON subscription TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON subscription TYPE datetime VALUE time::now();
-DEFINE FIELD metadata ON subscription TYPE option<object>;
+DEFINE FIELD metadata ON subscription FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX subscription_entity_idx ON subscription FIELDS entity UNIQUE;
 DEFINE INDEX subscription_customer_idx ON subscription FIELDS customer;

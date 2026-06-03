@@ -44,7 +44,7 @@ DEFINE FIELD status ON memory TYPE string DEFAULT "active"
 
 DEFINE FIELD title ON memory TYPE string;
 DEFINE FIELD summary ON memory TYPE option<string>;
-DEFINE FIELD content ON memory TYPE object DEFAULT {};
+DEFINE FIELD content ON memory FLEXIBLE TYPE object DEFAULT {};
 DEFINE FIELD embedding_ref ON memory TYPE option<string>;
 DEFINE FIELD vector ON memory TYPE option<array<number>>;
 DEFINE FIELD keywords ON memory TYPE array<string> DEFAULT [];
@@ -53,7 +53,7 @@ DEFINE FIELD tags ON memory TYPE array<string> DEFAULT [];
 DEFINE FIELD importance ON memory TYPE number DEFAULT 0.5 ASSERT $value >= 0 AND $value <= 1;
 DEFINE FIELD confidence ON memory TYPE option<number> ASSERT $value = NONE OR ($value >= 0 AND $value <= 1);
 DEFINE FIELD sensitivity ON memory TYPE string DEFAULT "internal" ASSERT $value IN ["public", "internal", "confidential", "restricted", "secret"];
-DEFINE FIELD retention_policy ON memory TYPE option<object>;
+DEFINE FIELD retention_policy ON memory FLEXIBLE TYPE option<object>;
 DEFINE FIELD access_policy_refs ON memory TYPE array<record<governance_object>> DEFAULT [];
 
 DEFINE FIELD valid_from ON memory TYPE datetime DEFAULT time::now();
@@ -63,7 +63,7 @@ DEFINE FIELD last_accessed_at ON memory TYPE option<datetime>;
 DEFINE FIELD access_count ON memory TYPE int DEFAULT 0;
 DEFINE FIELD created_at ON memory TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON memory TYPE datetime VALUE time::now();
-DEFINE FIELD metadata ON memory TYPE option<object>;
+DEFINE FIELD metadata ON memory FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX memory_entity_idx ON memory FIELDS entity UNIQUE;
 DEFINE INDEX memory_owner_idx ON memory FIELDS owner;
@@ -100,9 +100,9 @@ DEFINE FIELD event_type ON memory_event TYPE string
 
 DEFINE FIELD actor ON memory_event TYPE option<record<identity>>;
 DEFINE FIELD reason ON memory_event TYPE option<string>;
-DEFINE FIELD payload ON memory_event TYPE object DEFAULT {};
+DEFINE FIELD payload ON memory_event FLEXIBLE TYPE object DEFAULT {};
 DEFINE FIELD created_at ON memory_event TYPE datetime DEFAULT time::now();
-DEFINE FIELD metadata ON memory_event TYPE option<object>;
+DEFINE FIELD metadata ON memory_event FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX memory_event_memory_idx ON memory_event FIELDS memory;
 DEFINE INDEX memory_event_type_idx ON memory_event FIELDS event_type;

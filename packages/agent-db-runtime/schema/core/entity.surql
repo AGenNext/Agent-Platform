@@ -71,11 +71,11 @@ DEFINE FIELD valid_to ON entity TYPE option<datetime>;
 DEFINE FIELD created_at ON entity TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON entity TYPE datetime VALUE time::now();
 
-DEFINE FIELD metadata ON entity TYPE option<object>;
-DEFINE FIELD provenance ON entity TYPE option<object>;
+DEFINE FIELD metadata ON entity FLEXIBLE TYPE option<object>;
+DEFINE FIELD provenance ON entity FLEXIBLE TYPE option<object>;
 DEFINE FIELD schema_ref ON entity TYPE option<string>;
 DEFINE FIELD schema_version ON entity TYPE option<string>;
-DEFINE FIELD schema_snapshot ON entity TYPE option<object>;
+DEFINE FIELD schema_snapshot ON entity FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX entity_type_idx ON entity FIELDS entity_type;
 DEFINE INDEX entity_status_idx ON entity FIELDS status;
