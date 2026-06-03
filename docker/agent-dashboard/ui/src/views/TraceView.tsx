@@ -45,7 +45,7 @@ export function TraceView() {
         <CardHeader title="A2A Trace Explorer" />
         <div className="flex gap-2">
           <input
-            className="flex-1 bg-[#0d1117] border border-[#1f2937] rounded px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
+            className="flex-1 bg-surface border border-line rounded px-3 py-2 text-sm text-ink focus:outline-none focus:border-accent"
             placeholder="Paste a workflow run ID..."
             value={runId}
             onChange={e => setRunId(e.target.value)}
@@ -54,7 +54,7 @@ export function TraceView() {
           <button
             onClick={lookup}
             disabled={loading || !runId.trim()}
-            className="flex items-center gap-1.5 px-3 py-2 rounded bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-sm transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded bg-accent-strong hover:bg-accent disabled:opacity-40 text-white text-sm transition-colors"
           >
             <Search size={14} />
             {loading ? 'Loading...' : 'Trace'}
@@ -77,16 +77,16 @@ export function TraceView() {
                   onClick={() => loadChain(agent)}
                   className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-colors ${
                     selectedAgent?.id === agent.id
-                      ? 'border-indigo-600 bg-indigo-900/20'
-                      : 'border-[#1f2937] bg-[#0d1117] hover:border-[#374151]'
+                      ? 'border-accent bg-accent/10'
+                      : 'border-line bg-surface hover:border-line-strong'
                   }`}
                 >
-                  <div className="p-1.5 rounded bg-indigo-900/40 text-indigo-400">
+                  <div className="p-1.5 rounded bg-accent/15 text-accent">
                     <Bot size={14} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-slate-200">{agent.agent_role}</div>
-                    <div className="text-xs text-slate-500 font-mono truncate">{agent.id}</div>
+                    <div className="text-sm font-medium text-ink">{agent.agent_role}</div>
+                    <div className="text-xs text-faint font-mono truncate">{agent.id}</div>
                   </div>
                   <Badge label={agent.status} variant={statusVariant(agent.status)} />
                 </button>
@@ -97,34 +97,34 @@ export function TraceView() {
           <Card>
             <CardHeader title={selectedAgent ? `Handoff Chain — ${selectedAgent.agent_role}` : 'Handoff Chain'} />
             {!selectedAgent && (
-              <div className="text-slate-500 text-sm">Select an agent to view its handoff chain.</div>
+              <div className="text-faint text-sm">Select an agent to view its handoff chain.</div>
             )}
             {selectedAgent && chain.length === 0 && (
-              <div className="text-slate-500 text-sm">No handoffs recorded for this agent.</div>
+              <div className="text-faint text-sm">No handoffs recorded for this agent.</div>
             )}
             {chain.length > 0 && (
               <div className="space-y-2">
                 {chain.map((link, i) => (
                   <div key={link.id} className="relative">
-                    <div className="flex items-start gap-3 p-3 rounded-lg bg-[#0d1117] border border-[#1f2937]">
+                    <div className="flex items-start gap-3 p-3 rounded-lg bg-surface border border-line">
                       <div className="flex flex-col items-center">
-                        <div className="text-xs text-slate-500 font-mono mt-0.5">{i + 1}</div>
+                        <div className="text-xs text-faint font-mono mt-0.5">{i + 1}</div>
                         {i < chain.length - 1 && (
-                          <div className="w-px h-6 bg-[#1f2937] mt-1" />
+                          <div className="w-px h-6 bg-line mt-1" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 text-xs mb-1">
-                          <span className="text-slate-400 font-mono truncate max-w-24">{link.source_agent_id}</span>
-                          <ArrowRight size={11} className="text-indigo-400 shrink-0" />
-                          <span className="text-slate-400 font-mono truncate max-w-24">{link.target_agent_id}</span>
+                          <span className="text-muted font-mono truncate max-w-24">{link.source_agent_id}</span>
+                          <ArrowRight size={11} className="text-accent shrink-0" />
+                          <span className="text-muted font-mono truncate max-w-24">{link.target_agent_id}</span>
                         </div>
                         {link.context && (
-                          <div className="text-xs text-slate-500 italic truncate">"{link.context}"</div>
+                          <div className="text-xs text-faint italic truncate">"{link.context}"</div>
                         )}
                         <div className="flex items-center gap-2 mt-1">
                           <Badge label={link.handoff_status} variant={statusVariant(link.handoff_status)} />
-                          <span className="text-xs text-slate-600">
+                          <span className="text-xs text-faint">
                             {new Date(link.created_at).toLocaleTimeString()}
                           </span>
                         </div>
