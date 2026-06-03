@@ -45,7 +45,7 @@ export function TraceView() {
         <CardHeader title="A2A Trace Explorer" />
         <div className="flex gap-2">
           <input
-            className="flex-1 bg-surface border border-line rounded px-3 py-2 text-sm text-ink focus:outline-none focus:border-accent"
+            className="flex-1 bg-field/70 border border-line rounded-lg px-3 py-2 text-sm text-ink placeholder:text-faint focus:outline-none focus:border-accent transition-colors"
             placeholder="Paste a workflow run ID..."
             value={runId}
             onChange={e => setRunId(e.target.value)}
@@ -54,7 +54,7 @@ export function TraceView() {
           <button
             onClick={lookup}
             disabled={loading || !runId.trim()}
-            className="flex items-center gap-1.5 px-3 py-2 rounded bg-accent-strong hover:bg-accent disabled:opacity-40 text-white text-sm transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent-strong hover:bg-accent disabled:opacity-40 text-white text-sm font-medium transition-colors"
           >
             <Search size={14} />
             {loading ? 'Loading...' : 'Trace'}
@@ -62,7 +62,7 @@ export function TraceView() {
         </div>
 
         {error && (
-          <div className="mt-3 text-sm text-red-400">{error}</div>
+          <div className="mt-3 text-sm text-bad">{error}</div>
         )}
       </Card>
 
@@ -77,11 +77,11 @@ export function TraceView() {
                   onClick={() => loadChain(agent)}
                   className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-colors ${
                     selectedAgent?.id === agent.id
-                      ? 'border-accent bg-accent/10'
-                      : 'border-line bg-surface hover:border-line-strong'
+                      ? 'border-accent/50 bg-accent/10 ring-1 ring-accent/20'
+                      : 'border-line bg-field/40 hover:border-line-strong hover:bg-raised/40'
                   }`}
                 >
-                  <div className="p-1.5 rounded bg-accent/15 text-accent">
+                  <div className="p-1.5 rounded-lg bg-accent/15 text-accent">
                     <Bot size={14} />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -106,7 +106,7 @@ export function TraceView() {
               <div className="space-y-2">
                 {chain.map((link, i) => (
                   <div key={link.id} className="relative">
-                    <div className="flex items-start gap-3 p-3 rounded-lg bg-surface border border-line">
+                    <div className="flex items-start gap-3 p-3 rounded-lg bg-field/40 border border-line">
                       <div className="flex flex-col items-center">
                         <div className="text-xs text-faint font-mono mt-0.5">{i + 1}</div>
                         {i < chain.length - 1 && (

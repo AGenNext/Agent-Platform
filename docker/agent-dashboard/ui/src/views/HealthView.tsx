@@ -56,9 +56,9 @@ export function HealthView() {
         />
 
         {error && (
-          <div className="p-3 rounded bg-red-900/20 border border-red-800 text-red-400 text-sm">
+          <div className="p-4 rounded-lg bg-bad/10 border border-bad/30 text-bad text-sm">
             Cannot reach Agent Knowledge API — is the service running?<br />
-            <span className="text-xs opacity-70">{error}</span>
+            <span className="text-xs opacity-70 font-mono">{error}</span>
           </div>
         )}
 

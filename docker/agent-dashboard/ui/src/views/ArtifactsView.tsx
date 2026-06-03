@@ -30,10 +30,10 @@ export function ArtifactsView() {
       {!loading && artifacts.length > 0 && (
         <div className="space-y-2">
           {artifacts.map(artifact => (
-            <div key={artifact.id} className="rounded-lg bg-surface border border-line">
+            <div key={artifact.id} className="rounded-lg bg-field/40 border border-line">
               <button
                 onClick={() => setExpanded(e => e === artifact.id ? null : artifact.id)}
-                className="w-full flex items-center justify-between p-3 text-left hover:bg-raised-hover transition-colors rounded-lg"
+                className="w-full flex items-center justify-between p-3 text-left hover:bg-raised/40 transition-colors rounded-lg"
               >
                 <div className="flex items-center gap-2 min-w-0">
                   {expanded === artifact.id ? <ChevronDown size={14} className="text-faint shrink-0" /> : <ChevronRight size={14} className="text-faint shrink-0" />}
@@ -75,21 +75,18 @@ function ArtifactEval({ artifactId }: { artifactId: string }) {
   if (!result) return null
 
   return (
-    <div className="p-2 rounded bg-surface border border-line">
-      <div className="flex items-center gap-2 mb-2">
+    <div className="p-3 rounded-lg bg-field/50 border border-line">
+      <div className="flex items-center gap-2 mb-2.5">
         <Star size={12} className="text-warn" />
         <span className="text-xs font-medium text-ink">CLEAR Eval</span>
         <Badge label={result.passed ? 'passed' : 'failed'} variant={result.passed ? 'green' : 'red'} />
-        <span className="text-xs text-muted ml-auto">{(result.composite_score * 100).toFixed(0)}%</span>
+        <span className="text-xs text-muted ml-auto nums">{(result.composite_score * 100).toFixed(0)}%</span>
       </div>
       <div className="grid grid-cols-5 gap-1">
         {Object.entries(result.dimension_scores).map(([dim, score]) => (
           <div key={dim} className="text-center">
-            <div className="text-xs text-faint capitalize">{dim.slice(0, 4)}</div>
-            <div
-              className="text-xs font-semibold"
-              style={{ color: score >= 0.7 ? '#10b981' : score >= 0.5 ? '#f59e0b' : '#ef4444' }}
-            >
+            <div className="text-[11px] text-faint capitalize truncate">{dim.slice(0, 4)}</div>
+            <div className={`text-xs font-semibold nums ${score >= 0.7 ? 'text-ok' : score >= 0.5 ? 'text-warn' : 'text-bad'}`}>
               {(score * 100).toFixed(0)}%
             </div>
           </div>
@@ -109,17 +106,17 @@ function ArtifactTrust({ artifactId }: { artifactId: string }) {
   if (!trust) return null
 
   return (
-    <div className="p-2 rounded bg-surface border border-line">
+    <div className="p-3 rounded-lg bg-field/50 border border-line">
       <div className="flex items-center gap-2">
         <ShieldCheck size={12} className="text-accent" />
         <span className="text-xs font-medium text-ink">Trust</span>
-        <div className="flex-1 bg-line rounded-full h-1.5 ml-1">
+        <div className="flex-1 bg-line rounded-full h-1.5 ml-1 overflow-hidden">
           <div
-            className="h-1.5 rounded-full bg-accent"
+            className="h-1.5 rounded-full bg-gradient-to-r from-accent-strong to-accent"
             style={{ width: `${Math.min(trust.score * 100, 100)}%` }}
           />
         </div>
-        <span className="text-xs text-muted">{(trust.score * 100).toFixed(0)}%</span>
+        <span className="text-xs text-muted nums">{(trust.score * 100).toFixed(0)}%</span>
         <span className="text-xs text-faint">{trust.evidence_count} links</span>
       </div>
     </div>
