@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Activity, Bot, Box, Boxes, Flag, GitBranch, GraduationCap, LayoutDashboard, LayoutGrid, MessageSquare, Radio, Search, Wand2 } from 'lucide-react'
+import { Activity, Bot, Box, Boxes, Flag, GitBranch, GraduationCap, LayoutDashboard, LayoutGrid, MessageSquare, Radio, Search, Wand2, Workflow } from 'lucide-react'
+import { PipelineView } from './views/PipelineView'
 import { SpacesView } from './views/SpacesView'
 import { ChannelsView } from './views/ChannelsView'
 import { AgentsView } from './views/AgentsView'
@@ -13,7 +14,7 @@ import { ObjectivesView } from './views/ObjectivesView'
 import { ArtifactsView } from './views/ArtifactsView'
 import { TraceView } from './views/TraceView'
 
-type View = 'spaces' | 'chat' | 'agents' | 'composer' | 'milestones' | 'objectives' | 'artifacts' | 'trace' | 'hub' | 'learning' | 'gateway' | 'health'
+type View = 'pipeline' | 'spaces' | 'chat' | 'agents' | 'composer' | 'milestones' | 'objectives' | 'artifacts' | 'trace' | 'hub' | 'learning' | 'gateway' | 'health'
 
 type NavItem = { id: View; label: string; icon: React.ReactNode; hint: string }
 
@@ -21,6 +22,7 @@ const sections: { heading: string; items: NavItem[] }[] = [
   {
     heading: 'Build',
     items: [
+      { id: 'pipeline', label: 'Pipeline', icon: <Workflow size={17} />,      hint: 'End-to-end agent delivery' },
       { id: 'composer', label: 'Composer', icon: <Wand2 size={17} />,        hint: 'Chat → generated agent pipeline' },
       { id: 'spaces',   label: 'Spaces',   icon: <LayoutGrid size={17} />,   hint: 'Your agent workspaces' },
       { id: 'chat',     label: 'Chat',     icon: <MessageSquare size={17} />, hint: 'Agent, system & human channels' },
@@ -55,7 +57,7 @@ const sections: { heading: string; items: NavItem[] }[] = [
 const allItems = sections.flatMap(s => s.items)
 
 export default function App() {
-  const [view, setView] = useState<View>('composer')
+  const [view, setView] = useState<View>('pipeline')
   const active = allItems.find(n => n.id === view)!
 
   return (
@@ -134,6 +136,7 @@ export default function App() {
 
         <div className="flex-1 px-10 py-8 overflow-auto">
           <div className={`mx-auto ${view === 'composer' ? 'max-w-none h-full' : 'max-w-6xl'}`}>
+            {view === 'pipeline'   && <PipelineView onNavigate={setView as (v: string) => void} />}
             {view === 'spaces'     && <SpacesView />}
             {view === 'chat'       && <ChannelsView />}
             {view === 'agents'     && <AgentsView />}
