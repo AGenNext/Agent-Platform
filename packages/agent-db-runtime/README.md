@@ -110,9 +110,11 @@ Gate 2: Pinned SurrealDB server starts successfully
 Gate 3: Core schema applies against live SurrealDB (load order)
 Gate 4: Seed bootstrap records apply successfully
 Gate 5: Smoke assertions pass (THROW on missing records)
-Gate 6: Value-loop slice applies and asserts records
-Gate 7: Backup/restore path is documented and tested
-Gate 8: Upgrade/migration path is documented and tested
+Gate 6: Regression tests pass (THROW on regressions)
+Gate 7: Value-loop slice applies and asserts records
+Gate 8: Backup + disaster-recovery restore verified
+Gate 9: File-backed persistence survives a restart
+Gate 10: Upgrade/migration path is documented and tested
 ```
 
 Current implemented gates:
@@ -123,14 +125,23 @@ Current implemented gates:
 ✓ surreal import core schema (schema/load-order.txt)
 ✓ surreal import schema/seed.surql
 ✓ surreal import tests/smoke.surql (asserts via THROW)
+✓ surreal import tests/regression.surql (asserts via THROW)
 ✓ surreal import value-loop slice + tests/value-loop-asserts.surql
+✓ Backup (surreal export) + restore (schema-from-repo + data) verified
+✓ File-backed (rocksdb) persistence verified across a restart
 ```
 
 Current missing gates:
 
 ```txt
-✗ backup/restore test
-✗ upgrade/migration test
+✗ upgrade/migration test (schema change over existing seeded data)
+```
+
+Backup and restore locally:
+
+```bash
+make backup                          # surreal export -> backups/agent-runtime-backup.surql
+SURREAL_DB=agent_runtime_dr make restore-check   # schema from repo + data from backup, then verify
 ```
 
 The GitHub Actions workflow is:

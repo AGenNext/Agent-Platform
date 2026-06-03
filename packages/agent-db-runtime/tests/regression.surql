@@ -53,4 +53,13 @@ IF (SELECT VALUE metadata.completed_by FROM $hid)[0] != $to.id { THROW "regressi
 -- the merge must preserve the earlier key, not overwrite the object
 IF (SELECT VALUE metadata.accepted_by FROM $hid)[0] != $to.id { THROW "regression: complete_handoff overwrote metadata.accepted_by (object merge regression)"; };
 
+-- Clean up the records created above so this test is side-effect-free and
+-- re-runnable against the same database (identity.subject is uniquely indexed).
+-- Delete in dependency order: handoff, then identities, then entities.
+DELETE $hid;
+DELETE $from.id;
+DELETE $to.id;
+DELETE $e1.id;
+DELETE $e2.id;
+
 RETURN "regression ok: idempotency, referential integrity, ascii search, handoff lifecycle + metadata merge";
