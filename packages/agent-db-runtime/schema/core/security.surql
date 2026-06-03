@@ -38,8 +38,8 @@ DEFINE FIELD expires_at ON security_session TYPE option<datetime>;
 DEFINE FIELD revoked_at ON security_session TYPE option<datetime>;
 DEFINE FIELD source_ip ON security_session TYPE option<string>;
 DEFINE FIELD user_agent ON security_session TYPE option<string>;
-DEFINE FIELD context ON security_session TYPE object DEFAULT {};
-DEFINE FIELD metadata ON security_session TYPE option<object>;
+DEFINE FIELD context ON security_session FLEXIBLE TYPE object DEFAULT {};
+DEFINE FIELD metadata ON security_session FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX security_session_entity_idx ON security_session FIELDS entity UNIQUE;
 DEFINE INDEX security_session_identity_idx ON security_session FIELDS identity;
@@ -75,11 +75,11 @@ DEFINE FIELD result ON authentication_event TYPE string
   ASSERT $value IN ["success", "failure", "challenge", "blocked", "expired", "revoked"];
 
 DEFINE FIELD reason ON authentication_event TYPE option<string>;
-DEFINE FIELD evidence ON authentication_event TYPE option<object>;
+DEFINE FIELD evidence ON authentication_event FLEXIBLE TYPE option<object>;
 DEFINE FIELD source_ip ON authentication_event TYPE option<string>;
 DEFINE FIELD user_agent ON authentication_event TYPE option<string>;
 DEFINE FIELD created_at ON authentication_event TYPE datetime DEFAULT time::now();
-DEFINE FIELD metadata ON authentication_event TYPE option<object>;
+DEFINE FIELD metadata ON authentication_event FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX authentication_identity_idx ON authentication_event FIELDS identity;
 DEFINE INDEX authentication_result_idx ON authentication_event FIELDS result;
@@ -108,10 +108,10 @@ DEFINE FIELD decision ON authorization_decision TYPE string
 DEFINE FIELD reason ON authorization_decision TYPE option<string>;
 DEFINE FIELD obligations ON authorization_decision TYPE array<object> DEFAULT [];
 DEFINE FIELD advice ON authorization_decision TYPE array<object> DEFAULT [];
-DEFINE FIELD evidence ON authorization_decision TYPE option<object>;
+DEFINE FIELD evidence ON authorization_decision FLEXIBLE TYPE option<object>;
 DEFINE FIELD confidence ON authorization_decision TYPE option<number> ASSERT $value = NONE OR ($value >= 0 AND $value <= 1);
 DEFINE FIELD created_at ON authorization_decision TYPE datetime DEFAULT time::now();
-DEFINE FIELD metadata ON authorization_decision TYPE option<object>;
+DEFINE FIELD metadata ON authorization_decision FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX authorization_entity_idx ON authorization_decision FIELDS entity UNIQUE;
 DEFINE INDEX authorization_subject_idx ON authorization_decision FIELDS subject;
@@ -151,11 +151,11 @@ DEFINE FIELD status ON verification_check TYPE string
 
 DEFINE FIELD method ON verification_check TYPE option<string>;
 DEFINE FIELD claims_checked ON verification_check TYPE array<string> DEFAULT [];
-DEFINE FIELD result ON verification_check TYPE object DEFAULT {};
-DEFINE FIELD evidence ON verification_check TYPE option<object>;
+DEFINE FIELD result ON verification_check FLEXIBLE TYPE object DEFAULT {};
+DEFINE FIELD evidence ON verification_check FLEXIBLE TYPE option<object>;
 DEFINE FIELD confidence ON verification_check TYPE option<number> ASSERT $value = NONE OR ($value >= 0 AND $value <= 1);
 DEFINE FIELD created_at ON verification_check TYPE datetime DEFAULT time::now();
-DEFINE FIELD metadata ON verification_check TYPE option<object>;
+DEFINE FIELD metadata ON verification_check FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX verification_entity_idx ON verification_check FIELDS entity UNIQUE;
 DEFINE INDEX verification_target_idx ON verification_check FIELDS target;
@@ -191,9 +191,9 @@ DEFINE FIELD resource ON security_event TYPE option<record<entity>>;
 DEFINE FIELD session ON security_event TYPE option<record<security_session>>;
 DEFINE FIELD severity ON security_event TYPE string DEFAULT "info" ASSERT $value IN ["info", "low", "medium", "high", "critical"];
 DEFINE FIELD reason ON security_event TYPE option<string>;
-DEFINE FIELD evidence ON security_event TYPE option<object>;
+DEFINE FIELD evidence ON security_event FLEXIBLE TYPE option<object>;
 DEFINE FIELD created_at ON security_event TYPE datetime DEFAULT time::now();
-DEFINE FIELD metadata ON security_event TYPE option<object>;
+DEFINE FIELD metadata ON security_event FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX security_event_type_idx ON security_event FIELDS event_type;
 DEFINE INDEX security_event_identity_idx ON security_event FIELDS identity;

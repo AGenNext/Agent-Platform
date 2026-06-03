@@ -43,7 +43,7 @@ DEFINE FIELD policy_refs ON collaboration_space TYPE array<record<governance_obj
 DEFINE FIELD created_at ON collaboration_space TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON collaboration_space TYPE datetime VALUE time::now();
 DEFINE FIELD closed_at ON collaboration_space TYPE option<datetime>;
-DEFINE FIELD metadata ON collaboration_space TYPE option<object>;
+DEFINE FIELD metadata ON collaboration_space FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX collaboration_space_entity_idx ON collaboration_space FIELDS entity UNIQUE;
 DEFINE INDEX collaboration_space_type_idx ON collaboration_space FIELDS space_type;
@@ -97,16 +97,16 @@ DEFINE FIELD status ON exchange TYPE string DEFAULT "created"
 
 DEFINE FIELD subject ON exchange TYPE option<string>;
 DEFINE FIELD body ON exchange TYPE option<string>;
-DEFINE FIELD payload ON exchange TYPE object DEFAULT {};
+DEFINE FIELD payload ON exchange FLEXIBLE TYPE object DEFAULT {};
 DEFINE FIELD attachments ON exchange TYPE array<record<artifact>> DEFAULT [];
 DEFINE FIELD protocol_message ON exchange TYPE option<record<protocol_message>>;
-DEFINE FIELD evidence ON exchange TYPE option<object>;
+DEFINE FIELD evidence ON exchange FLEXIBLE TYPE option<object>;
 DEFINE FIELD correlation_id ON exchange TYPE option<string>;
 DEFINE FIELD created_at ON exchange TYPE datetime DEFAULT time::now();
 DEFINE FIELD sent_at ON exchange TYPE option<datetime>;
 DEFINE FIELD read_at ON exchange TYPE option<datetime>;
 DEFINE FIELD updated_at ON exchange TYPE datetime VALUE time::now();
-DEFINE FIELD metadata ON exchange TYPE option<object>;
+DEFINE FIELD metadata ON exchange FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX exchange_entity_idx ON exchange FIELDS entity UNIQUE;
 DEFINE INDEX exchange_space_idx ON exchange FIELDS collaboration_space;
@@ -148,15 +148,15 @@ DEFINE FIELD handoff_type ON handoff TYPE string
 DEFINE FIELD status ON handoff TYPE string DEFAULT "requested"
   ASSERT $value IN ["requested", "accepted", "rejected", "in_progress", "completed", "cancelled", "expired"];
 
-DEFINE FIELD context_snapshot ON handoff TYPE object DEFAULT {};
-DEFINE FIELD authority_scope ON handoff TYPE option<object>;
+DEFINE FIELD context_snapshot ON handoff FLEXIBLE TYPE object DEFAULT {};
+DEFINE FIELD authority_scope ON handoff FLEXIBLE TYPE option<object>;
 DEFINE FIELD obligations ON handoff TYPE array<object> DEFAULT [];
-DEFINE FIELD evidence ON handoff TYPE option<object>;
+DEFINE FIELD evidence ON handoff FLEXIBLE TYPE option<object>;
 DEFINE FIELD requested_at ON handoff TYPE datetime DEFAULT time::now();
 DEFINE FIELD accepted_at ON handoff TYPE option<datetime>;
 DEFINE FIELD completed_at ON handoff TYPE option<datetime>;
 DEFINE FIELD updated_at ON handoff TYPE datetime VALUE time::now();
-DEFINE FIELD metadata ON handoff TYPE option<object>;
+DEFINE FIELD metadata ON handoff FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX handoff_entity_idx ON handoff FIELDS entity UNIQUE;
 DEFINE INDEX handoff_from_idx ON handoff FIELDS from_identity;
@@ -222,7 +222,7 @@ DEFINE FUNCTION fn::accept_handoff(
   RETURN UPDATE $handoff SET
     status = "accepted",
     accepted_at = time::now(),
-    metadata = object::from_entries(array::concat(object::entries(IF metadata = NONE THEN {} ELSE metadata END), object::entries({ accepted_by: $actor })));
+    metadata.accepted_by = $actor;
 };
 
 DEFINE FUNCTION fn::complete_handoff(
@@ -234,5 +234,5 @@ DEFINE FUNCTION fn::complete_handoff(
     status = "completed",
     completed_at = time::now(),
     evidence = $evidence,
-    metadata = object::from_entries(array::concat(object::entries(IF metadata = NONE THEN {} ELSE metadata END), object::entries({ completed_by: $actor })));
+    metadata.completed_by = $actor;
 };

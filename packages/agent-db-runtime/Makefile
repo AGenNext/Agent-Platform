@@ -17,7 +17,7 @@ CONN := --endpoint $(SURREAL_ENDPOINT) --username $(SURREAL_USER) --password $(S
 
 LOAD_ORDER := schema/load-order.txt
 
-.PHONY: up down restart logs ps apply seed smoke value-loop check clean
+.PHONY: up down restart logs ps apply seed smoke regression value-loop check clean
 
 up:
 	$(PODMAN_COMPOSE) -f $(COMPOSE_FILE) up -d
@@ -46,13 +46,16 @@ seed:
 smoke:
 	$(SURREAL) import $(CONN) tests/smoke.surql
 
+regression:
+	$(SURREAL) import $(CONN) tests/regression.surql
+
 value-loop:
 	$(SURREAL) import $(CONN) schema/design/runtime-meta-model.surql
 	$(SURREAL) import $(CONN) schema/design/value-loop-phase1.surql
 	$(SURREAL) import $(CONN) tests/value-loop-smoke.surql
 	$(SURREAL) import $(CONN) tests/value-loop-asserts.surql
 
-check: apply seed smoke
+check: apply seed smoke regression
 
 clean:
 	$(PODMAN_COMPOSE) -f $(COMPOSE_FILE) down -v

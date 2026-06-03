@@ -53,9 +53,9 @@ DEFINE FIELD transport ON protocol TYPE option<string>;
 DEFINE FIELD message_types ON protocol TYPE array<object> DEFAULT [];
 DEFINE FIELD operations ON protocol TYPE array<object> DEFAULT [];
 DEFINE FIELD capabilities ON protocol TYPE array<string> DEFAULT [];
-DEFINE FIELD authentication ON protocol TYPE option<object>;
-DEFINE FIELD authorization ON protocol TYPE option<object>;
-DEFINE FIELD verification ON protocol TYPE option<object>;
+DEFINE FIELD authentication ON protocol FLEXIBLE TYPE option<object>;
+DEFINE FIELD authorization ON protocol FLEXIBLE TYPE option<object>;
+DEFINE FIELD verification ON protocol FLEXIBLE TYPE option<object>;
 DEFINE FIELD schemas ON protocol TYPE array<record<schema_definition>> DEFAULT [];
 DEFINE FIELD compliance_refs ON protocol TYPE array<record<governance_object>> DEFAULT [];
 DEFINE FIELD examples ON protocol TYPE array<object> DEFAULT [];
@@ -64,7 +64,7 @@ DEFINE FIELD created_at ON protocol TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON protocol TYPE datetime VALUE time::now();
 DEFINE FIELD valid_from ON protocol TYPE datetime DEFAULT time::now();
 DEFINE FIELD valid_to ON protocol TYPE option<datetime>;
-DEFINE FIELD metadata ON protocol TYPE option<object>;
+DEFINE FIELD metadata ON protocol FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX protocol_entity_idx ON protocol FIELDS entity UNIQUE;
 DEFINE INDEX protocol_type_idx ON protocol FIELDS protocol_type;
@@ -96,14 +96,14 @@ DEFINE FIELD status ON protocol_binding TYPE string DEFAULT "active"
   ASSERT $value IN ["active", "inactive", "pending", "failed", "deprecated", "archived"];
 
 DEFINE FIELD endpoint ON protocol_binding TYPE option<string>;
-DEFINE FIELD config ON protocol_binding TYPE object DEFAULT {};
+DEFINE FIELD config ON protocol_binding FLEXIBLE TYPE object DEFAULT {};
 DEFINE FIELD credential_refs ON protocol_binding TYPE array<record<credential>> DEFAULT [];
 DEFINE FIELD capabilities ON protocol_binding TYPE array<string> DEFAULT [];
 DEFINE FIELD conformance_result ON protocol_binding TYPE option<record<validation_result>>;
 DEFINE FIELD trust_assessment ON protocol_binding TYPE option<record<trust_assessment>>;
 DEFINE FIELD created_at ON protocol_binding TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON protocol_binding TYPE datetime VALUE time::now();
-DEFINE FIELD metadata ON protocol_binding TYPE option<object>;
+DEFINE FIELD metadata ON protocol_binding FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX protocol_binding_protocol_idx ON protocol_binding FIELDS protocol;
 DEFINE INDEX protocol_binding_subject_idx ON protocol_binding FIELDS subject;
@@ -125,15 +125,15 @@ DEFINE FIELD direction ON protocol_message TYPE string DEFAULT "outbound" ASSERT
 DEFINE FIELD status ON protocol_message TYPE string DEFAULT "created"
   ASSERT $value IN ["created", "sent", "received", "processed", "failed", "rejected", "archived"];
 
-DEFINE FIELD payload ON protocol_message TYPE object DEFAULT {};
-DEFINE FIELD headers ON protocol_message TYPE object DEFAULT {};
+DEFINE FIELD payload ON protocol_message FLEXIBLE TYPE object DEFAULT {};
+DEFINE FIELD headers ON protocol_message FLEXIBLE TYPE object DEFAULT {};
 DEFINE FIELD correlation_id ON protocol_message TYPE option<string>;
 DEFINE FIELD idempotency_key ON protocol_message TYPE option<string>;
-DEFINE FIELD evidence ON protocol_message TYPE option<object>;
-DEFINE FIELD error ON protocol_message TYPE option<object>;
+DEFINE FIELD evidence ON protocol_message FLEXIBLE TYPE option<object>;
+DEFINE FIELD error ON protocol_message FLEXIBLE TYPE option<object>;
 DEFINE FIELD created_at ON protocol_message TYPE datetime DEFAULT time::now();
 DEFINE FIELD processed_at ON protocol_message TYPE option<datetime>;
-DEFINE FIELD metadata ON protocol_message TYPE option<object>;
+DEFINE FIELD metadata ON protocol_message FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX protocol_message_protocol_idx ON protocol_message FIELDS protocol;
 DEFINE INDEX protocol_message_binding_idx ON protocol_message FIELDS binding;

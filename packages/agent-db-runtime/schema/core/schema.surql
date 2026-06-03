@@ -55,7 +55,7 @@ DEFINE FIELD namespace ON schema_definition TYPE option<string>;
 DEFINE FIELD external_ref ON schema_definition TYPE option<string>;
 DEFINE FIELD schema_org_type ON schema_definition TYPE option<string>;
 
-DEFINE FIELD definition ON schema_definition TYPE object DEFAULT {};
+DEFINE FIELD definition ON schema_definition FLEXIBLE TYPE object DEFAULT {};
 DEFINE FIELD allowed_values ON schema_definition TYPE array<object> DEFAULT [];
 DEFINE FIELD constraints ON schema_definition TYPE array<object> DEFAULT [];
 DEFINE FIELD examples ON schema_definition TYPE array<object> DEFAULT [];
@@ -68,7 +68,7 @@ DEFINE FIELD created_at ON schema_definition TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON schema_definition TYPE datetime VALUE time::now();
 DEFINE FIELD valid_from ON schema_definition TYPE datetime DEFAULT time::now();
 DEFINE FIELD valid_to ON schema_definition TYPE option<datetime>;
-DEFINE FIELD metadata ON schema_definition TYPE option<object>;
+DEFINE FIELD metadata ON schema_definition FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX schema_definition_entity_idx ON schema_definition FIELDS entity UNIQUE;
 DEFINE INDEX schema_definition_kind_idx ON schema_definition FIELDS schema_kind;
@@ -110,11 +110,11 @@ DEFINE FIELD severity ON validation_result TYPE string DEFAULT "info"
 
 DEFINE FIELD message ON validation_result TYPE string;
 DEFINE FIELD path ON validation_result TYPE option<string>;
-DEFINE FIELD expected ON validation_result TYPE option<object>;
-DEFINE FIELD actual ON validation_result TYPE option<object>;
-DEFINE FIELD evidence ON validation_result TYPE option<object>;
+DEFINE FIELD expected ON validation_result FLEXIBLE TYPE option<object>;
+DEFINE FIELD actual ON validation_result FLEXIBLE TYPE option<object>;
+DEFINE FIELD evidence ON validation_result FLEXIBLE TYPE option<object>;
 DEFINE FIELD created_at ON validation_result TYPE datetime DEFAULT time::now();
-DEFINE FIELD metadata ON validation_result TYPE option<object>;
+DEFINE FIELD metadata ON validation_result FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX validation_target_idx ON validation_result FIELDS target;
 DEFINE INDEX validation_schema_idx ON validation_result FIELDS schema_definition;
@@ -153,7 +153,7 @@ DEFINE FIELD constraints ON runtime_environment TYPE array<object> DEFAULT [];
 DEFINE FIELD allowed_protocols ON runtime_environment TYPE array<string> DEFAULT [];
 DEFINE FIELD allowed_tools ON runtime_environment TYPE array<string> DEFAULT [];
 DEFINE FIELD policy_refs ON runtime_environment TYPE array<record<governance_object>> DEFAULT [];
-DEFINE FIELD metadata ON runtime_environment TYPE option<object>;
+DEFINE FIELD metadata ON runtime_environment FLEXIBLE TYPE option<object>;
 DEFINE FIELD created_at ON runtime_environment TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON runtime_environment TYPE datetime VALUE time::now();
 

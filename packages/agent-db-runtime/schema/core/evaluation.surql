@@ -50,12 +50,12 @@ DEFINE FIELD method ON evaluation TYPE string DEFAULT "manual"
 DEFINE FIELD criteria ON evaluation TYPE array<object> DEFAULT [];
 DEFINE FIELD findings ON evaluation TYPE array<object> DEFAULT [];
 DEFINE FIELD recommendations ON evaluation TYPE array<object> DEFAULT [];
-DEFINE FIELD evidence ON evaluation TYPE option<object>;
+DEFINE FIELD evidence ON evaluation FLEXIBLE TYPE option<object>;
 DEFINE FIELD score ON evaluation TYPE option<number> ASSERT $value = NONE OR ($value >= 0 AND $value <= 1);
 DEFINE FIELD grade ON evaluation TYPE option<string> ASSERT $value = NONE OR $value IN ["A", "B", "C", "D", "E", "F", "pass", "fail"];
 DEFINE FIELD confidence ON evaluation TYPE option<number> ASSERT $value = NONE OR ($value >= 0 AND $value <= 1);
 
-DEFINE FIELD dimensions ON evaluation TYPE object DEFAULT {
+DEFINE FIELD dimensions ON evaluation FLEXIBLE TYPE object DEFAULT {
   correctness: NONE,
   completeness: NONE,
   compliance: NONE,
@@ -73,7 +73,7 @@ DEFINE FIELD validation_results ON evaluation TYPE array<record<validation_resul
 DEFINE FIELD created_at ON evaluation TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON evaluation TYPE datetime VALUE time::now();
 DEFINE FIELD completed_at ON evaluation TYPE option<datetime>;
-DEFINE FIELD metadata ON evaluation TYPE option<object>;
+DEFINE FIELD metadata ON evaluation FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX evaluation_entity_idx ON evaluation FIELDS entity UNIQUE;
 DEFINE INDEX evaluation_target_idx ON evaluation FIELDS target;
@@ -110,9 +110,9 @@ DEFINE FIELD value ON evaluation_metric TYPE number;
 DEFINE FIELD unit ON evaluation_metric TYPE option<string>;
 DEFINE FIELD threshold ON evaluation_metric TYPE option<number>;
 DEFINE FIELD passed ON evaluation_metric TYPE option<bool>;
-DEFINE FIELD evidence ON evaluation_metric TYPE option<object>;
+DEFINE FIELD evidence ON evaluation_metric FLEXIBLE TYPE option<object>;
 DEFINE FIELD created_at ON evaluation_metric TYPE datetime DEFAULT time::now();
-DEFINE FIELD metadata ON evaluation_metric TYPE option<object>;
+DEFINE FIELD metadata ON evaluation_metric FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX evaluation_metric_evaluation_idx ON evaluation_metric FIELDS evaluation;
 DEFINE INDEX evaluation_metric_category_idx ON evaluation_metric FIELDS category;

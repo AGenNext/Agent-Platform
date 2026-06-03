@@ -64,3 +64,6 @@ jobs:
 
       - name: Run smoke assertions
         run: surreal import $SURREAL_CONN tests/smoke.surql
+
+      - name: Run regression tests
+        run: surreal import $SURREAL_CONN tests/regression.surql

@@ -45,8 +45,8 @@ DEFINE FIELD governance_refs ON registry TYPE array<record<governance_object>> D
 DEFINE FIELD allowed_entry_types ON registry TYPE array<string> DEFAULT [];
 DEFINE FIELD publication_rules ON registry TYPE array<object> DEFAULT [];
 DEFINE FIELD certification_rules ON registry TYPE array<object> DEFAULT [];
-DEFINE FIELD discovery_config ON registry TYPE object DEFAULT {};
-DEFINE FIELD metadata ON registry TYPE option<object>;
+DEFINE FIELD discovery_config ON registry FLEXIBLE TYPE object DEFAULT {};
+DEFINE FIELD metadata ON registry FLEXIBLE TYPE option<object>;
 DEFINE FIELD created_at ON registry TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON registry TYPE datetime VALUE time::now();
 
@@ -118,7 +118,7 @@ DEFINE FIELD published_at ON registry_entry TYPE option<datetime>;
 DEFINE FIELD deprecated_at ON registry_entry TYPE option<datetime>;
 DEFINE FIELD created_at ON registry_entry TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON registry_entry TYPE datetime VALUE time::now();
-DEFINE FIELD metadata ON registry_entry TYPE option<object>;
+DEFINE FIELD metadata ON registry_entry FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX registry_entry_registry_idx ON registry_entry FIELDS registry;
 DEFINE INDEX registry_entry_entity_idx ON registry_entry FIELDS entity UNIQUE;
@@ -154,9 +154,9 @@ DEFINE FIELD event_type ON registry_event TYPE string
 
 DEFINE FIELD actor ON registry_event TYPE option<record<identity>>;
 DEFINE FIELD reason ON registry_event TYPE option<string>;
-DEFINE FIELD payload ON registry_event TYPE object DEFAULT {};
+DEFINE FIELD payload ON registry_event FLEXIBLE TYPE object DEFAULT {};
 DEFINE FIELD created_at ON registry_event TYPE datetime DEFAULT time::now();
-DEFINE FIELD metadata ON registry_event TYPE option<object>;
+DEFINE FIELD metadata ON registry_event FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX registry_event_entry_idx ON registry_event FIELDS registry_entry;
 DEFINE INDEX registry_event_type_idx ON registry_event FIELDS event_type;

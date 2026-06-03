@@ -64,14 +64,14 @@ DEFINE FIELD confidence ON entity_relation TYPE option<number>
 
 DEFINE FIELD source ON entity_relation TYPE option<string>;
 DEFINE FIELD reason ON entity_relation TYPE option<string>;
-DEFINE FIELD evidence ON entity_relation TYPE option<object>;
-DEFINE FIELD policy_result ON entity_relation TYPE option<object>;
+DEFINE FIELD evidence ON entity_relation FLEXIBLE TYPE option<object>;
+DEFINE FIELD policy_result ON entity_relation FLEXIBLE TYPE option<object>;
 
 DEFINE FIELD valid_from ON entity_relation TYPE datetime DEFAULT time::now();
 DEFINE FIELD valid_to ON entity_relation TYPE option<datetime>;
 DEFINE FIELD created_at ON entity_relation TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON entity_relation TYPE datetime VALUE time::now();
-DEFINE FIELD metadata ON entity_relation TYPE option<object>;
+DEFINE FIELD metadata ON entity_relation FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX entity_relation_type_idx ON entity_relation FIELDS relation_type;
 DEFINE INDEX entity_relation_status_idx ON entity_relation FIELDS status;

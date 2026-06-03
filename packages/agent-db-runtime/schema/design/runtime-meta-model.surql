@@ -118,7 +118,7 @@ DEFINE FIELD status ON card TYPE string DEFAULT 'draft';
 DEFINE FIELD owner ON card TYPE option<record<identity>>;
 DEFINE FIELD issuer ON card TYPE option<record<registry_platform>>;
 DEFINE FIELD dependencies ON card TYPE array<record<card>> DEFAULT [];
-DEFINE FIELD body ON card TYPE object DEFAULT {};
+DEFINE FIELD body ON card FLEXIBLE TYPE object DEFAULT {};
 
 DEFINE TABLE signature SCHEMAFULL;
 DEFINE FIELD card ON signature TYPE record<card>;
@@ -146,7 +146,7 @@ DEFINE FIELD certification_state ON certification TYPE string DEFAULT 'not-certi
 DEFINE FIELD certified_by ON certification TYPE option<record<identity>>;
 DEFINE FIELD certified_at ON certification TYPE option<datetime>;
 DEFINE FIELD expires_at ON certification TYPE option<datetime>;
-DEFINE FIELD scope ON certification TYPE object DEFAULT {};
+DEFINE FIELD scope ON certification FLEXIBLE TYPE object DEFAULT {};
 DEFINE FIELD evidence ON certification TYPE array<record<evidence>> DEFAULT [];
 DEFINE FIELD conditions ON certification TYPE array<string> DEFAULT [];
 DEFINE FIELD rejection_reasons ON certification TYPE array<string> DEFAULT [];
@@ -158,7 +158,7 @@ DEFINE FIELD accreditation_state ON accreditation TYPE string DEFAULT 'not-accre
 DEFINE FIELD accredited_by ON accreditation TYPE option<record<identity>>;
 DEFINE FIELD accredited_at ON accreditation TYPE option<datetime>;
 DEFINE FIELD expires_at ON accreditation TYPE option<datetime>;
-DEFINE FIELD scope ON accreditation TYPE object DEFAULT {};
+DEFINE FIELD scope ON accreditation FLEXIBLE TYPE object DEFAULT {};
 DEFINE FIELD evidence ON accreditation TYPE array<record<evidence>> DEFAULT [];
 DEFINE FIELD conditions ON accreditation TYPE array<string> DEFAULT [];
 DEFINE FIELD rejection_reasons ON accreditation TYPE array<string> DEFAULT [];
@@ -167,7 +167,7 @@ DEFINE TABLE recognition SCHEMAFULL;
 DEFINE FIELD subject_card ON recognition TYPE option<record<card>>;
 DEFINE FIELD recognition_state ON recognition TYPE string DEFAULT 'unknown';
 DEFINE FIELD recognized_by ON recognition TYPE array<record<identity>> DEFAULT [];
-DEFINE FIELD scope ON recognition TYPE object DEFAULT {};
+DEFINE FIELD scope ON recognition FLEXIBLE TYPE object DEFAULT {};
 DEFINE FIELD signals ON recognition TYPE array<string> DEFAULT [];
 DEFINE FIELD score ON recognition TYPE option<number>;
 DEFINE FIELD evidence ON recognition TYPE array<record<evidence>> DEFAULT [];
@@ -300,7 +300,7 @@ DEFINE FIELD name ON rag_index TYPE string;
 DEFINE FIELD artifacts ON rag_index TYPE array<record<artifact>> DEFAULT [];
 DEFINE FIELD knowledge ON rag_index TYPE array<record<knowledge>> DEFAULT [];
 DEFINE FIELD source_anchors ON rag_index TYPE array<record<source_anchor>> DEFAULT [];
-DEFINE FIELD chunk_metadata ON rag_index TYPE object DEFAULT {};
+DEFINE FIELD chunk_metadata ON rag_index FLEXIBLE TYPE object DEFAULT {};
 
 DEFINE TABLE evaluation SCHEMAFULL;
 DEFINE FIELD subject_id ON evaluation TYPE string;

@@ -76,7 +76,7 @@ DEFINE FIELD size_bytes ON artifact TYPE option<int>;
 
 DEFINE FIELD version ON artifact TYPE string DEFAULT "0.1.0";
 DEFINE FIELD version_of ON artifact TYPE option<record<artifact>>;
-DEFINE FIELD content_snapshot ON artifact TYPE option<object>;
+DEFINE FIELD content_snapshot ON artifact FLEXIBLE TYPE option<object>;
 DEFINE FIELD content_text ON artifact TYPE option<string>;
 DEFINE FIELD schema_refs ON artifact TYPE array<record<schema_definition>> DEFAULT [];
 DEFINE FIELD governed_by ON artifact TYPE array<record<governance_object>> DEFAULT [];
@@ -91,7 +91,7 @@ DEFINE FIELD created_at ON artifact TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON artifact TYPE datetime VALUE time::now();
 DEFINE FIELD published_at ON artifact TYPE option<datetime>;
 DEFINE FIELD archived_at ON artifact TYPE option<datetime>;
-DEFINE FIELD metadata ON artifact TYPE option<object>;
+DEFINE FIELD metadata ON artifact FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX artifact_entity_idx ON artifact FIELDS entity UNIQUE;
 DEFINE INDEX artifact_owner_idx ON artifact FIELDS owner;
@@ -128,9 +128,9 @@ DEFINE FIELD event_type ON artifact_event TYPE string
 
 DEFINE FIELD actor ON artifact_event TYPE option<record<identity>>;
 DEFINE FIELD reason ON artifact_event TYPE option<string>;
-DEFINE FIELD payload ON artifact_event TYPE object DEFAULT {};
+DEFINE FIELD payload ON artifact_event FLEXIBLE TYPE object DEFAULT {};
 DEFINE FIELD created_at ON artifact_event TYPE datetime DEFAULT time::now();
-DEFINE FIELD metadata ON artifact_event TYPE option<object>;
+DEFINE FIELD metadata ON artifact_event FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX artifact_event_artifact_idx ON artifact_event FIELDS artifact;
 DEFINE INDEX artifact_event_type_idx ON artifact_event FIELDS event_type;

@@ -66,18 +66,18 @@ DEFINE FIELD assignee ON task TYPE option<record<identity>>;
 DEFINE FIELD delegated_by ON task TYPE option<record<identity>>;
 DEFINE FIELD delegated_to ON task TYPE option<record<identity>>;
 
-DEFINE FIELD input ON task TYPE object DEFAULT {};
-DEFINE FIELD expected_output ON task TYPE option<object>;
-DEFINE FIELD output ON task TYPE option<object>;
-DEFINE FIELD outcome ON task TYPE option<object>;
-DEFINE FIELD evidence ON task TYPE option<object>;
-DEFINE FIELD error ON task TYPE option<object>;
+DEFINE FIELD input ON task FLEXIBLE TYPE object DEFAULT {};
+DEFINE FIELD expected_output ON task FLEXIBLE TYPE option<object>;
+DEFINE FIELD output ON task FLEXIBLE TYPE option<object>;
+DEFINE FIELD outcome ON task FLEXIBLE TYPE option<object>;
+DEFINE FIELD evidence ON task FLEXIBLE TYPE option<object>;
+DEFINE FIELD error ON task FLEXIBLE TYPE option<object>;
 
 DEFINE FIELD dependencies ON task TYPE array<record<task>> DEFAULT [];
 DEFINE FIELD blockers ON task TYPE array<record<task>> DEFAULT [];
 DEFINE FIELD retry_count ON task TYPE int DEFAULT 0;
 DEFINE FIELD max_retries ON task TYPE int DEFAULT 0;
-DEFINE FIELD retry_policy ON task TYPE option<object>;
+DEFINE FIELD retry_policy ON task FLEXIBLE TYPE option<object>;
 DEFINE FIELD rollback_task ON task TYPE option<record<task>>;
 DEFINE FIELD compensation_task ON task TYPE option<record<task>>;
 
@@ -85,7 +85,7 @@ DEFINE FIELD approval_required ON task TYPE bool DEFAULT false;
 DEFINE FIELD approval ON task TYPE option<record<governance_approval>>;
 DEFINE FIELD policy_evaluations ON task TYPE array<record<policy_evaluation>> DEFAULT [];
 
-DEFINE FIELD sla ON task TYPE option<object>;
+DEFINE FIELD sla ON task FLEXIBLE TYPE option<object>;
 DEFINE FIELD estimated_cost ON task TYPE option<number>;
 DEFINE FIELD actual_cost ON task TYPE option<number>;
 DEFINE FIELD estimated_duration_seconds ON task TYPE option<int>;
@@ -102,7 +102,7 @@ DEFINE FIELD started_at ON task TYPE option<datetime>;
 DEFINE FIELD completed_at ON task TYPE option<datetime>;
 DEFINE FIELD created_at ON task TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON task TYPE datetime VALUE time::now();
-DEFINE FIELD metadata ON task TYPE option<object>;
+DEFINE FIELD metadata ON task FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX task_entity_idx ON task FIELDS entity UNIQUE;
 DEFINE INDEX task_action_idx ON task FIELDS action;
@@ -147,9 +147,9 @@ DEFINE FIELD actor ON task_event TYPE option<record<identity>>;
 DEFINE FIELD from_status ON task_event TYPE option<string>;
 DEFINE FIELD to_status ON task_event TYPE option<string>;
 DEFINE FIELD reason ON task_event TYPE option<string>;
-DEFINE FIELD payload ON task_event TYPE object DEFAULT {};
+DEFINE FIELD payload ON task_event FLEXIBLE TYPE object DEFAULT {};
 DEFINE FIELD created_at ON task_event TYPE datetime DEFAULT time::now();
-DEFINE FIELD metadata ON task_event TYPE option<object>;
+DEFINE FIELD metadata ON task_event FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX task_event_task_idx ON task_event FIELDS task;
 DEFINE INDEX task_event_type_idx ON task_event FIELDS event_type;

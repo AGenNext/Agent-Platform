@@ -37,7 +37,7 @@ DEFINE FIELD description ON assurance_product TYPE option<string>;
 DEFINE FIELD status ON assurance_product TYPE string DEFAULT "draft"
   ASSERT $value IN ["draft", "active", "inactive", "deprecated", "archived"];
 
-DEFINE FIELD coverage_scope ON assurance_product TYPE object DEFAULT {};
+DEFINE FIELD coverage_scope ON assurance_product FLEXIBLE TYPE object DEFAULT {};
 DEFINE FIELD exclusions ON assurance_product TYPE array<object> DEFAULT [];
 DEFINE FIELD eligibility_rules ON assurance_product TYPE array<object> DEFAULT [];
 DEFINE FIELD trigger_conditions ON assurance_product TYPE array<object> DEFAULT [];
@@ -52,7 +52,7 @@ DEFINE FIELD valid_from ON assurance_product TYPE datetime DEFAULT time::now();
 DEFINE FIELD valid_to ON assurance_product TYPE option<datetime>;
 DEFINE FIELD created_at ON assurance_product TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON assurance_product TYPE datetime VALUE time::now();
-DEFINE FIELD metadata ON assurance_product TYPE option<object>;
+DEFINE FIELD metadata ON assurance_product FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX assurance_product_entity_idx ON assurance_product FIELDS entity UNIQUE;
 DEFINE INDEX assurance_product_type_idx ON assurance_product FIELDS assurance_type;
@@ -82,7 +82,7 @@ DEFINE FIELD effective_from ON assurance_binding TYPE datetime DEFAULT time::now
 DEFINE FIELD effective_to ON assurance_binding TYPE option<datetime>;
 DEFINE FIELD created_at ON assurance_binding TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON assurance_binding TYPE datetime VALUE time::now();
-DEFINE FIELD metadata ON assurance_binding TYPE option<object>;
+DEFINE FIELD metadata ON assurance_binding FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX assurance_binding_product_idx ON assurance_binding FIELDS assurance_product;
 DEFINE INDEX assurance_binding_subject_idx ON assurance_binding FIELDS subject;
@@ -145,16 +145,16 @@ DEFINE FIELD requested_amount ON assurance_claim TYPE option<number>;
 DEFINE FIELD approved_amount ON assurance_claim TYPE option<number>;
 DEFINE FIELD currency ON assurance_claim TYPE string DEFAULT "USD";
 DEFINE FIELD reason_code ON assurance_claim TYPE option<string>;
-DEFINE FIELD evidence ON assurance_claim TYPE option<object>;
+DEFINE FIELD evidence ON assurance_claim FLEXIBLE TYPE option<object>;
 DEFINE FIELD policy_evaluations ON assurance_claim TYPE array<record<policy_evaluation>> DEFAULT [];
 DEFINE FIELD evaluations ON assurance_claim TYPE array<record<evaluation>> DEFAULT [];
-DEFINE FIELD resolution ON assurance_claim TYPE option<object>;
+DEFINE FIELD resolution ON assurance_claim FLEXIBLE TYPE option<object>;
 DEFINE FIELD settlement_ref ON assurance_claim TYPE option<string>;
 DEFINE FIELD due_at ON assurance_claim TYPE option<datetime>;
 DEFINE FIELD decided_at ON assurance_claim TYPE option<datetime>;
 DEFINE FIELD created_at ON assurance_claim TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON assurance_claim TYPE datetime VALUE time::now();
-DEFINE FIELD metadata ON assurance_claim TYPE option<object>;
+DEFINE FIELD metadata ON assurance_claim FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX assurance_claim_entity_idx ON assurance_claim FIELDS entity UNIQUE;
 DEFINE INDEX assurance_claim_binding_idx ON assurance_claim FIELDS assurance_binding;
@@ -190,9 +190,9 @@ DEFINE FIELD actor ON assurance_claim_event TYPE option<record<identity>>;
 DEFINE FIELD from_status ON assurance_claim_event TYPE option<string>;
 DEFINE FIELD to_status ON assurance_claim_event TYPE option<string>;
 DEFINE FIELD reason ON assurance_claim_event TYPE option<string>;
-DEFINE FIELD payload ON assurance_claim_event TYPE object DEFAULT {};
+DEFINE FIELD payload ON assurance_claim_event FLEXIBLE TYPE object DEFAULT {};
 DEFINE FIELD created_at ON assurance_claim_event TYPE datetime DEFAULT time::now();
-DEFINE FIELD metadata ON assurance_claim_event TYPE option<object>;
+DEFINE FIELD metadata ON assurance_claim_event FLEXIBLE TYPE option<object>;
 
 DEFINE INDEX assurance_claim_event_claim_idx ON assurance_claim_event FIELDS claim;
 DEFINE INDEX assurance_claim_event_type_idx ON assurance_claim_event FIELDS event_type;
