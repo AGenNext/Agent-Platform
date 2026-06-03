@@ -17,12 +17,12 @@ type NavItem = { id: View; label: string; icon: React.ReactNode; hint: string }
 
 const sections: { heading: string; items: NavItem[] }[] = [
   {
-    heading: 'Workspace',
+    heading: 'Build',
     items: [
-      { id: 'spaces', label: 'Spaces', icon: <LayoutGrid size={17} />,      hint: 'Your agent workspaces' },
-      { id: 'chat',   label: 'Chat',   icon: <MessageSquare size={17} />,   hint: 'Agent, system & human channels' },
-      { id: 'agents',   label: 'Agents',   icon: <Bot size={17} />,   hint: 'Agent roster across spaces' },
-      { id: 'composer', label: 'Composer', icon: <Wand2 size={17} />, hint: 'Chat → generated agent pipeline' },
+      { id: 'composer', label: 'Composer', icon: <Wand2 size={17} />,        hint: 'Chat → generated agent pipeline' },
+      { id: 'spaces',   label: 'Spaces',   icon: <LayoutGrid size={17} />,   hint: 'Your agent workspaces' },
+      { id: 'chat',     label: 'Chat',     icon: <MessageSquare size={17} />, hint: 'Agent, system & human channels' },
+      { id: 'agents',   label: 'Agents',   icon: <Bot size={17} />,          hint: 'Agent roster across spaces' },
     ],
   },
   {
@@ -46,7 +46,7 @@ const sections: { heading: string; items: NavItem[] }[] = [
 const allItems = sections.flatMap(s => s.items)
 
 export default function App() {
-  const [view, setView] = useState<View>('spaces')
+  const [view, setView] = useState<View>('composer')
   const active = allItems.find(n => n.id === view)!
 
   return (
@@ -124,7 +124,7 @@ export default function App() {
         </header>
 
         <div className="flex-1 px-10 py-8 overflow-auto">
-          <div className="mx-auto max-w-6xl">
+          <div className={`mx-auto ${view === 'composer' ? 'max-w-none h-full' : 'max-w-6xl'}`}>
             {view === 'spaces'     && <SpacesView />}
             {view === 'chat'       && <ChannelsView />}
             {view === 'agents'     && <AgentsView />}
