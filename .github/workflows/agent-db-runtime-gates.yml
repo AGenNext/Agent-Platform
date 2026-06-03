@@ -13,6 +13,9 @@ on:
       - ".github/workflows/agent-db-runtime-gates.yml"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   validate-agent-db-runtime:
     name: Validate Agent DB Runtime
@@ -28,7 +31,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
 
       - name: Install SurrealDB CLI
         working-directory: /tmp

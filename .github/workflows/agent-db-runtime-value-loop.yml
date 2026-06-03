@@ -11,6 +11,9 @@ on:
       - '.github/workflows/agent-db-runtime-value-loop.yml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   value-loop-validation:
     name: Validate value loop runtime slice
@@ -24,7 +27,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
 
       - name: Install SurrealDB CLI
         working-directory: /tmp
@@ -64,11 +67,5 @@ jobs:
           mkdir -p reports/evidence
           printf 'SELECT count() AS count FROM output GROUP ALL;SELECT count() AS count FROM outcome GROUP ALL;SELECT count() AS count FROM value_realization GROUP ALL;SELECT count() AS count FROM learning GROUP ALL;SELECT count() AS count FROM improvement GROUP ALL;' \
             | surreal sql $SURREAL_CONN --json > reports/evidence/value-loop-validation-output.json || true
-
-      - name: Upload value-loop evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: value-loop-validation-output
-          path: packages/agent-db-runtime/reports/evidence/value-loop-validation-output.json
-          if-no-files-found: warn
+          echo "value-loop evidence:"
+          cat reports/evidence/value-loop-validation-output.json || true
