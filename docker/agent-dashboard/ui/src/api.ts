@@ -101,6 +101,10 @@ export interface LearningPath {
   enrolled: number
   progress: number
   modules: LearningModule[]
+  /** Canonical source label, e.g. "open-lmx" for referenced courses */
+  source?: string
+  /** External link for referenced courses (opens out instead of the in-app player) */
+  href?: string
 }
 
 export interface AgentProfile {
