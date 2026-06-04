@@ -3,17 +3,19 @@ interface BadgeProps {
   variant?: 'green' | 'red' | 'yellow' | 'blue' | 'gray'
 }
 
-const colors = {
-  green: 'bg-emerald-900/40 text-emerald-400 border-emerald-800',
-  red:   'bg-red-900/40 text-red-400 border-red-800',
-  yellow:'bg-amber-900/40 text-amber-400 border-amber-800',
-  blue:  'bg-indigo-900/40 text-indigo-400 border-indigo-800',
-  gray:  'bg-slate-800 text-slate-400 border-slate-700',
+const styles: Record<NonNullable<BadgeProps['variant']>, { wrap: string; dot: string }> = {
+  green:  { wrap: 'bg-ok/10 text-ok ring-ok/25',          dot: 'bg-ok' },
+  red:    { wrap: 'bg-bad/10 text-bad ring-bad/25',        dot: 'bg-bad' },
+  yellow: { wrap: 'bg-warn/10 text-warn ring-warn/25',     dot: 'bg-warn' },
+  blue:   { wrap: 'bg-accent/10 text-accent ring-accent/25', dot: 'bg-accent' },
+  gray:   { wrap: 'bg-muted/10 text-muted ring-line-strong', dot: 'bg-faint' },
 }
 
 export function Badge({ label, variant = 'gray' }: BadgeProps) {
+  const s = styles[variant]
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${colors[variant]}`}>
+    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium ring-1 ${s.wrap}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
       {label}
     </span>
   )

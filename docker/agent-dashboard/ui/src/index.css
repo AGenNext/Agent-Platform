@@ -1,17 +1,100 @@
 @import "tailwindcss";
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+/* ------------------------------------------------------------------ */
+/* Design tokens — single source of truth for the dashboard theme.     */
+/* Tailwind v4 generates utilities from these (bg-surface, border-line,*/
+/* text-accent, text-muted, ...). Tune the product look here.          */
+/* ------------------------------------------------------------------ */
+@theme {
+  /* Elevation ramp: canvas -> surface -> raised -> field */
+  --color-canvas: #090c13;
+  --color-surface: #0e131d;
+  --color-raised: #141b29;
+  --color-raised-hover: #19212f;
+  --color-field: #161e2d;
 
-body {
-  background: #080c14;
-  color: #e2e8f0;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
+  /* Hairlines */
+  --color-line: #1f2735;
+  --color-line-strong: #2b3548;
+
+  /* Text */
+  --color-ink: #e9edf6;
+  --color-muted: #9aa4b8;
+  --color-faint: #5d6678;
+
+  /* Brand + semantic — Harness-style purple/magenta with cyan gradient accent */
+  --color-accent: #b07bff;
+  --color-accent-strong: #8b3dff;
+  --color-accent-2: #22d3ee;
+  --color-ok: #34d399;
+  --color-warn: #fbbf24;
+  --color-bad: #fb7185;
+  --color-info: #60a5fa;
+
+  --font-sans: "Inter", "Inter var", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --radius-card: 0.75rem;
 }
 
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: #111827; }
-::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { color-scheme: dark; }
+
+body {
+  /* Harness-style radial depth: purple + cyan glow behind the app */
+  background:
+    radial-gradient(1100px 560px at 16% -10%, #2a1650 0%, transparent 58%),
+    radial-gradient(820px 460px at 102% -4%, #0b2f3a 0%, transparent 52%),
+    var(--color-canvas);
+  background-attachment: fixed;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: -0.006em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Tabular figures for metrics / IDs */
+.nums { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+
+/* Consistent, accessible focus ring */
+:where(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2a3448; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #3a455c; }
+
+/* Harness-style gradient glow border (purple -> cyan) for hero panels */
+.glow-border {
+  position: relative;
+  border-radius: 0.75rem;
+}
+.glow-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, color-mix(in oklab, var(--color-accent) 80%, transparent), color-mix(in oklab, var(--color-accent-2) 70%, transparent));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+}
+.glow-border::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  box-shadow: 0 0 40px -12px color-mix(in oklab, var(--color-accent) 60%, transparent);
+  pointer-events: none;
+  z-index: -1;
+}
 
 #root { display: flex; flex-direction: column; min-height: 100vh; }

@@ -12,6 +12,13 @@ async function req<T>(method: string, path: string, body?: unknown): Promise<T> 
 
 export const api = {
   health: () => req<HealthStatus>('GET', '/health'),
+  listSpaces: () => req<Space[]>('GET', '/spaces'),
+  listChannels: () => req<Channel[]>('GET', '/channels'),
+  listMilestones: () => req<Milestone[]>('GET', '/milestones'),
+  agentRoster: () => req<AgentProfile[]>('GET', '/agents/roster'),
+  gatewayRoutes: () => req<ModelRoute[]>('GET', '/model-router/routes'),
+  hubArtifacts: () => req<HubArtifact[]>('GET', '/artifacts/hub'),
+  learningPaths: () => req<LearningPath[]>('GET', '/learning/paths'),
   listObjectives: (status?: string) =>
     req<Objective[]>('GET', `/objectives${status ? `?status=${status}` : ''}`),
   createObjective: (payload: { title: string; objective_type: string; payload?: unknown }) =>
@@ -30,6 +37,98 @@ export const api = {
     req<TrustScore>('GET', `/trust/artifacts/${artifactId}`),
   usageSummary: () =>
     req<UsageSummary>('GET', '/model-router/usage/summary'),
+}
+
+export interface Space {
+  id: string
+  name: string
+  owner: string
+  description: string
+  status: string
+  kind: 'research' | 'generation' | 'eval' | 'generic'
+  runs: number
+  artifacts: number
+  trust: number
+  updated_at: string
+}
+
+export interface Channel {
+  id: string
+  name: string
+  kind: 'agent' | 'system' | 'human'
+  unread: number
+  last_message: string
+  last_at: string
+  active: boolean
+}
+
+export interface ModelRoute {
+  id: string
+  provider: string
+  model: string
+  requests: number
+  cost_usd: number
+  p95_ms: number
+  error_rate: number
+  share: number
+  status: string
+}
+
+export interface HubArtifact {
+  id: string
+  title: string
+  artifact_type: 'deck' | 'doc' | 'dataset' | 'code' | 'report'
+  space: string
+  version: string
+  eval_score: number
+  trust: number
+  status: string
+  downloads: number
+  updated_at: string
+}
+
+export interface LearningModule {
+  title: string
+  done: boolean
+}
+
+export interface LearningPath {
+  id: string
+  title: string
+  description: string
+  level: 'Beginner' | 'Intermediate' | 'Advanced'
+  duration_min: number
+  enrolled: number
+  progress: number
+  modules: LearningModule[]
+  /** Canonical source label, e.g. "open-lmx" for referenced courses */
+  source?: string
+  /** External link for referenced courses (opens out instead of the in-app player) */
+  href?: string
+}
+
+export interface AgentProfile {
+  id: string
+  role: string
+  status: string
+  model: string
+  space: string
+  skills: string[]
+  current_task?: string
+  runs: number
+  trust: number
+}
+
+export interface Milestone {
+  id: string
+  name: string
+  space: string
+  status: string
+  progress: number
+  due_at: string
+  tasks_done: number
+  tasks_total: number
+  owner: string
 }
 
 export interface HealthStatus {

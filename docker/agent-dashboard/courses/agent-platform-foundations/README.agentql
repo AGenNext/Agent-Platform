@@ -1,0 +1,34 @@
+namespace agennext.platform.courses.agent_platform_foundations_readme
+
+vocabulary agent_platform_foundations {
+  term course means "Hands-on course covering the full platform stack" maps to platform.learning.course
+  term canonical_format means "Course authored in the OpenLMX canonical course format" maps to platform.learning.canonical_format
+  term competency_credential means "Verifiable competency credential earned on course completion" maps to platform.learning.credential
+  term skill_passport means "Learner's accumulated competency record" maps to platform.learning.skill_passport
+  term module means "A single read-edit-run lesson within the course" maps to platform.learning.module
+  term referenced_course means "External canonical course referenced from the open-lmx catalog" maps to platform.learning.referenced_course
+}
+
+constitution AgentPlatformFoundationsReadme {
+  rule docs_agentql_first: "Course README content must be authored in AgentQL first; README.md is the rendered output."
+  rule canonical_format: "Courses follow the OpenLMX canonical format: every module is a hands-on read-edit-run lesson."
+  rule platform_stack_coverage: "The course teaches the loop agents-propose, database-records, gates-enforce using the platform's own primitives: Spaces, Objectives, Composer/AgentQL, policy gates, CLEAR evaluation, trust scoring, preview/deploy, and the AI Gateway."
+  rule business_logic_location: "All runtime business logic taught here lives in SurrealDB schema, SurrealQL functions, SurrealDB DEFINE API endpoints, events/permissions, AgentQL-generated SurrealQL, or SurrealML bindings."
+  rule browser_only_typescript: "The dashboard surfacing these courses is browser-side presentation only and owns no product/runtime business logic."
+  rule credential_progression: "Completion follows the OpenLMX progression Knowledge to Learning to Assessment to Competency to Credential to Work Readiness, adding the competency to the learner's skill passport."
+  rule referenced_courses: "Referenced open-lmx courses (LangGraph + Next.js, Multi-Tenant Enterprise SaaS) link out to their canonical source rather than embedding in-app lessons."
+}
+
+course AgentPlatformFoundations {
+  level "Intermediate"
+  duration_minutes 90
+  credential "Agent Platform Foundations"
+
+  module spaces_and_objectives competency "Spaces, Objectives"
+  module composer_and_agentql competency "Composer, AgentQL"
+  module policy_gates competency "Governance, Policy"
+  module clear_evaluation competency "Evaluation, CLEAR"
+  module trust_scoring competency "Trust"
+  module preview_and_deploy competency "Deploy, Endpoints"
+  module ai_gateway_routing_and_cost competency "Routing, Cost"
+}

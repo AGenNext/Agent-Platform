@@ -1,0 +1,29 @@
+namespace agennext.platform.courses.governance_guardrails_readme
+
+vocabulary governance_guardrails {
+  term course means "Hands-on course on policy, evaluation, and trust guardrails" maps to platform.learning.course
+  term policy_gate means "Runtime policy evaluated before any agent acts" maps to platform.governance.policy_gate
+  term clear_eval means "CLEAR composite evaluation gating publication" maps to platform.evaluation.clear
+  term trust_score means "Evidence-weighted trust feeding the publish gate" maps to platform.trust.score
+  term failure_handling means "Audited recovery when a gate denies" maps to platform.governance.failure_handling
+}
+
+constitution GovernanceGuardrailsReadme {
+  rule docs_agentql_first: "Course README content must be authored in AgentQL first; README.md is the rendered output."
+  rule governance_by_construction: "Policy gates run before agents act; a denied policy throws and the pipeline never executes."
+  rule evaluation_gate: "Publication is gated on a CLEAR composite score meeting the threshold."
+  rule trust_gate: "Trust accumulates as evidence and feeds the publish decision."
+  rule failure_is_audited: "A denied gate is an audited event, recorded and routed, never an unhandled crash."
+  rule business_logic_location: "All taught runtime logic lives in SurrealDB schema, SurrealQL functions, DEFINE API endpoints, events/permissions, AgentQL-generated SurrealQL, or SurrealML bindings."
+}
+
+course GovernanceGuardrails {
+  level "Intermediate"
+  duration_minutes 50
+  credential "Governance & Guardrails"
+
+  module policy_gates competency "Governance, Policy"
+  module clear_eval competency "Evaluation, CLEAR"
+  module trust_scoring competency "Trust"
+  module failure_handling competency "Resilience"
+}
