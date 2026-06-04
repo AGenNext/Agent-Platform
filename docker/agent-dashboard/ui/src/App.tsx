@@ -71,7 +71,7 @@ export default function App() {
             </div>
             <div className="leading-tight">
               <div className="text-[15px] font-semibold text-ink tracking-tight">RealGraph</div>
-              <div className="text-[11px] text-faint">Agent Workspace</div>
+              <div className="text-[11px] text-faint">Agent-Native SaaS</div>
             </div>
           </div>
         </div>
