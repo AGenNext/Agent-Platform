@@ -1,0 +1,34 @@
+namespace agennext.platform.readme
+
+vocabulary platform_readme {
+  term surrealdb_runtime means "SurrealDB is the runtime, data, policy, API, permissions, memory, and decision layer" maps to platform.runtime.surrealdb
+  term surrealml_inference means "SurrealML is the learned inference layer" maps to platform.runtime.surrealml
+  term agentql_authoring means "AgentQL authors runtime vocabulary, ontology, policies, APIs, beliefs, mind state, constitution rules, and generated SurrealDB artifacts" maps to platform.language.agentql
+  term edge_delivery means "Validation and authoring feedback run fast in the user's browser or client before server submission" maps to platform.validation.edge
+  term same_language_loop means "Agents read, validate, write, and present in AgentQL to minimize semantic conversion and hallucination risk" maps to platform.documentation.same_language_loop
+}
+
+brain SurrealRuntime {
+  owns data
+  owns business_logic
+  owns policy
+  owns api
+  owns permissions
+  owns events
+  owns live_queries
+  owns memory
+  owns beliefs
+  owns decisions
+}
+
+constitution PlatformReadme {
+  rule surrealdb_first: "SurrealDB is the platform layer for data processing, storage, business logic, policy enforcement, runtime state, API endpoints, permissions, and deterministic decisions."
+  rule surrealml_inference: "SurrealML is the learned inference layer."
+  rule no_business_logic_outside_surreal: "Business logic outside SurrealDB or SurrealML is prohibited unless quorum consensus approves a documented exception."
+  rule edge_validation: "Validation and authoring feedback must be fast and delivered at the edge."
+  rule client_first: "Checks that can run locally must run in the user's browser or client before server submission."
+  rule browser_typescript_only: "Outside SurrealDB, SurrealQL, SurrealML, and AgentQL, the only approved implementation language is browser-side TypeScript."
+  rule agentql_authoring: "AgentQL defines agent runtime vocabulary, ontology, policies, APIs, beliefs, mind state, constitution rules, and SurrealDB-owned business behavior."
+  rule agentql_runtime_target: "AgentQL compiles to SurrealDB and SurrealML artifacts and must not create a second runtime business-logic layer."
+  rule same_language_hallucination_control: "When an agent reads and presents in the same language, hallucination risk is minimized."
+}

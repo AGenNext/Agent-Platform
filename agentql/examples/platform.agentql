@@ -1,0 +1,62 @@
+namespace agennext.platform
+
+vocabulary runtime {
+  term brain means "SurrealDB-owned runtime decision layer" maps to agent_runtime.brain
+  term mind means "SurrealDB-owned state, context, goals, and memory for an agent" maps to agent_runtime.mind
+  term belief means "Source-grounded claim with confidence and provenance" maps to agent_runtime.belief
+  term constitution means "SurrealDB-owned policy and operating law" maps to agent_runtime.constitution
+}
+
+entity Agent {
+  id: string required
+  role: string required
+  status: string required
+}
+
+entity Belief {
+  claim: string required
+  confidence: float
+  source: string
+  provenance: array
+}
+
+relation holds Agent -> Belief {
+  created_at: datetime required
+  confidence: float
+}
+
+brain SurrealRuntime {
+  owns data
+  owns business_logic
+  owns policy
+  owns api
+  owns permissions
+  owns events
+  owns live_queries
+  owns memory
+  owns beliefs
+  owns decisions
+}
+
+mind AgentMind for Agent {
+  goals: array
+  context: object
+  memory: array
+}
+
+belief RuntimeIsData {
+  subject Agent
+  claim "Runtime itself is data"
+  confidence 1.0
+  source "AGENTS.md"
+}
+
+constitution PlatformLaw {
+  rule no_python_business_logic: "Business logic belongs in SurrealDB or SurrealML"
+  rule no_design_change_without_quorum: "Any design change requires quorum consensus"
+  rule no_vocabulary_change_without_quorum: "Any vocabulary or ontology change requires quorum consensus"
+}
+
+api get "/.well-known/agent-platform.json" returns surrealdb
+function fn.platform.manifest() returns object as surrealdb
+surrealml TrustClassifier for classification input Belief output Belief

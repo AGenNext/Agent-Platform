@@ -1,0 +1,44 @@
+namespace agennext.platform.agent_db_runtime.readme
+
+vocabulary agent_db_runtime_readme {
+  term governed_state_machine means "The database is a governed state machine for agents, humans, tools, workflows, decisions, policies, trust, memory, knowledge, commerce, and collaboration" maps to runtime.kernel.governed_state_machine
+  term operational_kernel means "Agent DB Runtime is the SurrealDB-backed operational kernel for AGenNext" maps to runtime.kernel.surrealdb
+  term operational_language means "The package defines the common operational language used by the platform" maps to runtime.kernel.language
+  term surrealdb_cli_only means "The only runtime tool is the SurrealDB CLI; there is no Node, npm, or TypeScript tooling in the package" maps to runtime.kernel.tooling.surreal_cli
+  term deployment_gates means "Deployment is blocked until SurrealDB CLI install, server start, core schema apply, seed, smoke assertions, and value-loop assertions pass" maps to runtime.kernel.deployment_gates
+  term database_as_agents means "Agents propose, policies govern, humans approve, workers execute, and the database reconciles" maps to runtime.kernel.database_as_agents
+}
+
+brain SurrealRuntimeKernel {
+  owns data
+  owns identity
+  owns security
+  owns governance
+  owns protocol
+  owns registry
+  owns action
+  owns task
+  owns decision
+  owns workflow
+  owns evaluation
+  owns trust
+  owns memory
+  owns knowledge
+  owns artifact
+  owns assurance
+  owns issue
+  owns collaboration
+  owns commerce
+}
+
+constitution AgentDbRuntimeReadme {
+  rule surrealdb_kernel: "Agent DB Runtime is the SurrealDB-backed operational kernel and canonical model for the platform."
+  rule governed_truth: "The database owns governed truth; agents and workers must not mutate truth without leaving a trace."
+  rule propose_govern_reconcile: "Agents propose, policies govern, humans approve, workers execute, and the database reconciles."
+  rule explicit_human_approval: "Human approval is explicit, not hidden inside prompts."
+  rule provenance_required: "Everything important has lifecycle, ownership, time, evidence, and provenance."
+  rule memory_not_canonical: "Memory is not canonical knowledge; knowledge requires provenance, verification, and dispute handling."
+  rule surreal_cli_only: "The only runtime tool is the SurrealDB CLI; no Node, npm, or TypeScript tooling is used or permitted in the package."
+  rule deployment_gated: "A green static validator alone is not deployment readiness; the live SurrealDB apply gate must also pass."
+  rule same_language_hallucination_control: "When an agent reads and presents in the same language, hallucination risk is minimized."
+}

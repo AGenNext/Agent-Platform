@@ -1,0 +1,277 @@
+apiVersion: agennext.io/taxonomy/v0.1
+kind: ValueLoopTaxonomy
+metadata:
+  name: value-loop-taxonomy
+  version: 0.1.0
+  status: draft
+  owner: registry-platform
+  description: Controlled values for output, outcome, value realization, learning, and improvement.
+
+principles:
+  - Value realization must link work output to beneficiary outcome.
+  - Learning must be classified before it can drive improvement.
+  - Improvement must be traceable to evidence and learning.
+  - Taxonomy values are controlled vocabulary, not schema definitions.
+
+terms:
+  output_type:
+    - value: document
+      displayName: Document
+      description: Written or structured document output.
+      status: active
+    - value: code
+      displayName: Code
+      description: Source code, patch, script, or executable implementation output.
+      status: active
+    - value: report
+      displayName: Report
+      description: Analytical, validation, audit, or status report.
+      status: active
+    - value: decision_record
+      displayName: Decision Record
+      description: Documented decision with rationale and evidence.
+      status: active
+    - value: validation_result
+      displayName: Validation Result
+      description: Result produced by validation, test, check, or smoke execution.
+      status: active
+    - value: artifact
+      displayName: Artifact
+      description: Durable artifact produced by work.
+      status: active
+    - value: configuration
+      displayName: Configuration
+      description: Runtime, infrastructure, policy, or application configuration output.
+      status: active
+    - value: dataset
+      displayName: Dataset
+      description: Dataset or data product output.
+      status: active
+    - value: workflow
+      displayName: Workflow
+      description: Workflow, runbook, or executable process definition.
+      status: active
+
+  outcome_type:
+    - value: achieved
+      displayName: Achieved
+      description: Intended outcome was achieved.
+      status: active
+    - value: partially_achieved
+      displayName: Partially Achieved
+      description: Intended outcome was partially achieved.
+      status: active
+    - value: not_achieved
+      displayName: Not Achieved
+      description: Intended outcome was not achieved.
+      status: active
+    - value: exceeded
+      displayName: Exceeded
+      description: Outcome exceeded target or expectation.
+      status: active
+    - value: blocked
+      displayName: Blocked
+      description: Outcome could not be achieved due to blocker.
+      status: active
+    - value: unintended
+      displayName: Unintended
+      description: Outcome occurred but was not originally intended.
+      status: active
+
+  value_type:
+    - value: financial
+      displayName: Financial Value
+      description: Revenue, cost, margin, profit, or financial benefit.
+      status: active
+    - value: operational
+      displayName: Operational Value
+      description: Operational efficiency, throughput, flow, or reliability value.
+      status: active
+    - value: user
+      displayName: User Value
+      description: Value realized by user experience, adoption, satisfaction, or productivity.
+      status: active
+    - value: compliance
+      displayName: Compliance Value
+      description: Value from meeting law, regulation, policy, standard, or audit requirement.
+      status: active
+    - value: trust
+      displayName: Trust Value
+      description: Value from improved trust, confidence, transparency, or auditability.
+      status: active
+    - value: knowledge
+      displayName: Knowledge Value
+      description: Value from reusable verified knowledge, documentation, or learning.
+      status: active
+    - value: risk_reduction
+      displayName: Risk Reduction
+      description: Value from reduced likelihood or impact of risk.
+      status: active
+    - value: time_saved
+      displayName: Time Saved
+      description: Value from reduced cycle time, lead time, or manual effort.
+      status: active
+    - value: quality_improvement
+      displayName: Quality Improvement
+      description: Value from improved correctness, accuracy, or quality.
+      status: active
+    - value: reliability_improvement
+      displayName: Reliability Improvement
+      description: Value from improved uptime, resilience, recovery, or SLA performance.
+      status: active
+
+  learning_type:
+    - value: decision_learning
+      displayName: Decision Learning
+      description: Learning that improves future decisions.
+      status: active
+    - value: skill_learning
+      displayName: Skill Learning
+      description: Learning that improves skill definitions or execution.
+      status: active
+    - value: tool_learning
+      displayName: Tool Learning
+      description: Learning about tool behavior, fit, limits, or performance.
+      status: active
+    - value: operator_learning
+      displayName: Operator Learning
+      description: Learning about operator reliability, fit, trust, or performance.
+      status: active
+    - value: policy_learning
+      displayName: Policy Learning
+      description: Learning that should update policy, control, or guardrail.
+      status: active
+    - value: recommendation_learning
+      displayName: Recommendation Learning
+      description: Learning about recommendation accuracy, alternatives, or ranking.
+      status: active
+    - value: selection_learning
+      displayName: Selection Learning
+      description: Learning about why selected options succeeded or failed.
+      status: active
+    - value: trust_learning
+      displayName: Trust Learning
+      description: Learning that changes confidence or trust assessment.
+      status: active
+    - value: knowledge_learning
+      displayName: Knowledge Learning
+      description: Learning that may become documentation or knowledge candidate.
+      status: active
+    - value: workflow_learning
+      displayName: Workflow Learning
+      description: Learning about process, handoff, flow, bottlenecks, or orchestration.
+      status: active
+    - value: cost_learning
+      displayName: Cost Learning
+      description: Learning about cost, efficiency, waste, or investment fit.
+      status: active
+    - value: risk_learning
+      displayName: Risk Learning
+      description: Learning that changes risk understanding or mitigation.
+      status: active
+    - value: quality_learning
+      displayName: Quality Learning
+      description: Learning about quality, defects, accuracy, or validation.
+      status: active
+
+  improvement_type:
+    - value: strategy_update
+      displayName: Strategy Update
+      description: Improvement that updates strategy or priority.
+      status: active
+    - value: objective_update
+      displayName: Objective Update
+      description: Improvement that updates objective, metric, or target.
+      status: active
+    - value: policy_update
+      displayName: Policy Update
+      description: Improvement that updates policy, control, or guardrail.
+      status: active
+    - value: work_definition_update
+      displayName: Work Definition Update
+      description: Improvement that updates work definition or unit of work.
+      status: active
+    - value: skill_update
+      displayName: Skill Update
+      description: Improvement that updates a skill.
+      status: active
+    - value: tool_update
+      displayName: Tool Update
+      description: Improvement that updates tool selection, configuration, or certification.
+      status: active
+    - value: operator_update
+      displayName: Operator Update
+      description: Improvement that updates operator eligibility, trust, training, or role.
+      status: active
+    - value: workflow_update
+      displayName: Workflow Update
+      description: Improvement that updates workflow, process, or handoff.
+      status: active
+    - value: knowledge_update
+      displayName: Knowledge Update
+      description: Improvement that updates documentation or knowledge candidate.
+      status: active
+    - value: runtime_fix
+      displayName: Runtime Fix
+      description: Improvement that fixes runtime schema, code, script, CI, or validation.
+      status: active
+    - value: risk_mitigation
+      displayName: Risk Mitigation
+      description: Improvement that reduces risk likelihood or impact.
+      status: active
+
+  value_realization_state:
+    - value: not_started
+      displayName: Not Started
+      description: Value realization has not started.
+      status: active
+    - value: measuring
+      displayName: Measuring
+      description: Value realization measurement is in progress.
+      status: active
+    - value: realized
+      displayName: Realized
+      description: Value was realized and evidenced.
+      status: active
+    - value: partially_realized
+      displayName: Partially Realized
+      description: Value was partially realized.
+      status: active
+    - value: not_realized
+      displayName: Not Realized
+      description: Expected value was not realized.
+      status: active
+    - value: disputed
+      displayName: Disputed
+      description: Value realization is disputed.
+      status: active
+
+  improvement_state:
+    - value: proposed
+      displayName: Proposed
+      description: Improvement has been proposed.
+      status: active
+    - value: accepted
+      displayName: Accepted
+      description: Improvement has been accepted.
+      status: active
+    - value: rejected
+      displayName: Rejected
+      description: Improvement was rejected with reason.
+      status: active
+    - value: planned
+      displayName: Planned
+      description: Improvement is planned.
+      status: active
+    - value: in_progress
+      displayName: In Progress
+      description: Improvement is in progress.
+      status: active
+    - value: applied
+      displayName: Applied
+      description: Improvement has been applied.
+      status: active
+    - value: validated
+      displayName: Validated
+      description: Improvement has been validated.
+      status: active

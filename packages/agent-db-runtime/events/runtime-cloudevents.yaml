@@ -1,0 +1,419 @@
+specVersion: 1.0
+id: agennext-agent-db-runtime-events-v0.1
+type: agennext.runtime.events.catalog
+source: agennext://agent-db-runtime/contracts/runtime-cloudevents.yaml
+subject: Agent DB Runtime CloudEvents Contract
+version: 0.1.0
+status: draft
+note: >
+  Design artifact only. Runtime event publishing is not validated until
+  Agent DB Runtime gates pass.
+
+cloudEvents:
+  base:
+    specversion: "1.0"
+    source: agennext://agent-db-runtime
+    datacontenttype: application/json
+
+  eventTypes:
+    - type: agennext.card.submitted.v0
+      subject: card
+      description: A card was submitted for registry review.
+      dataSchema: '#/schemas/CardEventData'
+
+    - type: agennext.card.signed.v0
+      subject: card
+      description: Registry Platform issued and signed a card.
+      dataSchema: '#/schemas/CardEventData'
+
+    - type: agennext.capability.verified.v0
+      subject: capability
+      description: Evidence-based verification passed for a signed card capability.
+      dataSchema: '#/schemas/VerificationEventData'
+
+    - type: agennext.capability.certified.v0
+      subject: capability
+      description: A verified capability was certified for scoped use.
+      dataSchema: '#/schemas/CertificationEventData'
+
+    - type: agennext.authority.accredited.v0
+      subject: authority
+      description: An authority was accredited for scoped trust delegation.
+      dataSchema: '#/schemas/AccreditationEventData'
+
+    - type: agennext.card.recognized.v0
+      subject: card
+      description: Recognition signal was recorded for a card.
+      dataSchema: '#/schemas/RecognitionEventData'
+
+    - type: agennext.discovery.requested.v0
+      subject: discovery
+      description: Discovery was requested for a need, task, or capability.
+      dataSchema: '#/schemas/DiscoveryEventData'
+
+    - type: agennext.discovery.candidate.qualified.v0
+      subject: discovery-candidate
+      description: A discovery candidate passed qualification.
+      dataSchema: '#/schemas/QualificationEventData'
+
+    - type: agennext.discovery.candidate.rejected.v0
+      subject: discovery-candidate
+      description: A discovery candidate was rejected with reasons.
+      dataSchema: '#/schemas/RejectionEventData'
+
+    - type: agennext.recommendation.created.v0
+      subject: recommendation
+      description: Recommendation generated with rationale, confidence, alternatives, and risks.
+      dataSchema: '#/schemas/RecommendationEventData'
+
+    - type: agennext.selection.created.v0
+      subject: selection
+      description: A card was selected for use with evidence and rationale.
+      dataSchema: '#/schemas/SelectionEventData'
+
+    - type: agennext.action.invoked.v0
+      subject: action-invocation
+      description: An operator invoked an operation through a tool or native runtime capability.
+      dataSchema: '#/schemas/ActionInvocationEventData'
+
+    - type: agennext.evidence.recorded.v0
+      subject: evidence
+      description: Evidence was recorded for a meaningful runtime event.
+      dataSchema: '#/schemas/EvidenceEventData'
+
+    - type: agennext.decision.recorded.v0
+      subject: decision
+      description: A decision was recorded with rationale, tradeoffs, and evidence.
+      dataSchema: '#/schemas/DecisionEventData'
+
+    - type: agennext.evaluation.recorded.v0
+      subject: evaluation
+      description: Evaluation result was recorded.
+      dataSchema: '#/schemas/EvaluationEventData'
+
+    - type: agennext.trust.updated.v0
+      subject: trust-assessment
+      description: Trust score or trust level changed.
+      dataSchema: '#/schemas/TrustEventData'
+
+    - type: agennext.incident.reported.v0
+      subject: incident
+      description: Runtime reported an incident.
+      dataSchema: '#/schemas/IncidentEventData'
+
+    - type: agennext.sla.breached.v0
+      subject: sla
+      description: SLA breach was detected or recorded.
+      dataSchema: '#/schemas/SlaEventData'
+
+    - type: agennext.knowledge.promoted.v0
+      subject: knowledge
+      description: A signed, verified, governed artifact was promoted to knowledge.
+      dataSchema: '#/schemas/KnowledgeEventData'
+
+schemas:
+  BaseRuntimeEventData:
+    type: object
+    required: [eventId, occurredAt]
+    properties:
+      eventId:
+        type: string
+      occurredAt:
+        type: string
+        format: date-time
+      tenantId:
+        type: string
+      organizationId:
+        type: string
+      projectId:
+        type: string
+      milestoneId:
+        type: string
+      taskId:
+        type: string
+      operatorId:
+        type: string
+      evidenceIds:
+        type: array
+        items:
+          type: string
+
+  CardEventData:
+    allOf:
+      - $ref: '#/schemas/BaseRuntimeEventData'
+      - type: object
+        required: [cardId, cardKind, cardVersion]
+        properties:
+          cardId:
+            type: string
+          cardKind:
+            type: string
+          cardVersion:
+            type: string
+          issuerId:
+            type: string
+          signatureRef:
+            type: string
+
+  VerificationEventData:
+    allOf:
+      - $ref: '#/schemas/BaseRuntimeEventData'
+      - type: object
+        required: [cardId, verificationState, capabilityVerified]
+        properties:
+          cardId:
+            type: string
+          verificationState:
+            type: string
+          capabilityVerified:
+            type: boolean
+          verifiedBy:
+            type: string
+
+  CertificationEventData:
+    allOf:
+      - $ref: '#/schemas/BaseRuntimeEventData'
+      - type: object
+        required: [cardId, certificationState]
+        properties:
+          cardId:
+            type: string
+          certificationState:
+            type: string
+          scope:
+            type: object
+          conditions:
+            type: array
+            items:
+              type: string
+
+  AccreditationEventData:
+    allOf:
+      - $ref: '#/schemas/BaseRuntimeEventData'
+      - type: object
+        required: [authorityId, accreditationState]
+        properties:
+          authorityId:
+            type: string
+          accreditationState:
+            type: string
+          scope:
+            type: object
+
+  RecognitionEventData:
+    allOf:
+      - $ref: '#/schemas/BaseRuntimeEventData'
+      - type: object
+        required: [cardId, recognitionState]
+        properties:
+          cardId:
+            type: string
+          recognitionState:
+            type: string
+          signals:
+            type: array
+            items:
+              type: string
+
+  DiscoveryEventData:
+    allOf:
+      - $ref: '#/schemas/BaseRuntimeEventData'
+      - type: object
+        required: [discoveryQueryId, need]
+        properties:
+          discoveryQueryId:
+            type: string
+          need:
+            type: string
+          requiredInterfaces:
+            type: array
+            items:
+              type: string
+          requiredProtocols:
+            type: array
+            items:
+              type: string
+
+  QualificationEventData:
+    allOf:
+      - $ref: '#/schemas/BaseRuntimeEventData'
+      - type: object
+        required: [candidateId, cardId, qualificationState]
+        properties:
+          candidateId:
+            type: string
+          cardId:
+            type: string
+          qualificationState:
+            type: string
+          reasons:
+            type: array
+            items:
+              type: string
+
+  RecommendationEventData:
+    allOf:
+      - $ref: '#/schemas/BaseRuntimeEventData'
+      - type: object
+        required: [recommendationId]
+        properties:
+          recommendationId:
+            type: string
+          recommendedCardId:
+            type: string
+          confidence:
+            type: number
+          rationale:
+            type: string
+          alternativesConsidered:
+            type: array
+            items:
+              type: string
+          risks:
+            type: array
+            items:
+              type: string
+
+  SelectionEventData:
+    allOf:
+      - $ref: '#/schemas/BaseRuntimeEventData'
+      - type: object
+        required: [selectionId, selectedCardId, selectionReason]
+        properties:
+          selectionId:
+            type: string
+          selectedCardId:
+            type: string
+          selectionReason:
+            type: string
+
+  RejectionEventData:
+    allOf:
+      - $ref: '#/schemas/BaseRuntimeEventData'
+      - type: object
+        required: [rejectionId, rejectedCardId, rejectionReasons]
+        properties:
+          rejectionId:
+            type: string
+          rejectedCardId:
+            type: string
+          rejectionReasons:
+            type: array
+            items:
+              type: string
+
+  ActionInvocationEventData:
+    allOf:
+      - $ref: '#/schemas/BaseRuntimeEventData'
+      - type: object
+        required: [actionInvocationId, operation]
+        properties:
+          actionInvocationId:
+            type: string
+          operation:
+            type: string
+          toolId:
+            type: string
+          status:
+            type: string
+
+  EvidenceEventData:
+    allOf:
+      - $ref: '#/schemas/BaseRuntimeEventData'
+      - type: object
+        required: [evidenceId, evidenceType]
+        properties:
+          evidenceId:
+            type: string
+          evidenceType:
+            type: string
+          source:
+            type: string
+          artifactId:
+            type: string
+          sourceAnchorId:
+            type: string
+
+  DecisionEventData:
+    allOf:
+      - $ref: '#/schemas/BaseRuntimeEventData'
+      - type: object
+        required: [decisionId, rationale]
+        properties:
+          decisionId:
+            type: string
+          rationale:
+            type: string
+          selectedOption:
+            type: string
+          tradeoffs:
+            type: array
+            items:
+              type: string
+
+  EvaluationEventData:
+    allOf:
+      - $ref: '#/schemas/BaseRuntimeEventData'
+      - type: object
+        required: [evaluationId, subjectId]
+        properties:
+          evaluationId:
+            type: string
+          subjectId:
+            type: string
+          scores:
+            type: object
+
+  TrustEventData:
+    allOf:
+      - $ref: '#/schemas/BaseRuntimeEventData'
+      - type: object
+        required: [trustAssessmentId, score]
+        properties:
+          trustAssessmentId:
+            type: string
+          trustLevel:
+            type: string
+          score:
+            type: number
+          delta:
+            type: number
+
+  IncidentEventData:
+    allOf:
+      - $ref: '#/schemas/BaseRuntimeEventData'
+      - type: object
+        required: [incidentId, severity]
+        properties:
+          incidentId:
+            type: string
+          severity:
+            type: string
+          status:
+            type: string
+
+  SlaEventData:
+    allOf:
+      - $ref: '#/schemas/BaseRuntimeEventData'
+      - type: object
+        required: [slaId, breachType]
+        properties:
+          slaId:
+            type: string
+          breachType:
+            type: string
+          threshold:
+            type: string
+
+  KnowledgeEventData:
+    allOf:
+      - $ref: '#/schemas/BaseRuntimeEventData'
+      - type: object
+        required: [knowledgeId, sourceArtifactId]
+        properties:
+          knowledgeId:
+            type: string
+          sourceArtifactId:
+            type: string
+          canonicalSourceAnchorId:
+            type: string

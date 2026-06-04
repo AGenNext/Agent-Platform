@@ -1,0 +1,17 @@
+{
+  "projectName": "AgentQL",
+  "languages": [
+    {
+      "id": "agentql",
+      "grammar": "src/language/agentql.langium",
+      "fileExtensions": [".agentql"],
+      "textMate": {
+        "out": "syntaxes/agentql.tmLanguage.json"
+      },
+      "monarch": {
+        "out": "syntaxes/agentql.monarch.ts"
+      }
+    }
+  ],
+  "out": "src/language/generated"
+}

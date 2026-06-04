@@ -1,0 +1,201 @@
+apiVersion: agennext.io/protocol-map/v0.1
+kind: RuntimeA2AProtocolMap
+metadata:
+  name: agent-db-runtime-a2a
+  version: 0.1.0
+  status: draft
+  repository: AGenNext/Agent-Platform
+  package: packages/agent-db-runtime
+
+purpose: |
+  A2A maps agent-to-agent collaboration, delegation, handoff, negotiation,
+  and coordination into the Agent DB Runtime model.
+  This is a design artifact and is not validated until runtime gates pass.
+
+principles:
+  - Every agent is an Operator during execution.
+  - Agent identity and operator execution must remain distinct.
+  - A2A messages are protocol messages and must log evidence.
+  - Agent handoff requires scope, responsibility, evidence, and decision context.
+  - Delegation must respect project scope, milestone deadline, task progress, policy, trust, and authorization.
+  - A2A output is not knowledge unless promoted through signed, verified, governed artifacts.
+
+mappings:
+  a2aAgent:
+    mapsTo:
+      - Identity
+      - Operator
+      - OperatorCard
+      - TrustAssessment
+    requirements:
+      - signed-card
+      - identity
+      - credentials-when-needed
+      - allowed-scope
+      - trust-threshold
+
+  a2aMessage:
+    mapsTo:
+      - ProtocolMessage
+      - Exchange
+      - Evidence
+      - ActionInvocation
+    evidenceRequired: true
+
+  a2aTaskDelegation:
+    mapsTo:
+      - Task
+      - Handoff
+      - Responsibility
+      - Decision
+      - Evidence
+    requiredFields:
+      - sourceOperator
+      - targetOperator
+      - taskId
+      - scope
+      - responsibility
+      - evidenceIds
+
+  a2aHandoff:
+    mapsTo:
+      - Handoff
+      - Responsibility
+      - Commitment
+      - Evidence
+      - Decision
+    requiredEvidence:
+      - context-summary
+      - current-task-state
+      - decision-context
+      - open-risks
+      - acceptance-record
+
+  a2aCapabilityAdvertise:
+    mapsTo:
+      - OperatorCard
+      - SkillCard
+      - ToolCard
+      - RegistryEntry
+    requirements:
+      - signed-card
+      - capability-verification-state
+      - certification-state
+      - trust-score
+
+  a2aNegotiation:
+    mapsTo:
+      - Discussion
+      - Exchange
+      - Decision
+      - Commitment
+      - Evidence
+
+messageTypes:
+  - name: capability.advertise
+    description: Agent advertises available certified/eligible skills and tools.
+    mapsTo: RegistryEntry
+    evidenceRequired: true
+
+  - name: task.delegate
+    description: Agent delegates a task or unit of work to another agent/operator.
+    mapsTo: Task
+    evidenceRequired: true
+
+  - name: task.accept
+    description: Target operator accepts delegated responsibility.
+    mapsTo: Responsibility
+    evidenceRequired: true
+
+  - name: task.reject
+    description: Target operator rejects delegation with reasons.
+    mapsTo: Rejection
+    evidenceRequired: true
+
+  - name: handoff.request
+    description: Source operator requests handoff.
+    mapsTo: Handoff
+    evidenceRequired: true
+
+  - name: handoff.accept
+    description: Target operator accepts handoff and responsibility.
+    mapsTo: Responsibility
+    evidenceRequired: true
+
+  - name: handoff.complete
+    description: Handoff completed with evidence and updated task state.
+    mapsTo: Evidence
+    evidenceRequired: true
+
+  - name: status.update
+    description: Operator reports task, milestone, incident, or workflow state.
+    mapsTo: TaskEvent
+    evidenceRequired: true
+
+  - name: evidence.share
+    description: Operator shares evidence references, not necessarily full content.
+    mapsTo: Evidence
+    evidenceRequired: true
+
+  - name: decision.share
+    description: Operator shares decision context and rationale.
+    mapsTo: Decision
+    evidenceRequired: true
+
+  - name: incident.escalate
+    description: Operator escalates incident to another operator or authority.
+    mapsTo: Incident
+    evidenceRequired: true
+
+  - name: claim.raise
+    description: Operator raises an operational claim or assurance claim.
+    mapsTo: Claim
+    evidenceRequired: true
+
+selectionPolicy:
+  operatorSelection:
+    requiredInputs:
+      - task
+      - projectScope
+      - requiredSkill
+      - allowedTools
+      - allowedProtocols
+      - trustThreshold
+    process:
+      - discovery
+      - qualification
+      - eligibility
+      - recommendation
+      - selection
+    output:
+      - selectedOperator
+      - selectionReason
+      - alternativesConsidered
+      - rejectionReasons
+      - evidenceIds
+
+authorization:
+  required: true
+  checks:
+    - source-operator-can-delegate
+    - target-operator-can-accept
+    - tool-use-allowed
+    - protocol-allowed
+    - project-scope-allowed
+    - data-access-allowed
+  recommendedProtocols:
+    - AuthZEN
+    - OpenFGA
+    - OPA
+
+events:
+  emitted:
+    - agennext.action.invoked.v0
+    - agennext.evidence.recorded.v0
+    - agennext.decision.recorded.v0
+    - agennext.selection.created.v0
+    - agennext.incident.reported.v0
+
+validation:
+  status: unvalidated
+  requiredGate: packages/agent-db-runtime make check

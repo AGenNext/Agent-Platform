@@ -157,6 +157,34 @@ Agent-Eval proves quality.
 Agent-Analytics improves over time.
 ```
 
+## Runtime Law
+
+```text
+SurrealDB is the runtime brain, state layer, policy layer, API layer, and deterministic decision layer.
+SurrealML is the learned inference layer.
+LLMs are language tools, not the source of truth.
+```
+
+Business logic outside SurrealDB or SurrealML requires quorum consensus before implementation.
+
+This applies to scoring, trust gates, model routing, budget enforcement, lifecycle transitions, approval decisions, permissions, policy checks, memory selection, belief updates, runtime state mutation, and public runtime API behavior.
+
+```text
+No quorum, no exception.
+```
+
+Any design change or architecture deviation requires quorum consensus before implementation.
+
+```text
+No quorum, no design change.
+```
+
+Any grammar, vocabulary, ontology, taxonomy, naming, schema-language, semantic-model, domain-term, relation, entity-type, record-type, edge-type, JSON-LD context, or meaning change requires quorum consensus before implementation.
+
+```text
+No quorum, no vocabulary change.
+```
+
 ## Final Rule
 
 Each repository should own exactly one major responsibility.

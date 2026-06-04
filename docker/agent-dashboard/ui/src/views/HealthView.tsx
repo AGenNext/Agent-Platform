@@ -41,13 +41,13 @@ export function HealthView() {
           action={
             <div className="flex items-center gap-3">
               {lastChecked && (
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-faint">
                   Checked {lastChecked.toLocaleTimeString()}
                 </span>
               )}
               <button
                 onClick={check}
-                className="text-xs px-3 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+                className="text-xs px-3 py-1 rounded bg-accent-strong hover:bg-accent text-white transition-colors"
               >
                 Refresh
               </button>
@@ -56,22 +56,22 @@ export function HealthView() {
         />
 
         {error && (
-          <div className="p-3 rounded bg-red-900/20 border border-red-800 text-red-400 text-sm">
+          <div className="p-4 rounded-lg bg-bad/10 border border-bad/30 text-bad text-sm">
             Cannot reach Agent Knowledge API — is the service running?<br />
-            <span className="text-xs opacity-70">{error}</span>
+            <span className="text-xs opacity-70 font-mono">{error}</span>
           </div>
         )}
 
         {!error && !health && (
-          <div className="text-slate-500 text-sm animate-pulse">Checking...</div>
+          <div className="text-faint text-sm animate-pulse">Checking...</div>
         )}
 
         {health && (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {services.map(({ label, value, icon }) => (
-              <div key={label} className="bg-[#0d1117] rounded-lg p-3 border border-[#1f2937]">
-                <div className="flex items-center gap-1.5 text-slate-500 text-xs mb-2">
-                  {icon} {label}
+              <div key={label} className="rounded-xl p-4 border border-line bg-surface/60 hover:border-line-strong transition-colors">
+                <div className="flex items-center gap-2 text-faint text-xs mb-3">
+                  <span className="text-muted">{icon}</span> {label}
                 </div>
                 <Badge label={value} variant={statusVariant(value)} />
               </div>
@@ -95,7 +95,7 @@ function UsageSummaryPanel() {
     api.usageSummary().then(setSummary).catch(() => setSummary(null))
   }, [])
 
-  if (!summary) return <div className="text-slate-500 text-sm">No usage data yet.</div>
+  if (!summary) return <div className="text-faint text-sm">No usage data yet.</div>
 
   const stats = [
     { label: 'Total Calls', value: summary.total_calls },
@@ -108,9 +108,9 @@ function UsageSummaryPanel() {
   return (
     <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
       {stats.map(({ label, value }) => (
-        <div key={label} className="bg-[#0d1117] rounded-lg p-3 border border-[#1f2937]">
-          <div className="text-xs text-slate-500 mb-1">{label}</div>
-          <div className="text-lg font-semibold text-indigo-300">{value}</div>
+        <div key={label} className="rounded-xl p-4 border border-line bg-surface/60 hover:border-line-strong transition-colors">
+          <div className="text-[11px] uppercase tracking-wide text-faint mb-1.5">{label}</div>
+          <div className="text-2xl font-semibold text-ink nums tracking-tight">{value}</div>
         </div>
       ))}
     </div>

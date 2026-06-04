@@ -1,0 +1,26 @@
+namespace agennext.platform.courses.routing_cost_control_readme
+
+vocabulary routing_cost_control {
+  term course means "Hands-on course on AI Gateway routing and cost control" maps to platform.learning.course
+  term model_route means "A primary model route with share-based traffic split" maps to platform.gateway.model_route
+  term fallback_policy means "Automatic failover on error or budget breach" maps to platform.gateway.fallback
+  term cost_dashboard means "Per-route requests, spend, p95 latency, and error rate" maps to platform.gateway.cost_dashboard
+}
+
+constitution RoutingCostControlReadme {
+  rule docs_agentql_first: "Course README content must be authored in AgentQL first; README.md is the rendered output."
+  rule single_front_door: "The AI Gateway is the single entry point for every model call."
+  rule fallback_on_failure: "Routes fail over to a backup model on error or budget breach."
+  rule cost_observability: "Per-route requests, spend, p95 latency, and error rate are aggregated for the gateway view."
+  rule business_logic_location: "All taught runtime logic lives in SurrealDB schema, SurrealQL functions, DEFINE API endpoints, events/permissions, AgentQL-generated SurrealQL, or SurrealML bindings."
+}
+
+course RoutingCostControl {
+  level "Intermediate"
+  duration_minutes 40
+  credential "Routing & Cost Control"
+
+  module model_routes competency "Routing"
+  module fallback_policy competency "Resilience"
+  module cost_dashboards competency "Cost"
+}

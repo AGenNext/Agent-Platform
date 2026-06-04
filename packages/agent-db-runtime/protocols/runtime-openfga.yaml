@@ -1,0 +1,216 @@
+apiVersion: agennext.io/protocol-map/v0.1
+kind: RuntimeOpenFGAProtocolMap
+metadata:
+  name: agent-db-runtime-openfga
+  version: 0.1.0
+  status: draft
+  repository: AGenNext/Agent-Platform
+  package: packages/agent-db-runtime
+
+purpose: |
+  OpenFGA maps relationship-based authorization into the Agent DB Runtime model.
+  This is a design artifact and is not validated until runtime gates pass.
+
+principles:
+  - Relationship authorization answers who is related to what and what access follows.
+  - OpenFGA complements AuthZEN and OPA.
+  - Relationships must be scoped by organization, project, task, resource, and role.
+  - Relationship checks must be logged as evidence when used for runtime decisions.
+
+entityMappings:
+  organization:
+    mapsTo: Organization
+  project:
+    mapsTo: Project
+  milestone:
+    mapsTo: Milestone
+  task:
+    mapsTo: Task
+  card:
+    mapsTo: Card
+  tool:
+    mapsTo: Tool
+  skill:
+    mapsTo: Skill
+  operator:
+    mapsTo: Operator
+  artifact:
+    mapsTo: Artifact
+  knowledge:
+    mapsTo: Knowledge
+  registry:
+    mapsTo: Registry
+  registry_entry:
+    mapsTo: RegistryEntry
+  incident:
+    mapsTo: Incident
+
+subjectMappings:
+  user:
+    mapsTo: Identity
+  agent:
+    mapsTo: Identity
+  operator:
+    mapsTo: Operator
+  service:
+    mapsTo: Identity
+  team:
+    mapsTo: IdentityGroup
+
+relations:
+  organization:
+    - owner
+    - admin
+    - member
+    - auditor
+    - policy_admin
+
+  project:
+    - owner
+    - maintainer
+    - contributor
+    - reviewer
+    - viewer
+    - operator
+    - approver
+
+  milestone:
+    - owner
+    - contributor
+    - reviewer
+    - approver
+
+  task:
+    - owner
+    - assignee
+    - reviewer
+    - approver
+    - watcher
+    - delegated_operator
+
+  card:
+    - owner
+    - issuer
+    - publisher
+    - provider
+    - verifier
+    - certifier
+    - reviewer
+    - consumer
+
+  tool:
+    - owner
+    - operator
+    - allowed_user
+    - admin
+    - reviewer
+
+  skill:
+    - owner
+    - allowed_operator
+    - reviewer
+    - certifier
+
+  artifact:
+    - owner
+    - author
+    - signer
+    - verifier
+    - viewer
+    - editor
+
+  knowledge:
+    - owner
+    - curator
+    - verifier
+    - viewer
+    - source_authority
+
+  registry:
+    - owner
+    - issuer
+    - admin
+    - reviewer
+    - publisher
+
+permissions:
+  project:
+    read: [owner, maintainer, contributor, reviewer, viewer, auditor]
+    update: [owner, maintainer]
+    approve: [owner, approver]
+    operate: [owner, maintainer, operator]
+
+  task:
+    read: [owner, assignee, reviewer, watcher]
+    update: [owner, assignee]
+    delegate: [owner, assignee]
+    approve: [owner, approver]
+    close: [owner, assignee, approver]
+
+  card:
+    read: [owner, issuer, publisher, provider, verifier, certifier, reviewer, consumer]
+    submit: [owner, publisher]
+    sign: [issuer]
+    verify: [verifier]
+    certify: [certifier]
+    review: [reviewer]
+    revoke: [issuer, certifier]
+
+  tool:
+    read: [owner, operator, allowed_user, reviewer]
+    invoke: [operator, allowed_user]
+    administer: [owner, admin]
+
+  skill:
+    read: [owner, allowed_operator, reviewer]
+    execute: [allowed_operator]
+    certify: [certifier]
+
+  artifact:
+    read: [owner, author, signer, verifier, viewer]
+    update: [owner, author, editor]
+    sign: [signer]
+    verify: [verifier]
+
+  knowledge:
+    read: [owner, curator, verifier, viewer]
+    promote: [owner, curator, verifier]
+    verify: [verifier]
+
+runtimeChecks:
+  - can_read_card
+  - can_submit_card
+  - can_sign_card
+  - can_verify_capability
+  - can_certify_capability
+  - can_select_card
+  - can_invoke_tool
+  - can_execute_skill
+  - can_delegate_task
+  - can_accept_handoff
+  - can_promote_knowledge
+  - can_report_incident
+
+integrationWithAuthZEN:
+  subject: Identity or Operator
+  action: Runtime action or tool operation
+  resource: Card, Tool, Task, Artifact, Knowledge, RegistryEntry
+  context: Project, Milestone, Protocol, Certification, Trust, SLA, Incident
+  relationshipCheck: OpenFGA
+  policyCheck: OPA
+  finalDecision: AuthZEN response
+
+evidence:
+  requiredWhen:
+    - relationship-check-affects-authorization
+    - relationship-check-denies-action
+    - relationship-check-allows-high-risk-action
+    - relationship-change-grants-permission
+    - relationship-change-revokes-permission
+  emittedEvents:
+    - agennext.evidence.recorded.v0
+    - agennext.decision.recorded.v0
+
+validation:
+  status: unvalidated
+  requiredGate: packages/agent-db-runtime make check

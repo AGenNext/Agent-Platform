@@ -1,0 +1,585 @@
+openapi: 3.1.0
+info:
+  title: Agent DB Runtime API
+  version: 0.1.0
+  description: |
+    Draft REST API contract for the Agent DB Runtime frozen meta-model.
+    This is a design artifact and is not deployment-ready until runtime gates pass.
+servers:
+  - url: https://api.example.local/agent-runtime/v0.1
+    description: Placeholder runtime API endpoint
+tags:
+  - name: Cards
+  - name: Registry
+  - name: Discovery
+  - name: Recommendation
+  - name: Verification
+  - name: Certification
+  - name: Accreditation
+  - name: Evidence
+  - name: Decisions
+  - name: Tasks
+paths:
+  /cards:
+    get:
+      tags: [Cards]
+      summary: List cards
+      parameters:
+        - name: kind
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Cards returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+    post:
+      tags: [Cards]
+      summary: Submit a draft card
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CardSubmitRequest'
+      responses:
+        '201':
+          description: Card submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+  /cards/{cardId}:
+    get:
+      tags: [Cards]
+      summary: Get card by ID
+      parameters:
+        - $ref: '#/components/parameters/CardId'
+      responses:
+        '200':
+          description: Card returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+  /cards/{cardId}/sign:
+    post:
+      tags: [Cards]
+      summary: Issue/sign a card through the Registry Platform
+      parameters:
+        - $ref: '#/components/parameters/CardId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignCardRequest'
+      responses:
+        '200':
+          description: Card signed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+  /cards/{cardId}/verify:
+    post:
+      tags: [Verification]
+      summary: Verify a card capability using evidence
+      parameters:
+        - $ref: '#/components/parameters/CardId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerificationRequest'
+      responses:
+        '200':
+          description: Verification recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Verification'
+  /cards/{cardId}/certify:
+    post:
+      tags: [Certification]
+      summary: Certify a verified capability for scoped use
+      parameters:
+        - $ref: '#/components/parameters/CardId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificationRequest'
+      responses:
+        '200':
+          description: Certification recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Certification'
+  /authorities/{identityId}/accredit:
+    post:
+      tags: [Accreditation]
+      summary: Accredit an authority for scoped trust delegation
+      parameters:
+        - name: identityId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccreditationRequest'
+      responses:
+        '200':
+          description: Accreditation recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Accreditation'
+  /registry/{registryId}/entries:
+    get:
+      tags: [Registry]
+      summary: List registry entries
+      parameters:
+        - name: registryId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Registry entries returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RegistryEntry'
+  /discover:
+    post:
+      tags: [Discovery]
+      summary: Discover candidate cards for a need or task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiscoveryRequest'
+      responses:
+        '200':
+          description: Discovery candidates returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscoveryResponse'
+  /recommend:
+    post:
+      tags: [Recommendation]
+      summary: Recommend preferred card candidates from discovered candidates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecommendationRequest'
+      responses:
+        '200':
+          description: Recommendation returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recommendation'
+  /select:
+    post:
+      tags: [Recommendation]
+      summary: Select a card with rationale and evidence
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SelectionRequest'
+      responses:
+        '200':
+          description: Selection recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Selection'
+  /reject:
+    post:
+      tags: [Recommendation]
+      summary: Reject a card with reasons and evidence
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RejectionRequest'
+      responses:
+        '200':
+          description: Rejection recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rejection'
+  /evidence:
+    post:
+      tags: [Evidence]
+      summary: Record evidence
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvidenceRequest'
+      responses:
+        '201':
+          description: Evidence recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evidence'
+  /decisions:
+    post:
+      tags: [Decisions]
+      summary: Record a decision
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecisionRequest'
+      responses:
+        '201':
+          description: Decision recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Decision'
+  /tasks/{taskId}:
+    get:
+      tags: [Tasks]
+      summary: Get task by ID
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Task returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+components:
+  parameters:
+    CardId:
+      name: cardId
+      in: path
+      required: true
+      schema: { type: string }
+  schemas:
+    Card:
+      type: object
+      required: [id, kind, name, version, status]
+      properties:
+        id: { type: string }
+        kind: { type: string }
+        name: { type: string }
+        displayName: { type: string }
+        version: { type: string }
+        status: { type: string }
+        owner: { type: string }
+        issuer: { type: string }
+        signature: { $ref: '#/components/schemas/Signature' }
+        verification: { $ref: '#/components/schemas/Verification' }
+        certification: { $ref: '#/components/schemas/Certification' }
+        accreditation: { $ref: '#/components/schemas/Accreditation' }
+        recognition: { $ref: '#/components/schemas/Recognition' }
+        body: { type: object, additionalProperties: true }
+    CardSubmitRequest:
+      type: object
+      required: [kind, name, version, body]
+      properties:
+        kind: { type: string }
+        name: { type: string }
+        displayName: { type: string }
+        version: { type: string }
+        ownerId: { type: string }
+        body: { type: object, additionalProperties: true }
+    Signature:
+      type: object
+      properties:
+        signed: { type: boolean }
+        issuer: { type: string }
+        signatureRef: { type: string }
+        signedAt: { type: string, format: date-time }
+        signingKeyRef: { type: string }
+        digest: { type: string }
+    SignCardRequest:
+      type: object
+      properties:
+        issuerId: { type: string }
+        signingKeyRef: { type: string }
+        evidenceIds:
+          type: array
+          items: { type: string }
+    Verification:
+      type: object
+      properties:
+        verified: { type: boolean }
+        verifiedBy: { type: string }
+        verifiedAt: { type: string, format: date-time }
+        verificationMethod: { type: string }
+        evidenceIds:
+          type: array
+          items: { type: string }
+        capabilityVerified: { type: boolean }
+        verificationState: { type: string }
+    VerificationRequest:
+      type: object
+      required: [evidenceIds]
+      properties:
+        verifiedBy: { type: string }
+        verificationMethod: { type: string }
+        evidenceIds:
+          type: array
+          items: { type: string }
+    Certification:
+      type: object
+      properties:
+        certified: { type: boolean }
+        certificationState: { type: string }
+        certifiedBy: { type: string }
+        certifiedAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time }
+        scope: { type: object, additionalProperties: true }
+        conditions:
+          type: array
+          items: { type: string }
+        rejectionReasons:
+          type: array
+          items: { type: string }
+    CertificationRequest:
+      type: object
+      required: [scope, evidenceIds]
+      properties:
+        certifiedBy: { type: string }
+        scope: { type: object, additionalProperties: true }
+        evidenceIds:
+          type: array
+          items: { type: string }
+        conditions:
+          type: array
+          items: { type: string }
+    Accreditation:
+      type: object
+      properties:
+        accredited: { type: boolean }
+        accreditationState: { type: string }
+        accreditedBy: { type: string }
+        accreditedAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time }
+        scope: { type: object, additionalProperties: true }
+        conditions:
+          type: array
+          items: { type: string }
+    AccreditationRequest:
+      type: object
+      required: [scope, evidenceIds]
+      properties:
+        accreditedBy: { type: string }
+        scope: { type: object, additionalProperties: true }
+        evidenceIds:
+          type: array
+          items: { type: string }
+        conditions:
+          type: array
+          items: { type: string }
+    Recognition:
+      type: object
+      properties:
+        recognitionState: { type: string }
+        recognizedBy:
+          type: array
+          items: { type: string }
+        score: { type: number }
+        evidenceIds:
+          type: array
+          items: { type: string }
+    RegistryEntry:
+      type: object
+      required: [id, registryId, cardId, status]
+      properties:
+        id: { type: string }
+        registryId: { type: string }
+        cardId: { type: string }
+        status: { type: string }
+    DiscoveryRequest:
+      type: object
+      required: [need]
+      properties:
+        need: { type: string }
+        projectId: { type: string }
+        taskId: { type: string }
+        requiredInterfaces:
+          type: array
+          items: { type: string }
+        requiredProtocols:
+          type: array
+          items: { type: string }
+        allowedTools:
+          type: array
+          items: { type: string }
+        allowedOperators:
+          type: array
+          items: { type: string }
+    DiscoveryResponse:
+      type: object
+      properties:
+        queryId: { type: string }
+        candidates:
+          type: array
+          items:
+            $ref: '#/components/schemas/DiscoveryCandidate'
+    DiscoveryCandidate:
+      type: object
+      properties:
+        cardId: { type: string }
+        qualificationState: { type: string }
+        eligibilityState: { type: string }
+        reasons:
+          type: array
+          items: { type: string }
+    RecommendationRequest:
+      type: object
+      required: [need, candidateCardIds]
+      properties:
+        need: { type: string }
+        candidateCardIds:
+          type: array
+          items: { type: string }
+        projectId: { type: string }
+        taskId: { type: string }
+        criteria: { type: object, additionalProperties: true }
+    Recommendation:
+      type: object
+      properties:
+        id: { type: string }
+        recommendedCardId: { type: string }
+        confidence: { type: number }
+        rationale: { type: string }
+        alternativesConsidered:
+          type: array
+          items: { type: string }
+        tradeoffs:
+          type: array
+          items: { type: string }
+        risks:
+          type: array
+          items: { type: string }
+        evidenceIds:
+          type: array
+          items: { type: string }
+    SelectionRequest:
+      type: object
+      required: [cardId, reason]
+      properties:
+        cardId: { type: string }
+        selectedBy: { type: string }
+        reason: { type: string }
+        evidenceIds:
+          type: array
+          items: { type: string }
+    Selection:
+      type: object
+      properties:
+        id: { type: string }
+        selectedCardId: { type: string }
+        selectedBy: { type: string }
+        selectedAt: { type: string, format: date-time }
+        selectionReason: { type: string }
+    RejectionRequest:
+      type: object
+      required: [cardId, reasons]
+      properties:
+        cardId: { type: string }
+        rejectedBy: { type: string }
+        reasons:
+          type: array
+          items: { type: string }
+        evidenceIds:
+          type: array
+          items: { type: string }
+    Rejection:
+      type: object
+      properties:
+        id: { type: string }
+        rejectedCardId: { type: string }
+        rejectedBy: { type: string }
+        rejectedAt: { type: string, format: date-time }
+        rejectionReasons:
+          type: array
+          items: { type: string }
+    EvidenceRequest:
+      type: object
+      required: [evidenceType]
+      properties:
+        evidenceType: { type: string }
+        source: { type: string }
+        artifactId: { type: string }
+        sourceAnchorId: { type: string }
+    Evidence:
+      type: object
+      properties:
+        id: { type: string }
+        evidenceType: { type: string }
+        source: { type: string }
+        artifactId: { type: string }
+        sourceAnchorId: { type: string }
+        createdAt: { type: string, format: date-time }
+    DecisionRequest:
+      type: object
+      required: [rationale]
+      properties:
+        taskId: { type: string }
+        rationale: { type: string }
+        selectedOption: { type: string }
+        tradeoffs:
+          type: array
+          items: { type: string }
+        evidenceIds:
+          type: array
+          items: { type: string }
+    Decision:
+      type: object
+      properties:
+        id: { type: string }
+        taskId: { type: string }
+        rationale: { type: string }
+        selectedOption: { type: string }
+        tradeoffs:
+          type: array
+          items: { type: string }
+    Task:
+      type: object
+      properties:
+        id: { type: string }
+        projectId: { type: string }
+        milestoneId: { type: string }
+        title: { type: string }
+        status: { type: string }
+        progress: { type: number }

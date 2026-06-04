@@ -1,0 +1,237 @@
+apiVersion: agennext.io/protocol-map/v0.1
+kind: RuntimeOPAProtocolMap
+metadata:
+  name: agent-db-runtime-opa
+  version: 0.1.0
+  status: draft
+  repository: AGenNext/Agent-Platform
+  package: packages/agent-db-runtime
+
+purpose: |
+  OPA maps policy enforcement, constraints, approval rules, separation of duty,
+  deployment gates, and governance decisions into the Agent DB Runtime model.
+  This is a design artifact and is not validated until runtime gates pass.
+
+principles:
+  - Runtime enforces policy.
+  - Organization defines policy posture.
+  - Policy decisions must be explainable and evidence-backed.
+  - Policy denial must record rejection reasons.
+  - Policy exceptions must require approval and evidence.
+  - Separation of duty must be enforceable.
+
+policyDomains:
+  - authorization
+  - card-governance
+  - registry-publication
+  - capability-verification
+  - certification
+  - accreditation
+  - discovery-selection
+  - tool-invocation
+  - agent-delegation
+  - knowledge-promotion
+  - evidence-retention
+  - incident-response
+  - sla-management
+  - assurance-claims
+  - deployment-gates
+  - data-access
+  - privacy
+  - compliance
+
+mappings:
+  input:
+    subject:
+      mapsTo:
+        - Identity
+        - Operator
+        - Credential
+    action:
+      mapsTo:
+        - Action
+        - ActionInvocation
+        - ToolOperation
+    resource:
+      mapsTo:
+        - Card
+        - Tool
+        - Skill
+        - Project
+        - Task
+        - Artifact
+        - Knowledge
+        - RegistryEntry
+    context:
+      mapsTo:
+        - Organization
+        - Project
+        - Milestone
+        - WorkDefinition
+        - ProtocolBinding
+        - Verification
+        - Certification
+        - Accreditation
+        - Recognition
+        - TrustAssessment
+        - SLA
+        - Incident
+        - Environment
+
+  output:
+    mapsTo:
+      - PolicyEvaluation
+      - AuthorizationDecision
+      - Decision
+      - Evidence
+      - Rejection
+      - ApprovalRequest
+
+canonicalDecisionShape:
+  allow: boolean
+  decision: allow | deny | conditional | require-approval
+  reasons: []
+  obligations: []
+  violations: []
+  evidenceRequired: []
+  approvalRequired: false
+  rejectionReasons: []
+  policyIds: []
+
+rules:
+  cardGovernance:
+    - draft-card-can-be-submitted-by-owner-or-publisher
+    - card-can-be-signed-only-by-registry-platform-issuer
+    - revoked-card-cannot-be-selected
+    - signed-card-does-not-equal-verified-capability
+
+  capabilityVerification:
+    - capability-verification-requires-signed-card
+    - capability-verification-requires-evidence
+    - high-risk-capability-requires-human-review
+
+  certification:
+    - certification-requires-verified-capability
+    - certification-requires-scope
+    - certification-requires-governance-approval-for-high-risk
+    - expired-certification-cannot-be-auto-selected
+
+  accreditation:
+    - accreditation-requires-authority-identity
+    - accreditation-requires-scope
+    - accreditation-requires-evidence
+    - revoked-accreditation-cannot-certify
+
+  discoverySelection:
+    - discovery-only-returns-cards
+    - qualification-before-eligibility
+    - eligibility-before-recommendation
+    - recommendation-before-selection-when-policy-requires
+    - selection-requires-reason-and-evidence
+    - rejection-requires-reason
+
+  toolInvocation:
+    - tool-must-have-card
+    - tool-must-be-allowed-in-project
+    - tool-must-support-required-protocol
+    - tool-invocation-must-log-evidence
+    - external-tool-output-is-not-knowledge
+
+  operatorExecution:
+    - every-agent-execution-uses-operator
+    - operator-must-be-allowed-in-project
+    - operator-trust-must-meet-threshold
+    - operator-must-have-required-skill
+    - delegated-task-requires-acceptance
+
+  knowledgePromotion:
+    - memory-is-not-knowledge
+    - claim-is-not-knowledge
+    - tool-output-is-not-knowledge
+    - model-output-is-not-knowledge
+    - knowledge-requires-signed-artifact
+    - knowledge-requires-verification
+    - knowledge-requires-governance-approval
+    - public-canonical-source-required-when-available
+
+  separationOfDuty:
+    - card-submitter-cannot-be-sole-verifier-for-high-risk-card
+    - verifier-cannot-be-sole-certifier-for-high-risk-capability
+    - operator-cannot-approve-own-high-risk-action
+    - claim-reviewer-cannot-be-claim-submitter
+    - incident-resolver-cannot-be-sole-incident-reviewer-when-critical
+
+  deploymentGates:
+    - deployment-claim-requires-validation-report
+    - production-ready-claim-requires-green-gates
+    - unvalidated-runtime-cannot-be-marked-production-ready
+    - runtime-readiness-requires-make-check-pass-or-ci-equivalent
+
+  slaIncident:
+    - sla-breach-requires-incident-or-resolution-record
+    - incident-requires-severity-owner-and-evidence
+    - critical-incident-requires-escalation
+
+  assuranceInsurance:
+    - assurance-claim-requires-evidence
+    - refund-claim-requires-claim-decision
+    - insurance-path-requires-risk-transfer-definition
+
+exampleInputs:
+  toolInvocation:
+    subject:
+      id: operator:agent.issue_operator
+      type: operator
+    action:
+      name: invoke
+      operation: github.issue.create
+    resource:
+      id: tool:github
+      kind: ToolCard
+    context:
+      projectId: project:agent-db-runtime-validation
+      taskId: task:run-make-check
+      certificationState: certified
+      trustScore: 0.82
+      riskLevel: medium
+
+  knowledgePromotion:
+    subject:
+      id: identity:knowledge-curator
+      type: human
+    action:
+      name: promote
+      operation: artifact.promote_to_knowledge
+    resource:
+      id: artifact:runtime-validation-report
+      kind: ArtifactCard
+    context:
+      signed: true
+      verified: true
+      governanceApproved: true
+      canonicalSourceAnchorAvailable: true
+
+integration:
+  authzen:
+    role: final authorization decision API
+    usesOPA: true
+    usesOpenFGA: true
+  openfga:
+    role: relationship authorization and relationship graph checks
+  cloudevents:
+    emittedOnPolicyDecision:
+      - agennext.evidence.recorded.v0
+      - agennext.decision.recorded.v0
+  cards:
+    policyAppliesTo:
+      - Card
+      - ToolCard
+      - SkillCard
+      - OperatorCard
+      - ArtifactCard
+      - KnowledgeCard
+      - ProtocolCard
+
+validation:
+  status: unvalidated
+  requiredGate: packages/agent-db-runtime make check

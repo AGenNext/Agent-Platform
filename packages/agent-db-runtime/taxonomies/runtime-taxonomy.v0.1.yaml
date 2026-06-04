@@ -1,0 +1,345 @@
+apiVersion: agennext.io/taxonomy/v0.1
+kind: RuntimeTaxonomy
+metadata:
+  name: runtime-taxonomy
+  version: 0.1.0
+  status: draft
+  owner: registry-platform
+  description: Controlled runtime vocabulary for Agent DB Runtime.
+
+principles:
+  - Taxonomy defines controlled values.
+  - Schema references taxonomy values.
+  - Policy enforces valid taxonomy use.
+  - Deprecated values must declare replacements.
+
+terms:
+  lifecycle_status:
+    - value: draft
+      displayName: Draft
+      description: Object is being prepared and is not active.
+      status: active
+    - value: submitted
+      displayName: Submitted
+      description: Object has been submitted for review.
+      status: active
+    - value: active
+      displayName: Active
+      description: Object is active and available for governed use.
+      status: active
+    - value: suspended
+      displayName: Suspended
+      description: Object is temporarily unavailable for use.
+      status: active
+    - value: deprecated
+      displayName: Deprecated
+      description: Object remains available but should not be used for new work.
+      status: active
+    - value: archived
+      displayName: Archived
+      description: Object is retained for records but not active.
+      status: active
+    - value: revoked
+      displayName: Revoked
+      description: Object is no longer trusted or allowed.
+      status: active
+
+  entity_kind:
+    - value: identity
+      displayName: Identity
+      description: Human, agent, organization, service, system, or authority identity.
+      status: active
+    - value: organization
+      displayName: Organization
+      description: Enterprise, business unit, department, team, registry, or authority structure.
+      status: active
+    - value: project
+      displayName: Project
+      description: Scoped execution container.
+      status: active
+    - value: task
+      displayName: Task
+      description: Progress unit of work.
+      status: active
+    - value: artifact
+      displayName: Artifact
+      description: Durable recorded output or evidence-bearing object.
+      status: active
+    - value: knowledge
+      displayName: Knowledge
+      description: Governed, verified, approved truth artifact.
+      status: active
+
+  card_kind:
+    - value: platform_card
+      displayName: Platform Card
+      description: Describes a platform.
+      status: active
+    - value: registry_platform_card
+      displayName: Registry Platform Card
+      description: Describes registry card issuer authority.
+      status: active
+    - value: artifact_card
+      displayName: Artifact Card
+      description: Describes an artifact.
+      status: active
+    - value: tool_card
+      displayName: Tool Card
+      description: Describes a tool or external capability surface.
+      status: active
+    - value: skill_card
+      displayName: Skill Card
+      description: Describes a reusable documented skill.
+      status: active
+    - value: operator_card
+      displayName: Operator Card
+      description: Describes an operator identity during execution.
+      status: active
+    - value: project_card
+      displayName: Project Card
+      description: Describes project scope and governance.
+      status: active
+    - value: task_card
+      displayName: Task Card
+      description: Describes a task and progress unit.
+      status: active
+    - value: knowledge_card
+      displayName: Knowledge Card
+      description: Describes knowledge candidate or approved knowledge.
+      status: active
+    - value: protocol_card
+      displayName: Protocol Card
+      description: Describes protocol support and governance.
+      status: active
+
+  identity_type:
+    - value: human
+      displayName: Human
+      description: Natural person.
+      status: active
+    - value: agent
+      displayName: Agent
+      description: Agent identity that may become an operator.
+      status: active
+    - value: service
+      displayName: Service
+      description: Service identity.
+      status: active
+    - value: system
+      displayName: System
+      description: System identity.
+      status: active
+    - value: organization
+      displayName: Organization
+      description: Organization identity.
+      status: active
+    - value: authority
+      displayName: Authority
+      description: Identity with issuer, verifier, certifier, accreditor, or governance authority.
+      status: active
+
+  operator_type:
+    - value: human_operator
+      displayName: Human Operator
+      description: Human acting as an operator.
+      status: active
+    - value: agent_operator
+      displayName: Agent Operator
+      description: Agent acting as an operator.
+      status: active
+    - value: service_operator
+      displayName: Service Operator
+      description: Service identity executing work.
+      status: active
+    - value: workflow_operator
+      displayName: Workflow Operator
+      description: Workflow executing work.
+      status: active
+
+  tool_type:
+    - value: api
+      displayName: API
+      description: API tool.
+      status: active
+    - value: database
+      displayName: Database
+      description: Database tool or data source.
+      status: active
+    - value: cli
+      displayName: CLI
+      description: Command-line tool.
+      status: active
+    - value: browser
+      displayName: Browser
+      description: Browser-mediated tool.
+      status: active
+    - value: mcp_server
+      displayName: MCP Server
+      description: Model Context Protocol server.
+      status: active
+    - value: a2a_endpoint
+      displayName: A2A Endpoint
+      description: Agent-to-agent protocol endpoint.
+      status: active
+    - value: file_system
+      displayName: File System
+      description: File system capability surface.
+      status: active
+    - value: message_queue
+      displayName: Message Queue
+      description: Queue or event bus tool.
+      status: active
+    - value: human_interface
+      displayName: Human Interface
+      description: Human-facing interaction surface.
+      status: active
+
+  skill_type:
+    - value: tool_usage
+      displayName: Tool Usage
+      description: Skill derived from documented use of a tool.
+      status: active
+    - value: reasoning
+      displayName: Reasoning
+      description: Skill involving reasoning or decision support.
+      status: active
+    - value: validation
+      displayName: Validation
+      description: Skill for validation, verification, or testing.
+      status: active
+    - value: governance
+      displayName: Governance
+      description: Skill involving policy, compliance, or approval.
+      status: active
+    - value: communication
+      displayName: Communication
+      description: Skill for communication and reporting.
+      status: active
+    - value: transformation
+      displayName: Transformation
+      description: Skill for transforming data or artifacts.
+      status: active
+
+  evidence_type:
+    - value: command_output
+      displayName: Command Output
+      description: Output from a command execution.
+      status: active
+    - value: signed_artifact
+      displayName: Signed Artifact
+      description: Artifact with signature evidence.
+      status: active
+    - value: validation_report
+      displayName: Validation Report
+      description: Report from validation execution.
+      status: active
+    - value: audit_log
+      displayName: Audit Log
+      description: Audit trail record.
+      status: active
+    - value: source_anchor
+      displayName: Source Anchor
+      description: Canonical source reference.
+      status: active
+    - value: decision_record
+      displayName: Decision Record
+      description: Decision rationale and evidence.
+      status: active
+    - value: test_result
+      displayName: Test Result
+      description: Test or smoke result.
+      status: active
+    - value: policy_evaluation
+      displayName: Policy Evaluation
+      description: Policy decision evidence.
+      status: active
+
+  verification_state:
+    - value: unverified
+      displayName: Unverified
+      description: Not verified.
+      status: active
+    - value: pending
+      displayName: Pending
+      description: Verification pending.
+      status: active
+    - value: verified
+      displayName: Verified
+      description: Verified by evidence.
+      status: active
+    - value: disputed
+      displayName: Disputed
+      description: Verification is disputed.
+      status: active
+    - value: revoked
+      displayName: Revoked
+      description: Verification revoked.
+      status: active
+
+  trust_level:
+    - value: unknown
+      displayName: Unknown
+      description: Trust not yet assessed.
+      status: active
+    - value: low
+      displayName: Low
+      description: Low trust.
+      status: active
+    - value: medium
+      displayName: Medium
+      description: Medium trust.
+      status: active
+    - value: high
+      displayName: High
+      description: High trust.
+      status: active
+    - value: verified
+      displayName: Verified
+      description: Evidence-backed verified trust.
+      status: active
+
+  risk_level:
+    - value: low
+      displayName: Low
+      description: Low risk.
+      status: active
+    - value: medium
+      displayName: Medium
+      description: Medium risk.
+      status: active
+    - value: high
+      displayName: High
+      description: High risk.
+      status: active
+    - value: critical
+      displayName: Critical
+      description: Critical risk.
+      status: active
+
+  recommendation_state:
+    - value: not_recommended
+      displayName: Not Recommended
+      description: Candidate is not recommended.
+      status: active
+    - value: recommended
+      displayName: Recommended
+      description: Candidate is recommended.
+      status: active
+    - value: conditionally_recommended
+      displayName: Conditionally Recommended
+      description: Candidate is recommended with conditions.
+      status: active
+
+  selection_state:
+    - value: not_selected
+      displayName: Not Selected
+      description: Candidate not selected.
+      status: active
+    - value: selected
+      displayName: Selected
+      description: Candidate selected.
+      status: active
+    - value: rejected
+      displayName: Rejected
+      description: Candidate rejected.
+      status: active
