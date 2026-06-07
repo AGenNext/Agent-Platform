@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package agennext.platform.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/AGenNext/Agent-Platform-MVP/gen/go/agennext/platform/v1;platformv1";
+
+enum PlatformStatus {
+  PLATFORM_STATUS_UNSPECIFIED = 0;
+  PLATFORM_STATUS_DRAFT = 1;
+  PLATFORM_STATUS_ACTIVE = 2;
+  PLATFORM_STATUS_FROZEN = 3;
+  PLATFORM_STATUS_DEGRADED = 4;
+  PLATFORM_STATUS_CHALLENGED = 5;
+  PLATFORM_STATUS_RETIRED = 6;
+  PLATFORM_STATUS_ARCHIVED = 7;
+}
+
+enum PlatformSurfaceKind {
+  PLATFORM_SURFACE_KIND_UNSPECIFIED = 0;
+  PLATFORM_SURFACE_KIND_API = 1;
+  PLATFORM_SURFACE_KIND_MCP = 2;
+  PLATFORM_SURFACE_KIND_UI = 3;
+  PLATFORM_SURFACE_KIND_WORKER = 4;
+  PLATFORM_SURFACE_KIND_OPERATOR = 5;
+  PLATFORM_SURFACE_KIND_AGENT = 6;
+  PLATFORM_SURFACE_KIND_REGISTRY = 7;
+}
+
+message PlatformModule {
+  string id = 1;
+  string name = 2;
+  string repository = 3;
+  string owns = 4;
+  repeated string imports = 5;
+  repeated string constraints = 6;
+  repeated string evidence_refs = 7;
+  PlatformStatus status = 8;
+  google.protobuf.Timestamp registered_at = 9;
+}
+
+message PlatformSurface {
+  string id = 1;
+  PlatformSurfaceKind kind = 2;
+  string module_id = 3;
+  string endpoint = 4;
+  repeated string allowed_verbs = 5;
+  repeated string constraints = 6;
+  repeated string evidence_refs = 7;
+  PlatformStatus status = 8;
+}
+
+message PlatformCapability {
+  string id = 1;
+  string module_id = 2;
+  string name = 3;
+  repeated string required_contracts = 4;
+  repeated string required_checks = 5;
+  repeated string required_guards = 6;
+  repeated string reconciliation_refs = 7;
+  PlatformStatus status = 8;
+}
+
+message PlatformRequest {
+  string id = 1;
+  string actor = 2;
+  string intent = 3;
+  string target_module = 4;
+  string target_capability = 5;
+  repeated string constraints = 6;
+  repeated string evidence_refs = 7;
+  google.protobuf.Timestamp requested_at = 8;
+}
+
+message PlatformOutcome {
+  string id = 1;
+  string request_id = 2;
+  string status = 3;
+  repeated string produced_events = 4;
+  repeated string produced_artifacts = 5;
+  repeated string evidence_refs = 6;
+  string reconciliation_ref = 7;
+  google.protobuf.Timestamp completed_at = 8;
+}
