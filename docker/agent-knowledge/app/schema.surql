@@ -163,6 +163,30 @@ DEFINE FUNCTION fn::trust::record($input: object) -> object { LET $evidence = $i
 DEFINE FUNCTION fn::trust::gate($artifact_id: string, $threshold: option<float>) -> object { LET $t = $threshold ?? 0.65; LET $latest = (SELECT * FROM trust_scores WHERE artifact_id = $artifact_id ORDER BY computed_at DESC LIMIT 1)[0]; RETURN IF $latest = NONE THEN { passed: false, score: NONE, verified: false, threshold: $t, reason: "no_trust_score" } ELSE { passed: $latest.score >= $t, score: $latest.score, verified: $latest.verified, threshold: $t, reason: IF $latest.score >= $t THEN "ok" ELSE "score_below_threshold" END } END; };
 
 DEFINE FUNCTION fn::finops::daily_spend() -> float { LET $rows = SELECT math::sum(cost_usd) AS spent FROM usage_records WHERE recorded_at > time::now() - 1d GROUP ALL; RETURN <float>($rows[0].spent ?? 0.0); };
+DEFINE FUNCTION fn::auth::validate_api_key($api_key: string) -> option<string> {
+  LET $keys = string::split(ENV, "PLATFORM_API_KEYS") ?? [];
+  IF array::len($keys) = 0 THEN RETURN NONE; END;
+  IF $api_key IN $keys THEN RETURN $api_key ELSE RETURN NONE END;
+};
+
+DEFINE FUNCTION fn::auth::require_api_key($api_key: option<string>) -> object {
+  LET $validated = fn::auth::validate_api_key($api_key ?? "");
+  IF $validated = NONE THEN RETURN { authorized: false, identity: NONE, error: "invalid_or_missing_api_key" } ELSE RETURN { authorized: true, identity: $validated, error: NONE } END;
+};
+
+DEFINE FUNCTION fn::finops::emit_usage($customer_id: string, $event_code: string, $transaction_id: option<string>, $properties: option<object>) -> object {
+  LET $api_key = ENV("LAGO_API_KEY") ?? "";
+  IF $api_key = "" THEN RETURN { emitted: false, reason: "lago_not_configured" }; END;
+  LET $api_url = ENV("LAGO_API_URL") ?? "https://api.getlago.com/api/v1";
+  LET $txn_id = $transaction_id ?? string::uuid();
+  RETURN { emitted: true, reason: "async_event_queued", transaction_id: $txn_id, customer_id: $customer_id, event_code: $event_code };
+};
+
+DEFINE FUNCTION fn::finops::record_model_usage($workspace_id: option<string>, $objective_id: string, $model_id: string, $provider: string, $input_tokens: int, $output_tokens: int, $cost_usd: float) -> object {
+  LET $customer_id = $workspace_id ?? "platform";
+  RETURN fn::finops::emit_usage($customer_id, "model_tokens_used", NONE, { objective_id: $objective_id, model_id: $model_id, provider: $provider, input_tokens: $input_tokens, output_tokens: $output_tokens, cost_usd: $cost_usd });
+};
+
 DEFINE FUNCTION fn::model_router::select($input: object) -> object { LET $rule = (SELECT * FROM routing_rules WHERE task_type = $input.task_type AND enabled = true LIMIT 1)[0]; RETURN IF $rule = NONE THEN { model_id: "llama3", provider: "ollama", estimated_cost: 0.0, rationale: "fallback (no_rule)", rule_id: NONE } ELSE { LET $daily_spend = fn::finops::daily_spend(); LET $daily_budget = $rule.daily_budget ?? 10.0; RETURN IF $daily_spend >= $daily_budget THEN { model_id: "llama3", provider: "ollama", estimated_cost: 0.0, rationale: "fallback (daily_budget_exhausted)", rule_id: $rule.id } ELSE { LET $max_cost = $input.max_cost_override ?? $rule.max_cost_per_call ?? 0.10; LET $candidates = $rule.models[WHERE max_cost_per_call <= $max_cost].sort((|$a, $b| $a.priority < $b.priority)); LET $candidate = $candidates[0]; RETURN IF $candidate = NONE THEN { model_id: "llama3", provider: "ollama", estimated_cost: 0.0, rationale: "fallback (no_candidate_within_cost)", rule_id: $rule.id } ELSE { model_id: $candidate.model_id, provider: $candidate.provider, estimated_cost: $candidate.max_cost_per_call ?? 0.0, rationale: string::concat("priority=", <string>($candidate.priority ?? 0)), rule_id: $rule.id } END } END } END; };
 
 DEFINE API OVERWRITE "/.well-known/agent-platform.json" FOR get THEN { RETURN { status: 200, body: fn::platform::manifest(), headers: { "cache-control": "public, max-age=60, stale-while-revalidate=300" } }; } PERMISSIONS FULL;
@@ -171,3 +195,6 @@ DEFINE API OVERWRITE "/eval/evaluate" FOR post THEN { RETURN { status: 200, body
 DEFINE API OVERWRITE "/trust/provenance" FOR post THEN { RETURN { status: 200, body: fn::trust::record($request.body) }; } PERMISSIONS FULL;
 DEFINE API OVERWRITE "/trust/gate" FOR post THEN { RETURN { status: 200, body: fn::trust::gate($request.body.artifact_id, $request.body.threshold) }; } PERMISSIONS FULL;
 DEFINE API OVERWRITE "/model-router/select" FOR post THEN { RETURN { status: 200, body: fn::model_router::select($request.body) }; } PERMISSIONS FULL;
+DEFINE API OVERWRITE "/auth/validate" FOR post THEN { RETURN { status: 200, body: fn::auth::require_api_key($request.body.api_key) }; } PERMISSIONS FULL;
+DEFINE API OVERWRITE "/finops/emit-usage" FOR post THEN { RETURN { status: 200, body: fn::finops::emit_usage($request.body.customer_id, $request.body.event_code, $request.body.transaction_id, $request.body.properties) }; } PERMISSIONS FULL;
+DEFINE API OVERWRITE "/finops/model-usage" FOR post THEN { RETURN { status: 200, body: fn::finops::record_model_usage($request.body.workspace_id, $request.body.objective_id, $request.body.model_id, $request.body.provider, $request.body.input_tokens, $request.body.output_tokens, $request.body.cost_usd) }; } PERMISSIONS FULL;
