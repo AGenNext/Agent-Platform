@@ -40,8 +40,11 @@ Agent-Dashboard
 Agent-Team
   → reusable goal-oriented agents
 
+Agent-Framework
+  → AGenNext core runtime framework
+
 Agent-Frameworks
-  → LangGraph/runtime adapters
+  → adapters to external frameworks (LangGraph, CrewAI, AutoGen, etc.)
 
 Agent-Environment
   → dev/test/staging/prod contracts
