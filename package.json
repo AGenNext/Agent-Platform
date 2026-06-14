@@ -1,0 +1,18 @@
+{
+  "name": "@agentinvariate/agent-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Code-first monorepo for the AGenNext Agent Platform.",
+  "scripts": {
+    "loop": "bash scripts/loop.sh",
+    "build": "bash scripts/build.sh",
+    "validate": "bash scripts/validate.sh",
+    "test": "bash scripts/test.sh",
+    "lint": "bash scripts/lint.sh",
+    "doctor": "bash scripts/doctor.sh"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}
