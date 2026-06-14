@@ -18,7 +18,7 @@ CONN := --endpoint $(SURREAL_ENDPOINT) --username $(SURREAL_USER) --password $(S
 LOAD_ORDER := schema/load-order.txt
 BACKUP_FILE ?= backups/agent-runtime-backup.surql
 
-.PHONY: up down restart logs ps apply seed smoke regression value-loop backup restore-check check clean
+.PHONY: up down restart logs ps apply seed smoke regression value-loop validate-value-loop backup restore-check check clean
 
 up:
 	$(PODMAN_COMPOSE) -f $(COMPOSE_FILE) up -d
@@ -55,6 +55,31 @@ value-loop:
 	$(SURREAL) import $(CONN) schema/design/value-loop-phase1.surql
 	$(SURREAL) import $(CONN) tests/value-loop-smoke.surql
 	$(SURREAL) import $(CONN) tests/value-loop-asserts.surql
+
+# Runtime validation gate for Phase 1 value-loop slice
+# Expected behavior:
+#   start/runtime connect -> apply base schema -> apply value-loop schema -> run smoke test -> query created records -> return non-zero on failure
+validate-value-loop:
+	@echo "=== Phase 1 Value Loop Runtime Validation ==="
+	@echo "Starting SurrealDB in-memory instance..."
+	$(SURREAL) start --user $(SURREAL_USER) --pass $(SURREAL_PASS) memory &
+	@sleep 3
+	@echo "Applying base runtime schema..."
+	$(SURREAL) import $(CONN) schema/design/runtime-meta-model.surql || { echo "BASE_SCHEMA_MISSING: Failed to apply base runtime schema"; exit 1; }
+	@echo "Applying value-loop phase 1 schema..."
+	$(SURREAL) import $(CONN) schema/design/value-loop-phase1.surql || { echo "VALUE_LOOP_SCHEMA_APPLY_FAILURE: Failed to apply value-loop phase 1 schema"; exit 1; }
+	@echo "Running value-loop smoke test..."
+	$(SURREAL) import $(CONN) tests/value-loop-smoke.surql || { echo "SMOKE_TRANSACTION_FAILURE: Value-loop smoke test transaction failed"; exit 1; }
+	@echo "Running value-loop assertions..."
+	$(SURREAL) import $(CONN) tests/value-loop-asserts.surql || { echo "ASSERTION_FAILURE: Value-loop assertions failed"; exit 1; }
+	@echo "Querying created records..."
+	@echo "SELECT count() AS count FROM output;" | $(SURREAL) sql $(CONN) --json | grep -q '"count":' || { echo "QUERY_FAILURE: Failed to query output records"; exit 1; }
+	@echo "SELECT count() AS count FROM outcome;" | $(SURREAL) sql $(CONN) --json | grep -q '"count":' || { echo "QUERY_FAILURE: Failed to query outcome records"; exit 1; }
+	@echo "SELECT count() AS count FROM value_realization;" | $(SURREAL) sql $(CONN) --json | grep -q '"count":' || { echo "QUERY_FAILURE: Failed to query value_realization records"; exit 1; }
+	@echo "SELECT count() AS count FROM learning;" | $(SURREAL) sql $(CONN) --json | grep -q '"count":' || { echo "QUERY_FAILURE: Failed to query learning records"; exit 1; }
+	@echo "SELECT count() AS count FROM improvement;" | $(SURREAL) sql $(CONN) --json | grep -q '"count":' || { echo "QUERY_FAILURE: Failed to query improvement records"; exit 1; }
+	@echo "=== Validation PASSED ==="
+	@echo "All value-loop records created and queried successfully."
 
 backup:
 	@mkdir -p backups
