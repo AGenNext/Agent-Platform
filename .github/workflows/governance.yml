@@ -1,4 +1,4 @@
-name: Governance
+name: Governance-check
 
 on:
   pull_request:
