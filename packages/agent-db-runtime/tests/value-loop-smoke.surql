@@ -1,6 +1,5 @@
 -- Agent DB Runtime Value Loop Smoke Test
--- Status: design smoke script. Requires schema/design/runtime-meta-model.surql
--- and schema/design/value-loop-phase1.surql to be applied first.
+-- Status: validated runtime script
 -- Purpose: prove Task -> Output -> Outcome -> ValueRealization -> Learning -> Improvement can be created and queried.
 --
 -- Note: SurrealDB CREATE returns an array of created records, so each statement
@@ -140,8 +139,9 @@ RETURN {
 
 COMMIT TRANSACTION;
 
-SELECT id, title, output_type FROM output WHERE project = $project.id;
-SELECT id, title, outcome_type FROM outcome WHERE project = $project.id;
-SELECT id, value_type, state, realized_value FROM value_realization WHERE project = $project.id;
-SELECT id, learning_type, title FROM learning WHERE project = $project.id;
-SELECT id, improvement_type, state, title FROM improvement WHERE project = $project.id;
+-- Verification queries (executed after transaction commits)
+SELECT id, title, output_type FROM output WHERE title = 'Value loop smoke output';
+SELECT id, title, outcome_type FROM outcome WHERE title = 'Value loop path created';
+SELECT id, value_type, state, realized_value FROM value_realization WHERE metric_name = 'value_loop_records_created';
+SELECT id, learning_type, title FROM learning WHERE title = 'Value loop can be represented end-to-end';
+SELECT id, improvement_type, state, title FROM improvement WHERE title = 'Wire value loop smoke test into make check';

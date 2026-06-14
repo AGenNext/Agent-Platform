@@ -10,13 +10,17 @@
 
 DEFINE TABLE task SCHEMAFULL;
 
-DEFINE FIELD entity ON task TYPE record<entity>;
+DEFINE FIELD entity ON task TYPE option<record<entity>>;
 DEFINE FIELD action ON task TYPE option<record<action>>;
 DEFINE FIELD parent_task ON task TYPE option<record<task>>;
 DEFINE FIELD root_task ON task TYPE option<record<task>>;
 
-DEFINE FIELD task_type ON task TYPE string
-  ASSERT $value IN [
+-- Value loop integration: project and milestone references
+DEFINE FIELD project ON task TYPE option<record<project>>;
+DEFINE FIELD milestone ON task TYPE option<record<milestone>>;
+
+DEFINE FIELD task_type ON task TYPE option<string>
+  ASSERT $value = NONE OR $value IN [
     "intent",
     "objective",
     "action_task",
@@ -52,7 +56,8 @@ DEFINE FIELD status ON task TYPE string DEFAULT "draft"
     "failed",
     "cancelled",
     "expired",
-    "rolled_back"
+    "rolled_back",
+    "active"
   ];
 
 DEFINE FIELD priority ON task TYPE string DEFAULT "medium"
@@ -112,6 +117,9 @@ DEFINE INDEX task_status_idx ON task FIELDS status;
 DEFINE INDEX task_priority_idx ON task FIELDS priority;
 DEFINE INDEX task_assignee_idx ON task FIELDS assignee;
 DEFINE INDEX task_due_idx ON task FIELDS due_at;
+-- Value loop integration indexes
+DEFINE INDEX task_project_idx ON task FIELDS project;
+DEFINE INDEX task_milestone_idx ON task FIELDS milestone;
 
 -- ------------------------------------------------------------
 -- Task Event Log
