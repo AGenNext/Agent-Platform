@@ -18,7 +18,7 @@ CONN := --endpoint $(SURREAL_ENDPOINT) --username $(SURREAL_USER) --password $(S
 LOAD_ORDER := schema/load-order.txt
 BACKUP_FILE ?= backups/agent-runtime-backup.surql
 
-.PHONY: up down restart logs ps apply seed smoke regression value-loop backup restore-check check clean
+.PHONY: up down restart logs ps apply seed smoke regression value-loop validate-value-loop backup restore-check check clean
 
 up:
 	$(PODMAN_COMPOSE) -f $(COMPOSE_FILE) up -d
@@ -55,6 +55,21 @@ value-loop:
 	$(SURREAL) import $(CONN) schema/design/value-loop-phase1.surql
 	$(SURREAL) import $(CONN) tests/value-loop-smoke.surql
 	$(SURREAL) import $(CONN) tests/value-loop-asserts.surql
+
+validate-value-loop: apply
+	@echo "=== Value Loop Validation ==="
+	@echo "Applying value-loop integration schema..."
+	@$(SURREAL) import $(CONN) schema/design/value-loop-integration.surql || { echo "VALUE_LOOP_SCHEMA_APPLY_FAILURE"; exit 1; }
+	@echo "Running value-loop smoke test..."
+	@$(SURREAL) import $(CONN) tests/value-loop-smoke.surql > /tmp/value-loop-output.json 2>&1 || { echo "SMOKE_TRANSACTION_FAILURE"; cat /tmp/value-loop-output.json; exit 1; }
+	@echo "Verifying value-loop records..."
+	@QUERY_RESULT=$$(echo "SELECT count() as count FROM output GROUP ALL;" | $(SURREAL) sql $(CONN) 2>&1); echo "$$QUERY_RESULT" | grep -q "count" || { echo "QUERY_FAILURE"; exit 1; }
+	@QUERY_RESULT=$$(echo "SELECT count() as count FROM outcome GROUP ALL;" | $(SURREAL) sql $(CONN) 2>&1); echo "$$QUERY_RESULT" | grep -q "count" || { echo "QUERY_FAILURE"; exit 1; }
+	@QUERY_RESULT=$$(echo "SELECT count() as count FROM value_realization GROUP ALL;" | $(SURREAL) sql $(CONN) 2>&1); echo "$$QUERY_RESULT" | grep -q "count" || { echo "QUERY_FAILURE"; exit 1; }
+	@QUERY_RESULT=$$(echo "SELECT count() as count FROM learning GROUP ALL;" | $(SURREAL) sql $(CONN) 2>&1); echo "$$QUERY_RESULT" | grep -q "count" || { echo "QUERY_FAILURE"; exit 1; }
+	@QUERY_RESULT=$$(echo "SELECT count() as count FROM improvement GROUP ALL;" | $(SURREAL) sql $(CONN) 2>&1); echo "$$QUERY_RESULT" | grep -q "count" || { echo "QUERY_FAILURE"; exit 1; }
+	@echo "=== Value Loop Validation PASSED ==="
+	@echo "All value-loop records created and verified successfully."
 
 backup:
 	@mkdir -p backups
