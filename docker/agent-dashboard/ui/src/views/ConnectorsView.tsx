@@ -79,7 +79,7 @@ export function ConnectorsView() {
           </div>
 
           {selected.status === 'mock' && (
-            <div className="px-5 pt-3 text-[11px] text-warn">Showing sample data — set <span className="font-mono">VITE_FB_TOKEN</span> and <span className="font-mono">VITE_FB_PAGE_ID</span> to read live comments.</div>
+            <div className="px-5 pt-3 text-[11px] text-warn">Showing sample data — wire the server-governed Facebook endpoint (<span className="font-mono">/api/connectors/facebook/comments</span>) to read live comments. The access token stays server-side.</div>
           )}
           {error && <div className="px-5 pt-3 text-[11px] text-bad font-mono">{error}</div>}
 
