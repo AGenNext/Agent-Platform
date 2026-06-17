@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { Activity, Bot, Box, Boxes, Flag, GitBranch, GraduationCap, LayoutDashboard, LayoutGrid, MessageSquare, Radio, Search, Wand2, Workflow } from 'lucide-react'
+import { Activity, Bot, Box, Boxes, Flag, GitBranch, GraduationCap, LayoutDashboard, LayoutGrid, MessageSquare, Plug, Radio, Search, Wand2, Workflow } from 'lucide-react'
 import { PipelineView } from './views/PipelineView'
 import { SpacesView } from './views/SpacesView'
 import { ChannelsView } from './views/ChannelsView'
 import { AgentsView } from './views/AgentsView'
 import { ComposerView } from './views/ComposerView'
 import { AiGatewayView } from './views/AiGatewayView'
+import { ConnectorsView } from './views/ConnectorsView'
 import { ArtifactHubView } from './views/ArtifactHubView'
 import { LearningPathsView } from './views/LearningPathsView'
 import { MilestonesView } from './views/MilestonesView'
@@ -14,7 +15,7 @@ import { ObjectivesView } from './views/ObjectivesView'
 import { ArtifactsView } from './views/ArtifactsView'
 import { TraceView } from './views/TraceView'
 
-type View = 'pipeline' | 'spaces' | 'chat' | 'agents' | 'composer' | 'milestones' | 'objectives' | 'artifacts' | 'trace' | 'hub' | 'learning' | 'gateway' | 'health'
+type View = 'pipeline' | 'spaces' | 'chat' | 'agents' | 'composer' | 'milestones' | 'objectives' | 'artifacts' | 'trace' | 'hub' | 'learning' | 'gateway' | 'connectors' | 'health'
 
 type NavItem = { id: View; label: string; icon: React.ReactNode; hint: string }
 
@@ -48,8 +49,9 @@ const sections: { heading: string; items: NavItem[] }[] = [
   {
     heading: 'Platform',
     items: [
-      { id: 'gateway', label: 'AI Gateway', icon: <Radio size={17} />,   hint: 'Model routing, cost & latency' },
-      { id: 'health',  label: 'Health',     icon: <Activity size={17} />, hint: 'Platform status & usage' },
+      { id: 'gateway',    label: 'AI Gateway', icon: <Radio size={17} />,   hint: 'Model routing, cost & latency' },
+      { id: 'connectors', label: 'Connectors', icon: <Plug size={17} />,    hint: 'Social inbox — Facebook & more' },
+      { id: 'health',     label: 'Health',     icon: <Activity size={17} />, hint: 'Platform status & usage' },
     ],
   },
 ]
@@ -71,7 +73,7 @@ export default function App() {
             </div>
             <div className="leading-tight">
               <div className="text-[15px] font-semibold text-ink tracking-tight">RealGraph</div>
-              <div className="text-[11px] text-faint">Agent Workspace</div>
+              <div className="text-[11px] text-faint">Agent-Native SaaS</div>
             </div>
           </div>
         </div>
@@ -148,6 +150,7 @@ export default function App() {
             {view === 'hub'        && <ArtifactHubView />}
             {view === 'learning'   && <LearningPathsView />}
             {view === 'gateway'    && <AiGatewayView />}
+            {view === 'connectors' && <ConnectorsView />}
             {view === 'health'     && <HealthView />}
           </div>
         </div>
