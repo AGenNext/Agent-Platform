@@ -33,6 +33,19 @@ spec:
               value: "true"
             - name: AUTONOMYX_GATE_MODE
               value: deny-by-default
+            - name: AUTONOMYX_TLS_CERT_FILE
+              value: /var/run/autonomyx/tls/tls.crt
+            - name: AUTONOMYX_TLS_KEY_FILE
+              value: /var/run/autonomyx/tls/tls.key
+          volumeMounts:
+            - name: webhook-tls
+              mountPath: /var/run/autonomyx/tls
+              readOnly: true
+      volumes:
+        - name: webhook-tls
+          secret:
+            secretName: autonomyx-controller-webhook-tls
+            optional: true
 ---
 apiVersion: v1
 kind: Service
