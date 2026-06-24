@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-console-api
+  labels:
+    app.kubernetes.io/name: agent-console-api
+spec:
+  replicas: {{ .Values.api.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: agent-console-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: agent-console-api
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      containers:
+        - name: api
+          image: {{ .Values.api.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: {{ .Values.api.port }}
+          env:
+            - name: AGENT_CONSOLE_MODE
+              value: internal-only
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-console-api
+spec:
+  selector:
+    app.kubernetes.io/name: agent-console-api
+  ports:
+    - name: http
+      port: {{ .Values.api.port }}
+      targetPort: {{ .Values.api.port }}
