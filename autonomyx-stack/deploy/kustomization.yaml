@@ -10,6 +10,7 @@ resources:
   - tls/webhook-tls-secret.example.yaml
   - rbac.yaml
   - controller.yaml
+  - mvp.yaml
   - webhook.yaml
   - samples/domain-platform.yaml
   - samples/gate-default.yaml
