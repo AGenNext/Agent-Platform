@@ -21,6 +21,8 @@ const required = [
   "src/controller/reconciler.ts",
   "src/mvp/server.ts",
   "src/mvp/html.ts",
+  "src/mvp/store.ts",
+  "src/mvp/auth.ts",
   "src/security/identity.ts",
   "src/security/policy.ts",
   "src/security/certification.ts",
@@ -58,9 +60,17 @@ for (const bindingKey of ["domainBindings", "appBindings", "everyResourceHasDoma
 }
 
 const mvp = fs.readFileSync(path.join(root, "src/mvp/server.ts"), "utf8");
-for (const route of ["/api/apps", "/api/state", "/api/execute", "/api/manifest", "/api/binding"]) {
+for (const route of ["/api/apps", "/api/state", "/api/audit", "/api/execute", "/api/reset", "/api/manifest", "/api/binding"]) {
   if (!mvp.includes(route)) {
     console.error(`MVP server missing route: ${route}`);
+    process.exit(1);
+  }
+}
+
+const deployment = fs.readFileSync(path.join(root, "deploy/mvp.yaml"), "utf8");
+for (const token of ["PersistentVolumeClaim", "AUTONOMYX_STATE_FILE", "AUTONOMYX_MVP_TOKEN"]) {
+  if (!deployment.includes(token)) {
+    console.error(`MVP deployment missing persistence/auth token: ${token}`);
     process.exit(1);
   }
 }
