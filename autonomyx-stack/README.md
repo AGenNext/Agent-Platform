@@ -47,10 +47,13 @@ Autonomyx does not replace Kubernetes, OAM, SPIFFE, OPA, OpenTelemetry, SLSA, or
 ```text
 Surface request
   -> rebase
+  -> identity extraction
   -> domain resolution
-  -> gate decision
+  -> trust scoring
+  -> policy evaluation
+  -> CRD reconciliation
   -> graph arithmetic
-  -> audit
+  -> audit/telemetry
   -> certification-ready record
 ```
 
@@ -75,6 +78,15 @@ The controller exposes:
 
 - `GET /healthz`
 - `POST /admit`
+
+Example admission test:
+
+```bash
+curl -X POST http://localhost:8443/admit \
+  -H 'content-type: application/json' \
+  -H 'x-spiffe-id: spiffe://autonomyx.local/ns/default/sa/operator' \
+  --data @examples/admission-review.json
+```
 
 ## Build
 
@@ -111,13 +123,18 @@ The stack is bound in two places:
 - `src/kernel.ts` — deterministic logical kernel.
 - `src/apps.ts` — every stack component as an app.
 - `src/platform.ts` — composition layer.
+- `src/security/identity.ts` — SPIFFE/OIDC/Kubernetes identity extraction.
+- `src/security/policy.ts` — deny-by-default policy mirror.
+- `src/security/certification.ts` — certification verifier scaffold.
+- `src/observability/telemetry.ts` — structured telemetry event writer.
 - `src/controller/server.ts` — HTTP admission server.
 - `src/controller/admission.ts` — AdmissionReview decision adapter.
 - `src/controller/reconciler.ts` — CRD reconcile rules.
 - `policy/gate.rego` — OPA gate policy.
 - `docs/oam-mapping.md` — OAM-to-Autonomyx mapping.
 - `docs/kubernetes.md` — Kubernetes install guide.
+- `docs/runbook.md` — operator runbook.
 
 ## Current scope
 
-This is now a runnable TypeScript scaffold plus a Kubernetes-native resource model and admission endpoint. It is not yet a production-grade controller image with TLS automation, live Kubernetes watches, SPIFFE extraction, OPA bundle runtime, OpenTelemetry export, or Sigstore/SLSA verification.
+This is now a runnable TypeScript scaffold plus a Kubernetes-native resource model, admission endpoint, identity extraction, policy evaluation, telemetry emission, certification checks, Dockerfile, and binding contract. It is not yet a production-grade controller with TLS automation, live Kubernetes watches, real OPA bundle runtime, OpenTelemetry SDK exporter, SPIFFE Workload API integration, or Sigstore/SLSA verification implementation.
