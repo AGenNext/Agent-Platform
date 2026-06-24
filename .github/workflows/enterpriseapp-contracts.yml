@@ -1,0 +1,54 @@
+name: EnterpriseApp Contracts
+
+on:
+  pull_request:
+    paths:
+      - "platform/enterprise-app/**"
+      - ".github/workflows/enterpriseapp-contracts.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "platform/enterprise-app/**"
+      - ".github/workflows/enterpriseapp-contracts.yml"
+
+jobs:
+  validate-yaml:
+    name: Validate EnterpriseApp YAML
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate YAML parses
+        run: |
+          python - <<'PY'
+          import pathlib
+          import sys
+          import yaml
+
+          root = pathlib.Path('platform/enterprise-app')
+          failures = []
+
+          for path in sorted(root.rglob('*.yaml')):
+              try:
+                  docs = list(yaml.safe_load_all(path.read_text()))
+                  if not [doc for doc in docs if doc]:
+                      failures.append(f'{path}: no YAML documents found')
+              except Exception as exc:
+                  failures.append(f'{path}: {exc}')
+
+          if failures:
+              print('\n'.join(failures))
+              sys.exit(1)
+
+          print('EnterpriseApp YAML parsed successfully')
+          PY
+
+      - name: Validate Kubernetes CRD schema shape
+        run: |
+          test -f platform/enterprise-app/crd/enterpriseapps.platform.agennext.io.yaml
+          grep -q 'kind: CustomResourceDefinition' platform/enterprise-app/crd/enterpriseapps.platform.agennext.io.yaml
+          grep -q 'group: platform.agennext.io' platform/enterprise-app/crd/enterpriseapps.platform.agennext.io.yaml
+          grep -q 'kind: EnterpriseApp' platform/enterprise-app/catalog/whoami.yaml
+          grep -q 'kind: EnterpriseApp' platform/enterprise-app/catalog/liferay.yaml
