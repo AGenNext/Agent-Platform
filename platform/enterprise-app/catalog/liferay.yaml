@@ -1,0 +1,36 @@
+apiVersion: platform.agennext.io/v1alpha1
+kind: EnterpriseApp
+metadata:
+  name: liferay
+  namespace: liferay
+  labels:
+    app.kubernetes.io/name: liferay
+    app.kubernetes.io/part-of: agennext-platform
+    platform.agennext.io/category: enterprise-portal
+spec:
+  image: liferay/portal:latest
+  replicas: 1
+  runtime:
+    kind: java
+    port: 8080
+  ingress:
+    enabled: true
+    className: caddy
+    host: portal.local
+  storage:
+    enabled: true
+    size: 50Gi
+    storageClassName: local-path
+    mountPath: /opt/liferay/data
+  database:
+    provider: postgresql
+    host: postgres.liferay.svc.cluster.local
+    port: 5432
+    name: liferay
+    secretName: liferay-db
+  search:
+    provider: elasticsearch
+    host: elasticsearch.liferay.svc.cluster.local
+    port: 9200
+  build:
+    provider: none
