@@ -1,0 +1,21 @@
+{
+  "name": "@agennext/autonomyx-stack",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Autonomyx Open Application Governance Platform stack: domain-bound, policy-governed, graph-backed execution apps.",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "check": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
