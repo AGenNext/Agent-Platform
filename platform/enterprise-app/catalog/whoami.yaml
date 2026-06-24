@@ -1,0 +1,26 @@
+apiVersion: platform.agennext.io/v1alpha1
+kind: EnterpriseApp
+metadata:
+  name: whoami
+  namespace: platform-apps
+  labels:
+    app.kubernetes.io/name: whoami
+    app.kubernetes.io/part-of: agennext-platform
+spec:
+  image: traefik/whoami:v1.10
+  replicas: 1
+  runtime:
+    kind: container
+    port: 80
+  ingress:
+    enabled: true
+    className: caddy
+    host: whoami.local
+  storage:
+    enabled: false
+  database:
+    provider: none
+  search:
+    provider: none
+  build:
+    provider: none

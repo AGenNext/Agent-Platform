@@ -1,0 +1,150 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: enterpriseapps.platform.agennext.io
+  labels:
+    app.kubernetes.io/name: enterpriseapp
+    app.kubernetes.io/part-of: agennext-platform
+spec:
+  group: platform.agennext.io
+  scope: Namespaced
+  names:
+    plural: enterpriseapps
+    singular: enterpriseapp
+    kind: EnterpriseApp
+    shortNames:
+      - eapp
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          required:
+            - spec
+          properties:
+            spec:
+              type: object
+              required:
+                - image
+              properties:
+                image:
+                  type: string
+                  description: OCI image to deploy when build is not used.
+                replicas:
+                  type: integer
+                  minimum: 0
+                  default: 1
+                runtime:
+                  type: object
+                  properties:
+                    kind:
+                      type: string
+                      enum:
+                        - container
+                        - java
+                    port:
+                      type: integer
+                      minimum: 1
+                      maximum: 65535
+                      default: 8080
+                ingress:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      default: true
+                    className:
+                      type: string
+                      default: caddy
+                    host:
+                      type: string
+                storage:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      default: false
+                    size:
+                      type: string
+                      pattern: '^[0-9]+(Mi|Gi|Ti)$'
+                    storageClassName:
+                      type: string
+                    mountPath:
+                      type: string
+                database:
+                  type: object
+                  properties:
+                    provider:
+                      type: string
+                      enum:
+                        - none
+                        - postgresql
+                        - mysql
+                        - external
+                      default: none
+                    host:
+                      type: string
+                    port:
+                      type: integer
+                    name:
+                      type: string
+                    secretName:
+                      type: string
+                search:
+                  type: object
+                  properties:
+                    provider:
+                      type: string
+                      enum:
+                        - none
+                        - elasticsearch
+                        - opensearch
+                        - external
+                      default: none
+                    host:
+                      type: string
+                    port:
+                      type: integer
+                build:
+                  type: object
+                  properties:
+                    provider:
+                      type: string
+                      enum:
+                        - none
+                        - kpack
+                      default: none
+                    git:
+                      type: object
+                      properties:
+                        url:
+                          type: string
+                        revision:
+                          type: string
+                    builder:
+                      type: string
+                    tag:
+                      type: string
+            status:
+              type: object
+              properties:
+                phase:
+                  type: string
+                observedGeneration:
+                  type: integer
+                message:
+                  type: string
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: Image
+          type: string
+          jsonPath: .spec.image
+        - name: Replicas
+          type: integer
+          jsonPath: .spec.replicas
+        - name: Host
+          type: string
+          jsonPath: .spec.ingress.host
