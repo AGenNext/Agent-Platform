@@ -1,20 +1,22 @@
-import { createServer } from "node:http";
+import { createServer, type ServerResponse } from "node:http";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { admit, type AdmissionReview } from "../controller/admission.js";
 import { initialState, listApplications, runPlatform } from "../platform.js";
 import type { ExecutionRequest, PlatformState } from "../types.js";
+import { authorize, isAuthRequired } from "./auth.js";
 import { renderMvpHtml } from "./html.js";
+import { loadState, saveState, statePath } from "./store.js";
 
 const port = Number(process.env.PORT ?? process.env.AUTONOMYX_MVP_PORT ?? 8080);
-let state: PlatformState = initialState();
+let state: PlatformState = loadState();
 
-function json(response: Parameters<typeof createServer>[0] extends (...args: infer A) => unknown ? A[1] : never, code: number, value: unknown): void {
+function json(response: ServerResponse, code: number, value: unknown): void {
   response.writeHead(code, { "content-type": "application/json" });
   response.end(JSON.stringify(value, null, 2));
 }
 
-function text(response: Parameters<typeof createServer>[0] extends (...args: infer A) => unknown ? A[1] : never, code: number, value: string, type = "text/plain"): void {
+function text(response: ServerResponse, code: number, value: string, type = "text/plain"): void {
   response.writeHead(code, { "content-type": type });
   response.end(value);
 }
@@ -48,8 +50,23 @@ const server = createServer(async (request, response) => {
   }
 
   if (request.method === "GET" && url.pathname === "/healthz") {
-    json(response, 200, { status: "ok", service: "autonomyx-mvp", graphVersion: state.graph.version });
+    json(response, 200, {
+      status: "ok",
+      service: "autonomyx-mvp",
+      version: "0.1.0",
+      authRequired: isAuthRequired(),
+      graphVersion: state.graph.version,
+      statePath: statePath(),
+    });
     return;
+  }
+
+  if (url.pathname.startsWith("/api/") && request.method !== "GET") {
+    const auth = authorize(request.headers);
+    if (!auth.allowed) {
+      json(response, 401, { ok: false, error: auth.reason });
+      return;
+    }
   }
 
   if (request.method === "GET" && url.pathname === "/api/apps") {
@@ -65,6 +82,11 @@ const server = createServer(async (request, response) => {
       edges: state.graph.edges.length,
       audit: state.audit.slice(-10),
     });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/audit") {
+    json(response, 200, { count: state.audit.length, events: state.audit });
     return;
   }
 
@@ -99,11 +121,19 @@ const server = createServer(async (request, response) => {
         context: body.context,
       };
       state = runPlatform(execution, state);
+      saveState(state);
       json(response, 200, { ok: true, requestId, graphVersion: state.graph.version, audit: state.audit.at(-1) });
     } catch (error) {
       const message = error instanceof Error ? error.message : "invalid request";
       json(response, 400, { ok: false, error: message });
     }
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/reset") {
+    state = initialState();
+    saveState(state);
+    json(response, 200, { ok: true, graphVersion: state.graph.version });
     return;
   }
 
