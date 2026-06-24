@@ -1,0 +1,6 @@
+{
+  "name": "research-agent",
+  "workspace": "research",
+  "image": "ghcr.io/agennext/research-agent:latest",
+  "replicas": 1
+}
