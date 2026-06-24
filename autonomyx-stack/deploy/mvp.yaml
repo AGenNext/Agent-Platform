@@ -19,6 +19,16 @@ type: Opaque
 stringData:
   token: change-me
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: autonomyx-surrealdb-auth
+  namespace: autonomyx-system
+type: Opaque
+stringData:
+  username: root
+  password: root
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -45,8 +55,30 @@ spec:
           env:
             - name: AUTONOMYX_MVP_PORT
               value: "8080"
+            - name: AUTONOMYX_STATE_PROVIDER
+              value: json
             - name: AUTONOMYX_STATE_FILE
               value: /var/lib/autonomyx/state/autonomyx-state.json
+            - name: AUTONOMYX_STATE_RECORD_ID
+              value: autonomyx_state:mvp
+            - name: SURREALDB_ENDPOINT
+              value: http://surrealdb.fabric.svc.cluster.local:8000
+            - name: SURREALDB_NAMESPACE
+              value: agennext
+            - name: SURREALDB_DATABASE
+              value: fabric
+            - name: SURREALDB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: autonomyx-surrealdb-auth
+                  key: username
+                  optional: true
+            - name: SURREALDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: autonomyx-surrealdb-auth
+                  key: password
+                  optional: true
             - name: AUTONOMYX_MVP_TOKEN
               valueFrom:
                 secretKeyRef:
