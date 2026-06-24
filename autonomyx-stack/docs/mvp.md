@@ -14,7 +14,8 @@ The MVP is a usable control-plane surface for the Autonomyx OAM stack.
 - Execution endpoint at `/api/execute`
 - Reset endpoint at `/api/reset`
 - Admission endpoint at `/admit`
-- File-backed state persistence
+- JSON-file state persistence
+- SurrealDB state persistence scaffold
 - Optional bearer-token write protection
 
 ## Run locally
@@ -64,7 +65,13 @@ curl -X POST http://localhost:8080/api/execute \
 
 ## State persistence
 
-By default, MVP state is written to:
+Default provider is JSON:
+
+```bash
+AUTONOMYX_STATE_PROVIDER=json npm run mvp:dev
+```
+
+By default, JSON state is written to:
 
 ```text
 ./data/autonomyx-state.json
@@ -74,6 +81,32 @@ Override it with:
 
 ```bash
 AUTONOMYX_STATE_FILE=/var/lib/autonomyx/state/autonomyx-state.json npm run mvp:dev
+```
+
+## SurrealDB provider
+
+Switch MVP state to SurrealDB:
+
+```bash
+AUTONOMYX_STATE_PROVIDER=surrealdb \
+SURREALDB_ENDPOINT=http://localhost:8000 \
+SURREALDB_NAMESPACE=agennext \
+SURREALDB_DATABASE=fabric \
+SURREALDB_USERNAME=root \
+SURREALDB_PASSWORD=root \
+npm run mvp:dev
+```
+
+The storage record defaults to:
+
+```text
+autonomyx_state:mvp
+```
+
+Override it with:
+
+```bash
+AUTONOMYX_STATE_RECORD_ID=autonomyx_state:prod
 ```
 
 ## Run in Kubernetes
@@ -93,7 +126,10 @@ The Kubernetes MVP deployment includes:
 
 - `PersistentVolumeClaim` named `autonomyx-mvp-state`
 - `Secret` named `autonomyx-mvp-auth`
+- `Secret` named `autonomyx-surrealdb-auth`
+- `AUTONOMYX_STATE_PROVIDER=json` by default
 - `AUTONOMYX_STATE_FILE=/var/lib/autonomyx/state/autonomyx-state.json`
+- SurrealDB env values ready for `surrealdb.fabric.svc.cluster.local:8000`
 - `AUTONOMYX_MVP_TOKEN` loaded from the secret
 
 ## MVP scope
@@ -112,7 +148,6 @@ OAM apps
 
 ## Not yet included
 
-- Production database adapter
 - Authentication login UI
 - Real OPA bundle runtime
 - Real SPIFFE Workload API
