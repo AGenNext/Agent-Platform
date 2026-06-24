@@ -8,6 +8,8 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
+    "controller:dev": "tsx src/controller/server.ts",
+    "controller:start": "node dist/controller/server.js",
     "check": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
