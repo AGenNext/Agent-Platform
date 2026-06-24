@@ -1,0 +1,12 @@
+apiVersion: autonomyx.io/v1alpha1
+kind: Gate
+metadata:
+  name: autonomyx-default-gate
+  namespace: default
+spec:
+  domain: platform
+  mode: deny-by-default
+  policyRef: policy/gate.rego
+  trustThreshold: 0.5
+  jitAccess: true
+  jitAuthorization: true
