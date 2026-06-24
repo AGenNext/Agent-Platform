@@ -1,0 +1,13 @@
+apiVersion: autonomyx.io/v1alpha1
+kind: Publication
+metadata:
+  name: autonomyx-stack-v0-1
+  namespace: default
+spec:
+  domain: platform
+  artifact: autonomyx-oam-stack
+  version: 0.1.0
+  immutable: true
+  effectiveFrom: "2026-06-24T00:00:00+05:30"
+  expiresAt: "2026-12-24T00:00:00+05:30"
+  certificationRef: autonomyx-stack-v0-1
