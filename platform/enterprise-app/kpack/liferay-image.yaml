@@ -1,0 +1,19 @@
+apiVersion: kpack.io/v1alpha2
+kind: Image
+metadata:
+  name: liferay
+  namespace: liferay
+  labels:
+    app.kubernetes.io/name: liferay
+    app.kubernetes.io/part-of: agennext-platform
+spec:
+  tag: ghcr.io/agennext/liferay:latest
+  serviceAccountName: kpack-registry-writer
+  builder:
+    kind: Builder
+    name: agennext-java-builder
+  source:
+    git:
+      url: https://github.com/AGenNext/Agent-Platform
+      revision: main
+    subPath: platform/enterprise-app/liferay-src
