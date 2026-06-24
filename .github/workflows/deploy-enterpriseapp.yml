@@ -1,0 +1,56 @@
+name: Deploy EnterpriseApp Contracts
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Deployment target"
+        required: true
+        default: "whoami"
+        type: choice
+        options:
+          - whoami
+          - liferay-contract-only
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  deploy:
+    name: Deploy EnterpriseApp contracts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Configure kubeconfig
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        run: |
+          mkdir -p "$HOME/.kube"
+          printf '%s' "$KUBE_CONFIG" > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
+
+      - name: Validate cluster access
+        run: kubectl version --client=true && kubectl get nodes
+
+      - name: Apply EnterpriseApp CRD
+        run: kubectl apply -f platform/enterprise-app/crd/enterpriseapps.platform.agennext.io.yaml
+
+      - name: Deploy whoami contract
+        if: ${{ inputs.target == 'whoami' }}
+        run: |
+          kubectl create namespace platform-apps --dry-run=client -o yaml | kubectl apply -f -
+          kubectl apply -f platform/enterprise-app/catalog/whoami.yaml
+          kubectl get enterpriseapps.platform.agennext.io -A
+
+      - name: Deploy Liferay contract only
+        if: ${{ inputs.target == 'liferay-contract-only' }}
+        run: |
+          kubectl create namespace liferay --dry-run=client -o yaml | kubectl apply -f -
+          kubectl apply -f platform/enterprise-app/catalog/liferay.yaml
+          kubectl get enterpriseapps.platform.agennext.io -A
