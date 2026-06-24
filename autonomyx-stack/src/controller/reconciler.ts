@@ -1,3 +1,5 @@
+import { verifyCertification } from "../security/certification.js";
+
 export type KubernetesObject = {
   apiVersion: string;
   kind: string;
@@ -58,21 +60,28 @@ function reconcilePublication(object: KubernetesObject): ReconcileDecision {
   if (!object.spec?.domain) return reject("Publication requires spec.domain");
   if (!object.spec?.artifact) return reject("Publication requires spec.artifact");
   if (object.spec.immutable !== true) return reject("Publication must be immutable");
-  return accept("Published", Boolean(object.spec.certificationRef));
+  if (!object.spec.certificationRef) return reject("Publication requires spec.certificationRef");
+  return accept("Published", true);
 }
 
 function reconcileCertification(object: KubernetesObject): ReconcileDecision {
-  const provenance = object.spec?.provenance as Record<string, unknown> | undefined;
+  const decision = verifyCertification({
+    subject: String(object.spec?.subject ?? ""),
+    provenance: object.spec?.provenance as Parameters<typeof verifyCertification>[0]["provenance"],
+    validFrom: typeof object.spec?.validFrom === "string" ? object.spec.validFrom : undefined,
+    validUntil: typeof object.spec?.validUntil === "string" ? object.spec.validUntil : undefined,
+  });
+
   if (!object.spec?.domain) return reject("Certification requires spec.domain");
-  if (!object.spec?.subject) return reject("Certification requires spec.subject");
-  if (!provenance?.source || !provenance?.digest) return reject("Certification requires provenance.source and provenance.digest");
+  if (!decision.certified) return reject(decision.reasons.join(","));
+
   return {
     phase: "Certified",
     certified: true,
     patches: [
       { op: "add", path: "/status/phase", value: "Certified" },
       { op: "add", path: "/status/certified", value: true },
-      { op: "add", path: "/status/trustScore", value: 0.8 },
+      { op: "add", path: "/status/trustScore", value: decision.trustScore },
     ],
   };
 }
