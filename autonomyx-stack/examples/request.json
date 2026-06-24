@@ -1,0 +1,20 @@
+{
+  "id": "req:example:001",
+  "domain": "platform",
+  "identity": {
+    "id": "user:001",
+    "issuer": "local",
+    "subject": "operator",
+    "claims": {
+      "role": "platform-operator"
+    }
+  },
+  "op": "⊕",
+  "payload": {
+    "@id": "publication:example",
+    "@type": "AutonomyxPublication",
+    "title": "Example immutable publication",
+    "immutable": true,
+    "effectiveFrom": "2026-06-24T00:00:00+05:30"
+  }
+}
