@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: autonomyx-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autonomyx-controller
+  namespace: autonomyx-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: autonomyx-controller
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: autonomyx-controller
+    spec:
+      serviceAccountName: autonomyx-controller
+      containers:
+        - name: controller
+          image: ghcr.io/agennext/autonomyx-controller:0.1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: webhook
+              containerPort: 8443
+          env:
+            - name: AUTONOMYX_MODE
+              value: oam-stack
+            - name: AUTONOMYX_REQUIRE_REBASE
+              value: "true"
+            - name: AUTONOMYX_GATE_MODE
+              value: deny-by-default
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: autonomyx-controller
+  namespace: autonomyx-system
+spec:
+  selector:
+    app.kubernetes.io/name: autonomyx-controller
+  ports:
+    - name: webhook
+      port: 443
+      targetPort: webhook
