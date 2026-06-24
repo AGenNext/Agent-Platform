@@ -31,7 +31,7 @@ const server = createServer(async (request, response) => {
   try {
     const body = await readBody(request);
     const review = JSON.parse(body) as AdmissionReview;
-    const decision = admit(review);
+    const decision = admit(review, request.headers);
     response.writeHead(200, { "content-type": "application/json" });
     response.end(JSON.stringify(decision));
   } catch (error) {
