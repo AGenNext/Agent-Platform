@@ -1,0 +1,45 @@
+apiVersion: autonomyx.io/v1alpha1
+kind: AutonomyxStackBinding
+metadata:
+  name: autonomyx-oam-stack-binding
+spec:
+  rootManifest: autonomyx-oam-stack
+  protocol:
+    pinnedTo: Open Application Model
+    binding: autonomyx.manifest
+  domainBindings:
+    platform:
+      domainRef: platform
+      gateRef: autonomyx-default-gate
+      policyRef: policy/gate.rego
+  appBindings:
+    autonomyx-domain:
+      kind: Domain
+      domain: platform
+      gate: autonomyx-default-gate
+    autonomyx-policy:
+      kind: Gate
+      domain: platform
+      gate: autonomyx-default-gate
+    autonomyx-runtime:
+      kind: AutonomyxManifest
+      domain: runtime
+      gate: autonomyx-default-gate
+    autonomyx-certification:
+      kind: Certification
+      domain: governance
+      gate: autonomyx-default-gate
+    autonomyx-publication:
+      kind: Publication
+      domain: runtime
+      gate: autonomyx-default-gate
+    autodesk:
+      kind: AutonomyxManifest
+      domain: workspace
+      gate: autonomyx-default-gate
+  invariants:
+    everyApplicationIsGate: true
+    everyResourceHasDomain: true
+    everyPublicationRequiresCertification: true
+    everyAdmissionRebases: true
+    everyDecisionAuditable: true
