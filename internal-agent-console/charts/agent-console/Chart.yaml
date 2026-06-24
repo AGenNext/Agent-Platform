@@ -1,0 +1,6 @@
+apiVersion: v2
+name: agent-console
+description: Internal hPanel-style AGenNext console for k3s operations
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
