@@ -6,10 +6,10 @@ import { initialState, listApplications, runPlatform } from "../platform.js";
 import type { ExecutionRequest, PlatformState } from "../types.js";
 import { authorize, isAuthRequired } from "./auth.js";
 import { renderMvpHtml } from "./html.js";
-import { loadState, saveState, statePath } from "./store.js";
+import { loadState, saveState, stateInfo } from "./store.js";
 
 const port = Number(process.env.PORT ?? process.env.AUTONOMYX_MVP_PORT ?? 8080);
-let state: PlatformState = loadState();
+let state: PlatformState;
 
 function json(response: ServerResponse, code: number, value: unknown): void {
   response.writeHead(code, { "content-type": "application/json" });
@@ -56,7 +56,7 @@ const server = createServer(async (request, response) => {
       version: "0.1.0",
       authRequired: isAuthRequired(),
       graphVersion: state.graph.version,
-      statePath: statePath(),
+      storage: stateInfo(),
     });
     return;
   }
@@ -80,6 +80,7 @@ const server = createServer(async (request, response) => {
       graphVersion: state.graph.version,
       nodes: state.graph.nodes.length,
       edges: state.graph.edges.length,
+      storage: stateInfo(),
       audit: state.audit.slice(-10),
     });
     return;
@@ -121,8 +122,8 @@ const server = createServer(async (request, response) => {
         context: body.context,
       };
       state = runPlatform(execution, state);
-      saveState(state);
-      json(response, 200, { ok: true, requestId, graphVersion: state.graph.version, audit: state.audit.at(-1) });
+      await saveState(state);
+      json(response, 200, { ok: true, requestId, graphVersion: state.graph.version, audit: state.audit.at(-1), storage: stateInfo() });
     } catch (error) {
       const message = error instanceof Error ? error.message : "invalid request";
       json(response, 400, { ok: false, error: message });
@@ -132,8 +133,8 @@ const server = createServer(async (request, response) => {
 
   if (request.method === "POST" && url.pathname === "/api/reset") {
     state = initialState();
-    saveState(state);
-    json(response, 200, { ok: true, graphVersion: state.graph.version });
+    await saveState(state);
+    json(response, 200, { ok: true, graphVersion: state.graph.version, storage: stateInfo() });
     return;
   }
 
@@ -151,6 +152,8 @@ const server = createServer(async (request, response) => {
   json(response, 404, { error: "not_found" });
 });
 
+state = await loadState();
 server.listen(port, "0.0.0.0", () => {
   console.log(`autonomyx MVP listening on :${port}`);
+  console.log(JSON.stringify({ storage: stateInfo() }));
 });
