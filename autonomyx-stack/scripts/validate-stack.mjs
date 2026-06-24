@@ -23,6 +23,10 @@ const required = [
   "src/mvp/html.ts",
   "src/mvp/store.ts",
   "src/mvp/auth.ts",
+  "src/mvp/storage/types.ts",
+  "src/mvp/storage/index.ts",
+  "src/mvp/storage/json-store.ts",
+  "src/mvp/storage/surreal-store.ts",
   "src/security/identity.ts",
   "src/security/policy.ts",
   "src/security/certification.ts",
@@ -68,9 +72,9 @@ for (const route of ["/api/apps", "/api/state", "/api/audit", "/api/execute", "/
 }
 
 const deployment = fs.readFileSync(path.join(root, "deploy/mvp.yaml"), "utf8");
-for (const token of ["PersistentVolumeClaim", "AUTONOMYX_STATE_FILE", "AUTONOMYX_MVP_TOKEN"]) {
+for (const token of ["PersistentVolumeClaim", "AUTONOMYX_STATE_PROVIDER", "AUTONOMYX_STATE_FILE", "AUTONOMYX_MVP_TOKEN", "SURREALDB_ENDPOINT"]) {
   if (!deployment.includes(token)) {
-    console.error(`MVP deployment missing persistence/auth token: ${token}`);
+    console.error(`MVP deployment missing persistence/auth/storage token: ${token}`);
     process.exit(1);
   }
 }
