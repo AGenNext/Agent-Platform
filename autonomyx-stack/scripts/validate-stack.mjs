@@ -13,11 +13,14 @@ const required = [
   "deploy/crds/autonomyx.io_certifications.yaml",
   "deploy/rbac.yaml",
   "deploy/controller.yaml",
+  "deploy/mvp.yaml",
   "deploy/webhook.yaml",
   "policy/gate.rego",
   "src/controller/server.ts",
   "src/controller/admission.ts",
   "src/controller/reconciler.ts",
+  "src/mvp/server.ts",
+  "src/mvp/html.ts",
   "src/security/identity.ts",
   "src/security/policy.ts",
   "src/security/certification.ts",
@@ -50,6 +53,14 @@ const binding = fs.readFileSync(path.join(root, "bindings/autonomyx.stack.bindin
 for (const bindingKey of ["domainBindings", "appBindings", "everyResourceHasDomain", "everyPublicationRequiresCertification"]) {
   if (!binding.includes(bindingKey)) {
     console.error(`Autonomyx binding missing: ${bindingKey}`);
+    process.exit(1);
+  }
+}
+
+const mvp = fs.readFileSync(path.join(root, "src/mvp/server.ts"), "utf8");
+for (const route of ["/api/apps", "/api/state", "/api/execute", "/api/manifest", "/api/binding"]) {
+  if (!mvp.includes(route)) {
+    console.error(`MVP server missing route: ${route}`);
     process.exit(1);
   }
 }
