@@ -10,7 +10,8 @@
     "dev": "tsx src/index.ts",
     "controller:dev": "tsx src/controller/server.ts",
     "controller:start": "node dist/controller/server.js",
-    "check": "tsc --noEmit -p tsconfig.json"
+    "check": "tsc --noEmit -p tsconfig.json",
+    "validate:stack": "node scripts/validate-stack.mjs"
   },
   "dependencies": {
     "zod": "^3.23.8"
