@@ -2,6 +2,39 @@
 
 Autonomyx is implemented here as an **Open Application Governance Platform**: every capability is modeled as an OAM-style application, every application is a gate, and every execution is domain-bound, policy-governed, graph-backed, audited, and certifiable.
 
+## MVP
+
+The MVP is now a usable control-plane surface:
+
+- browser operator UI at `/`
+- app registry at `/api/apps`
+- state view at `/api/state`
+- manifest view at `/api/manifest`
+- binding view at `/api/binding`
+- execution endpoint at `/api/execute`
+- admission endpoint at `/admit`
+
+Run it locally:
+
+```bash
+cd autonomyx-stack
+npm install
+npm run mvp:dev
+```
+
+Open:
+
+```text
+http://localhost:8080
+```
+
+Run it in Kubernetes:
+
+```bash
+kubectl apply -k deploy/
+kubectl -n autonomyx-system port-forward svc/autonomyx-mvp 8080:80
+```
+
 ## Canonical position
 
 Autonomyx does not replace Kubernetes, OAM, SPIFFE, OPA, OpenTelemetry, SLSA, or Sigstore. It composes them into a governed execution fabric.
@@ -57,14 +90,6 @@ Surface request
   -> certification-ready record
 ```
 
-## Run locally
-
-```bash
-cd autonomyx-stack
-npm install
-npm run dev
-```
-
 ## Run the admission controller locally
 
 ```bash
@@ -93,10 +118,11 @@ curl -X POST http://localhost:8443/admit \
 ```bash
 npm run build
 npm start
+npm run mvp:start
 npm run controller:start
 ```
 
-## Build controller image
+## Build controller/MVP image
 
 ```bash
 docker build -t ghcr.io/agennext/autonomyx-controller:0.1.0 .
@@ -123,6 +149,8 @@ The stack is bound in two places:
 - `src/kernel.ts` — deterministic logical kernel.
 - `src/apps.ts` — every stack component as an app.
 - `src/platform.ts` — composition layer.
+- `src/mvp/server.ts` — MVP API server.
+- `src/mvp/html.ts` — MVP browser UI.
 - `src/security/identity.ts` — SPIFFE/OIDC/Kubernetes identity extraction.
 - `src/security/policy.ts` — deny-by-default policy mirror.
 - `src/security/certification.ts` — certification verifier scaffold.
@@ -134,7 +162,8 @@ The stack is bound in two places:
 - `docs/oam-mapping.md` — OAM-to-Autonomyx mapping.
 - `docs/kubernetes.md` — Kubernetes install guide.
 - `docs/runbook.md` — operator runbook.
+- `docs/mvp.md` — MVP guide.
 
 ## Current scope
 
-This is now a runnable TypeScript scaffold plus a Kubernetes-native resource model, admission endpoint, identity extraction, policy evaluation, telemetry emission, certification checks, Dockerfile, and binding contract. It is not yet a production-grade controller with TLS automation, live Kubernetes watches, real OPA bundle runtime, OpenTelemetry SDK exporter, SPIFFE Workload API integration, or Sigstore/SLSA verification implementation.
+This is now a runnable MVP control plane plus a Kubernetes-native resource model, admission endpoint, identity extraction, policy evaluation, telemetry emission, certification checks, Dockerfile, deploy bundle, and binding contract. It is not yet a production-grade controller with persistent database, login UI, TLS automation, live Kubernetes watches, real OPA bundle runtime, OpenTelemetry SDK exporter, SPIFFE Workload API integration, or Sigstore/SLSA verification implementation.
