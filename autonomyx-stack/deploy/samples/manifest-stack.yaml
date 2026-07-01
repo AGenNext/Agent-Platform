@@ -1,0 +1,48 @@
+apiVersion: autonomyx.io/v1alpha1
+kind: AutonomyxManifest
+metadata:
+  name: autonomyx-oam-stack
+  namespace: default
+spec:
+  domain: platform
+  protocol:
+    pinnedTo: Open Application Model
+    source: https://www.cncf.io/blog/2020/07/24/open-application-model-carving-building-blocks-for-platforms/
+  invariants:
+    rebaseAtEverySurface: true
+    eligibilityBeforeDiscovery: true
+    jitAccess: true
+    jitAuthorization: true
+    immutablePublication: true
+    everyApplicationIsGate: true
+  standards:
+    orchestration: Kubernetes
+    policy: OPA/Rego
+    identity: SPIFFE/OIDC
+    observability: OpenTelemetry
+    supplyChain: SLSA/Sigstore/SBOM
+  apps:
+    - name: autonomyx-domain
+      tier: foundation
+      domain: platform
+      component: autonomyx-domain
+      traits: [domain-bound, gate-enforced, audited]
+      workflows: [rebase, authorize, execute, audit]
+    - name: autonomyx-policy
+      tier: foundation
+      domain: platform
+      component: autonomyx-policy
+      traits: [opa, deny-by-default, audited]
+      workflows: [evaluate, publish, audit]
+    - name: autonomyx-runtime
+      tier: runtime
+      domain: runtime
+      component: autonomyx-runtime
+      traits: [rebase, kernel, graph-arithmetic, audited]
+      workflows: [execute, publish, certify]
+    - name: autodesk
+      tier: experience
+      domain: workspace
+      component: autodesk
+      traits: [operator-workspace, domain-bound, audited]
+      workflows: [discover, operate, govern, publish]

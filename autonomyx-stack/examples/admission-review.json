@@ -1,0 +1,29 @@
+{
+  "apiVersion": "admission.k8s.io/v1",
+  "kind": "AdmissionReview",
+  "request": {
+    "uid": "admission:example:001",
+    "operation": "CREATE",
+    "object": {
+      "apiVersion": "autonomyx.io/v1alpha1",
+      "kind": "Certification",
+      "metadata": {
+        "name": "autonomyx-stack-v0-1",
+        "namespace": "default"
+      },
+      "spec": {
+        "domain": "platform",
+        "subject": "ghcr.io/agennext/autonomyx-controller:0.1.0",
+        "provenance": {
+          "source": "AGenNext/Agent-Platform",
+          "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+          "sbomRef": "sbom:example",
+          "signatureRef": "cosign:example",
+          "slsaLevel": "build-l1"
+        },
+        "validFrom": "2026-06-24T00:00:00+05:30",
+        "validUntil": "2026-12-24T00:00:00+05:30"
+      }
+    }
+  }
+}

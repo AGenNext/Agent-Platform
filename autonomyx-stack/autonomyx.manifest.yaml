@@ -1,0 +1,66 @@
+apiVersion: autonomyx.io/v1alpha1
+kind: AutonomyxManifest
+metadata:
+  name: autonomyx-oam-stack
+  domain: platform
+spec:
+  protocol:
+    pinnedTo: Open Application Model
+    source: https://www.cncf.io/blog/2020/07/24/open-application-model-carving-building-blocks-for-platforms/
+  invariants:
+    noSubAgents: true
+    noSubGraphs: true
+    noSidecarsInLogicLayer: true
+    rebaseAtEverySurface: true
+    eligibilityBeforeDiscovery: true
+    jitAccess: true
+    jitAuthorization: true
+    immutablePublication: true
+    timeBoundArtifacts: true
+    everyExchangeTransactional: true
+    everyApplicationIsGate: true
+  substrates:
+    liquid: runtime-flow
+    solid: persistent-state
+  state:
+    model: single-graph
+    semanticFormat: JSON-LD
+    graphName: AnyData
+  standards:
+    application: OAM
+    orchestration: Kubernetes
+    policy: OPA/Rego
+    identity: SPIFFE/OIDC
+    observability: OpenTelemetry
+    supplyChain: SLSA/Sigstore/SBOM
+  oamMapping:
+    component: Publication
+    trait: Policy
+    scope: Domain
+    workflow: ExecutionChain
+    applicationConfiguration: autonomyx.manifest
+  apps:
+    foundation:
+      - autonomyx-domain
+      - autonomyx-identity
+      - autonomyx-policy
+      - autonomyx-graph
+    governance:
+      - autonomyx-trust
+      - autonomyx-certification
+      - autonomyx-audit
+    runtime:
+      - autonomyx-runtime
+      - autonomyx-publication
+      - autonomyx-discovery
+    oam:
+      - autonomyx-oam
+      - autonomyx-manifest
+    experience:
+      - autodesk
+      - autobuilder
+      - autograph
+      - autotrust
+      - autopolicy
+      - autopublish
+      - autocertify

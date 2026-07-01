@@ -1,0 +1,26 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: autonomyx-gate
+webhooks:
+  - name: gate.autonomyx.io
+    admissionReviewVersions: ["v1"]
+    sideEffects: None
+    failurePolicy: Fail
+    rules:
+      - apiGroups: ["autonomyx.io"]
+        apiVersions: ["v1alpha1"]
+        operations: ["CREATE", "UPDATE"]
+        resources:
+          - autonomyxmanifests
+          - domains
+          - gates
+          - publications
+          - certifications
+    clientConfig:
+      service:
+        namespace: autonomyx-system
+        name: autonomyx-controller
+        path: /admit
+        port: 443
+      caBundle: "REPLACE_WITH_CA_BUNDLE"

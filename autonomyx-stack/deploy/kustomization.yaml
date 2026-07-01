@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - crds/autonomyx.io_autonomyxmanifests.yaml
+  - crds/autonomyx.io_domains.yaml
+  - crds/autonomyx.io_gates.yaml
+  - crds/autonomyx.io_publications.yaml
+  - crds/autonomyx.io_certifications.yaml
+  - tls/webhook-tls-secret.example.yaml
+  - rbac.yaml
+  - controller.yaml
+  - mvp.yaml
+  - webhook.yaml
+  - samples/domain-platform.yaml
+  - samples/gate-default.yaml
+  - samples/certification-stack.yaml
+  - samples/publication-stack.yaml
+  - samples/manifest-stack.yaml
+
+images:
+  - name: ghcr.io/agennext/autonomyx-controller
+    newTag: 0.1.0

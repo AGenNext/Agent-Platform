@@ -1,0 +1,11 @@
+apiVersion: autonomyx.io/v1alpha1
+kind: Domain
+metadata:
+  name: platform
+spec:
+  name: Platform
+  scope: foundation
+  ownerRef: external:domain-owner:platform
+  status: verified
+  policies:
+    - autonomyx-default-gate

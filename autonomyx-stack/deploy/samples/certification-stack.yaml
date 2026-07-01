@@ -1,0 +1,16 @@
+apiVersion: autonomyx.io/v1alpha1
+kind: Certification
+metadata:
+  name: autonomyx-stack-v0-1
+  namespace: default
+spec:
+  domain: platform
+  subject: ghcr.io/agennext/autonomyx-controller:0.1.0
+  provenance:
+    source: AGenNext/Agent-Platform
+    digest: sha256:replace-me
+    sbomRef: sbom:replace-me
+    signatureRef: cosign:replace-me
+    slsaLevel: build-l1
+  validFrom: "2026-06-24T00:00:00+05:30"
+  validUntil: "2026-12-24T00:00:00+05:30"
