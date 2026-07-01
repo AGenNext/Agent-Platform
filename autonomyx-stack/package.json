@@ -13,6 +13,7 @@
     "controller:dev": "tsx src/controller/server.ts",
     "controller:start": "node dist/controller/server.js",
     "check": "tsc --noEmit -p tsconfig.json",
+    "test": "node --test --import tsx src/**/*.test.ts",
     "validate:stack": "node scripts/validate-stack.mjs"
   },
   "dependencies": {
