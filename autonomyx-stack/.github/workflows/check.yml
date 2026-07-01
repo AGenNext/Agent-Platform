@@ -25,6 +25,7 @@ jobs:
           cache-dependency-path: autonomyx-stack/package.json
       - run: npm install
       - run: npm run check
+      - run: npm test
       - run: npm run validate:stack
       - run: npm run build
 
