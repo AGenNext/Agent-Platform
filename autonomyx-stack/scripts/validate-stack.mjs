@@ -19,6 +19,13 @@ const required = [
   "src/controller/server.ts",
   "src/controller/admission.ts",
   "src/controller/reconciler.ts",
+  "src/logical-kernel/types.ts",
+  "src/logical-kernel/planner.ts",
+  "src/logical-kernel/verifier.ts",
+  "src/logical-kernel/apply.ts",
+  "src/logical-kernel/diff.ts",
+  "src/logical-kernel/index.ts",
+  "src/logical-kernel/kernel.test.ts",
   "src/mvp/server.ts",
   "src/mvp/html.ts",
   "src/mvp/store.ts",
@@ -75,6 +82,14 @@ const deployment = fs.readFileSync(path.join(root, "deploy/mvp.yaml"), "utf8");
 for (const token of ["PersistentVolumeClaim", "AUTONOMYX_STATE_PROVIDER", "AUTONOMYX_STATE_FILE", "AUTONOMYX_MVP_TOKEN", "SURREALDB_ENDPOINT"]) {
   if (!deployment.includes(token)) {
     console.error(`MVP deployment missing persistence/auth/storage token: ${token}`);
+    process.exit(1);
+  }
+}
+
+const kernel = fs.readFileSync(path.join(root, "src/logical-kernel/index.ts"), "utf8");
+for (const token of ["reconcileIntent", "verifyPlan", "applyPlan", "diffGraph"]) {
+  if (!kernel.includes(token)) {
+    console.error(`Logical kernel missing export: ${token}`);
     process.exit(1);
   }
 }
