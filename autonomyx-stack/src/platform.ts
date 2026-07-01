@@ -1,5 +1,6 @@
 import { allApps } from "./apps.js";
 import { execute } from "./kernel.js";
+import { reconcileIntent } from "./logical-kernel/index.js";
 import type { ExecutionRequest, PlatformState } from "./types.js";
 
 export function initialState(): PlatformState {
@@ -46,11 +47,33 @@ export function initialState(): PlatformState {
 }
 
 export function runPlatform(request: ExecutionRequest, state: PlatformState = initialState()): PlatformState {
-  const result = execute(state, request);
+  const gateResult = execute(state, request);
+  if (gateResult.status !== "allowed") {
+    return {
+      ...state,
+      audit: [...state.audit, gateResult.auditEvent],
+    };
+  }
+
+  const reconciliation = reconcileIntent(state.graph, { request }, [
+    { type: "domain-bound", domain: request.domain },
+    { type: "no-cross-domain-edges" },
+  ]);
+
   return {
     ...state,
-    graph: result.graph,
-    audit: [...state.audit, result.auditEvent],
+    graph: reconciliation.graph,
+    audit: [
+      ...state.audit,
+      {
+        ...gateResult.auditEvent,
+        graphVersion: reconciliation.graph.version,
+        reason: reconciliation.verification.ok
+          ? `plan=${reconciliation.plan.id};addedNodes=${reconciliation.diff.addedNodes.length};removedNodes=${reconciliation.diff.removedNodes.length}`
+          : reconciliation.verification.findings.map((finding) => finding.code).join(","),
+        status: reconciliation.verification.ok ? gateResult.auditEvent.status : "error",
+      },
+    ],
   };
 }
 
