@@ -35,6 +35,30 @@ kubectl apply -k deploy/
 kubectl -n autonomyx-system port-forward svc/autonomyx-mvp 8080:80
 ```
 
+## Logical Kernel
+
+Execution now flows through the logical kernel:
+
+```text
+intent
+  -> plan
+  -> verify
+  -> apply graph patches
+  -> diff graph
+  -> reconcile
+  -> audit
+```
+
+Kernel files:
+
+- `src/logical-kernel/types.ts`
+- `src/logical-kernel/planner.ts`
+- `src/logical-kernel/verifier.ts`
+- `src/logical-kernel/apply.ts`
+- `src/logical-kernel/diff.ts`
+- `src/logical-kernel/index.ts`
+- `src/logical-kernel/kernel.test.ts`
+
 ## Canonical position
 
 Autonomyx does not replace Kubernetes, OAM, SPIFFE, OPA, OpenTelemetry, SLSA, or Sigstore. It composes them into a governed execution fabric.
@@ -85,7 +109,8 @@ Surface request
   -> trust scoring
   -> policy evaluation
   -> CRD reconciliation
-  -> graph arithmetic
+  -> logical kernel planning
+  -> graph reconciliation
   -> audit/telemetry
   -> certification-ready record
 ```
@@ -117,6 +142,7 @@ curl -X POST http://localhost:8443/admit \
 
 ```bash
 npm run build
+npm test
 npm start
 npm run mvp:start
 npm run controller:start
@@ -146,7 +172,8 @@ The stack is bound in two places:
 - `autonomyx.manifest.yaml` — canonical binding contract.
 - `bindings/autonomyx.stack.binding.yaml` — app/domain/gate/certification binding.
 - `src/types.ts` — platform object model.
-- `src/kernel.ts` — deterministic logical kernel.
+- `src/logical-kernel/` — deterministic logical kernel.
+- `src/kernel.ts` — gate-level compatibility kernel.
 - `src/apps.ts` — every stack component as an app.
 - `src/platform.ts` — composition layer.
 - `src/mvp/server.ts` — MVP API server.
@@ -163,7 +190,8 @@ The stack is bound in two places:
 - `docs/kubernetes.md` — Kubernetes install guide.
 - `docs/runbook.md` — operator runbook.
 - `docs/mvp.md` — MVP guide.
+- `docs/logical-kernel.md` — logical kernel guide.
 
 ## Current scope
 
-This is now a runnable MVP control plane plus a Kubernetes-native resource model, admission endpoint, identity extraction, policy evaluation, telemetry emission, certification checks, Dockerfile, deploy bundle, and binding contract. It is not yet a production-grade controller with persistent database, login UI, TLS automation, live Kubernetes watches, real OPA bundle runtime, OpenTelemetry SDK exporter, SPIFFE Workload API integration, or Sigstore/SLSA verification implementation.
+This is now a runnable MVP control plane with a deterministic logical kernel, Kubernetes-native resource model, admission endpoint, identity extraction, policy evaluation, telemetry emission, certification checks, Dockerfile, deploy bundle, and binding contract. It is not yet a production-grade controller with persistent database hardening, login UI, TLS automation, live Kubernetes watches, real OPA bundle runtime, OpenTelemetry SDK exporter, SPIFFE Workload API integration, or Sigstore/SLSA verification implementation.
