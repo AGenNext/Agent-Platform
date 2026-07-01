@@ -17,6 +17,7 @@ The MVP is a usable control-plane surface for the Autonomyx OAM stack.
 - JSON-file state persistence
 - SurrealDB state persistence scaffold
 - Optional bearer-token write protection
+- Logical kernel execution path
 
 ## Run locally
 
@@ -61,6 +62,17 @@ curl -X POST http://localhost:8080/api/execute \
       "immutable": true
     }
   }'
+```
+
+Execution now follows:
+
+```text
+gate
+  -> logical kernel plan
+  -> verify
+  -> apply graph patches
+  -> graph diff
+  -> audit reason
 ```
 
 ## State persistence
@@ -141,6 +153,7 @@ OAM apps
   → manifest
   → binding
   → execution API
+  → logical kernel
   → persistent graph state
   → audit event
   → operator UI
