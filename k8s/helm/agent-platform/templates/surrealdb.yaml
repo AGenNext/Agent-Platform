@@ -42,11 +42,16 @@ spec:
             - start
             - --log
             - info
+            # DEFINE API (the SurrealQL-served HTTP API) requires SurrealDB 3.x
+            # with capabilities enabled.
+            - --allow-all
             - --user
             - $(SURREALDB_USERNAME)
             - --pass
             - $(SURREALDB_PASSWORD)
-            - file:/data/platform.db
+            - --bind
+            - 0.0.0.0:{{ .Values.surrealdb.port }}
+            - rocksdb:/data/platform.db
           env:
             - name: SURREALDB_USERNAME
               valueFrom:

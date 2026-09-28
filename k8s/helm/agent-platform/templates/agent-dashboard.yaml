@@ -28,8 +28,23 @@ spec:
             - name: {{ $key }}
               value: {{ $val | quote }}
             {{- end }}
-            - name: AGENT_KNOWLEDGE_URL
-              value: "http://agent-knowledge:{{ .Values.agentKnowledge.port }}"
+            # The dashboard proxies /api/* to the SurrealDB-served API.
+            - name: SURREAL_URL
+              value: "http://surrealdb:{{ .Values.surrealdb.port }}"
+            - name: SURREAL_NS
+              value: {{ .Values.surrealdb.namespace | default "agent_platform" | quote }}
+            - name: SURREAL_DB
+              value: {{ .Values.surrealdb.database | default "agent_platform" | quote }}
+            - name: SURREAL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: agent-platform-secrets
+                  key: SURREALDB_USERNAME
+            - name: SURREAL_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: agent-platform-secrets
+                  key: SURREALDB_PASSWORD
           resources:
             {{- toYaml .Values.agentDashboard.resources | nindent 12 }}
           livenessProbe:
