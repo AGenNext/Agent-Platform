@@ -1,0 +1,13 @@
+{
+  "name": "agent-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "Agent Platform dashboard — serves the built Vite UI + health.",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
