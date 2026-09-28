@@ -1,0 +1,30 @@
+name: Platform API
+
+on:
+  pull_request:
+    paths:
+      - "docker/agent-knowledge/**"
+      - ".github/workflows/platform-api.yml"
+  push:
+    branches: [main]
+    paths:
+      - "docker/agent-knowledge/**"
+
+permissions:
+  contents: read
+
+jobs:
+  surrealdb-api:
+    name: Validate SurrealDB-served API
+    runs-on: ubuntu-latest
+    steps:
+      # Manual checkout — avoids third-party actions in case the org Actions
+      # policy restricts the allowed actions list.
+      - name: Checkout
+        run: |
+          git init -q .
+          git remote add origin "https://github.com/${{ github.repository }}.git"
+          git fetch -q --depth 1 origin "${{ github.ref }}"
+          git checkout -q --force FETCH_HEAD
+      - name: Apply schema + seed and assert every endpoint
+        run: bash docker/agent-knowledge/test-api.sh
