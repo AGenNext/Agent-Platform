@@ -8,10 +8,27 @@
 // All business logic lives in SurrealQL — this process makes no decisions.
 const path = require("path");
 const express = require("express");
+const rateLimit = require("express-rate-limit");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const publicDir = path.join(__dirname, "public");
+
+// Trust the ingress/proxy so the limiter keys off the real client IP.
+app.set("trust proxy", 1);
+
+// Global rate limit: every route handler below (the /api proxy, static assets,
+// and the SPA fallback that reads index.html from disk) is throttled per client
+// IP, bounding filesystem and upstream load from any single source.
+const limiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: Number(process.env.RATE_LIMIT_PER_MINUTE || 300),
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  // Never throttle the liveness/readiness probe (no filesystem access anyway).
+  skip: (req) => req.path === "/health",
+});
+app.use(limiter);
 
 const SURREAL = process.env.SURREAL_URL || "http://surrealdb:8000";
 const NS = process.env.SURREAL_NS || "agent_platform";
