@@ -14,7 +14,18 @@ AUTH="-u root:root"
 
 if ! command -v surreal >/dev/null 2>&1; then
   echo "Installing SurrealDB ${SURREAL_VERSION}…"
-  curl -sSL "https://github.com/surrealdb/surrealdb/releases/download/${SURREAL_VERSION}/surreal-${SURREAL_VERSION}.linux-amd64.tgz" | tar xz -C /tmp
+  url="https://github.com/surrealdb/surrealdb/releases/download/${SURREAL_VERSION}/surreal-${SURREAL_VERSION}.linux-amd64.tgz"
+  tgz="$(mktemp --suffix=.tgz)"
+  # Download to a file first: -f fails on an HTTP error (so a redirect/error page
+  # is never piped to tar as a bogus "archive"), and --retry rides out transient
+  # GitHub/CDN hiccups. Then verify it is actually gzip before extracting.
+  curl -fSL --retry 5 --retry-all-errors --retry-delay 2 -o "$tgz" "$url"
+  if ! gzip -t "$tgz" 2>/dev/null; then
+    echo "ERROR: downloaded SurrealDB archive is not a valid gzip (download failed?)" >&2
+    exit 1
+  fi
+  tar xzf "$tgz" -C /tmp
+  rm -f "$tgz"
   sudo install -m0755 /tmp/surreal /usr/local/bin/surreal
 fi
 surreal version
