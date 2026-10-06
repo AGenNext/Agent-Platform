@@ -3,6 +3,10 @@ global:
   imageRegistry: ""
 
 agentKnowledge:
+  # Deprecated: the platform API is now served directly by SurrealDB (DEFINE API)
+  # per the SurrealDB-First Engineering Contract. This Python service is disabled
+  # by default and retained only for transition. Do not re-enable without quorum.
+  enabled: false
   image:
     repository: agennext/agent-knowledge
     tag: latest
@@ -43,10 +47,15 @@ agentDashboard:
 
 surrealdb:
   enabled: true
+  # DEFINE API (custom HTTP endpoints) requires SurrealDB 3.x. Pinned to a
+  # verified stable 3.x tag rather than `latest` for reproducible deploys.
   image:
     repository: surrealdb/surrealdb
-    tag: latest
+    tag: "v3.2.4"
   port: 8000
+  # Namespace/database the schema + seed are loaded into and the dashboard proxies to.
+  namespace: agent_platform
+  database: agent_platform
   storage:
     size: 20Gi
     storageClass: ""
@@ -89,9 +98,8 @@ ingress:
   hosts:
     - host: platform.example.com
       paths:
-        - path: /api
-          service: agent-knowledge
-          port: 8001
+        # The dashboard serves the SPA and reverse-proxies /api/* to the
+        # SurrealDB-served API internally, so a single route to it is enough.
         - path: /
           service: agent-dashboard
           port: 3000

@@ -1,0 +1,60 @@
+{{- if .Values.surrealdb.enabled }}
+# Applies the SurrealDB schema + seed after (re)install. Idempotent: the schema
+# uses DEFINE ... OVERWRITE and the seed uses UPSERT, so re-runs are safe.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: agent-platform-schema-loader
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "agent-platform.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 6
+  template:
+    metadata:
+      labels:
+        app: agent-platform-schema-loader
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: loader
+          image: curlimages/curl:8.11.0
+          env:
+            - name: SURREALDB_USERNAME
+              valueFrom:
+                secretKeyRef: { name: agent-platform-secrets, key: SURREALDB_USERNAME }
+            - name: SURREALDB_PASSWORD
+              valueFrom:
+                secretKeyRef: { name: agent-platform-secrets, key: SURREALDB_PASSWORD }
+            - name: NS
+              value: {{ .Values.surrealdb.namespace | default "agent_platform" | quote }}
+            - name: DB
+              value: {{ .Values.surrealdb.database | default "agent_platform" | quote }}
+            - name: SURREAL
+              value: "http://surrealdb:{{ .Values.surrealdb.port }}"
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -eu
+              echo "waiting for SurrealDB…"
+              until curl -fsS "$SURREAL/health" >/dev/null 2>&1; do sleep 2; done
+              AUTH="-u $SURREALDB_USERNAME:$SURREALDB_PASSWORD"
+              echo "ensuring namespace/database…"
+              curl -fsS $AUTH --data "DEFINE NAMESPACE IF NOT EXISTS $NS; USE NS $NS; DEFINE DATABASE IF NOT EXISTS $DB;" "$SURREAL/sql" >/dev/null
+              echo "applying schema…"
+              curl -fsS $AUTH -H "surreal-ns: $NS" -H "surreal-db: $DB" -H "Content-Type: text/plain" --data-binary @/schema/schema.surql "$SURREAL/sql" >/dev/null
+              echo "applying seed…"
+              curl -fsS $AUTH -H "surreal-ns: $NS" -H "surreal-db: $DB" -H "Content-Type: text/plain" --data-binary @/schema/seed.surql "$SURREAL/sql" >/dev/null
+              echo "schema + seed applied."
+          volumeMounts:
+            - name: schema
+              mountPath: /schema
+      volumes:
+        - name: schema
+          configMap:
+            name: agent-platform-schema
+{{- end }}

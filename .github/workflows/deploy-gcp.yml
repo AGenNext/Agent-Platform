@@ -1,0 +1,138 @@
+name: Deploy to GKE
+
+# Builds the dashboard image, pushes it to Artifact Registry, and deploys the
+# Helm chart to GKE. Authenticates to GCP keylessly via Workload Identity
+# Federation (GitHub OIDC -> STS -> service-account impersonation), so no
+# long-lived service-account key is ever stored.
+#
+# All GCP interaction is done with the gcloud/kubectl/docker CLIs and raw HTTPS
+# calls — no third-party GitHub Actions — to stay within a restrictive org
+# Actions allow-list. Run deploy/gcp/setup.sh once first, then set the repo
+# variables and secrets it prints (see deploy/gcp/README.md).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docker/agent-dashboard/**"
+      - "k8s/helm/agent-platform/**"
+      - ".github/workflows/deploy-gcp.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  id-token: write   # required to mint the GitHub OIDC token for WIF
+
+concurrency:
+  group: deploy-gke
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build image and deploy chart
+    runs-on: ubuntu-latest
+    env:
+      PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      REGION: ${{ vars.GCP_REGION }}
+      CLUSTER: ${{ vars.GKE_CLUSTER }}
+      AR_REPO: ${{ vars.AR_REPO }}
+      WIF_PROVIDER: ${{ vars.WIF_PROVIDER }}
+      WIF_SERVICE_ACCOUNT: ${{ vars.WIF_SERVICE_ACCOUNT }}
+      PLATFORM_HOST: ${{ vars.PLATFORM_HOST }}
+      NAMESPACE: agent-platform
+    steps:
+      # Manual checkout — avoids third-party actions in case the org Actions
+      # policy restricts the allowed actions list.
+      - name: Checkout
+        run: |
+          git init -q .
+          git remote add origin "https://github.com/${{ github.repository }}.git"
+          git fetch -q --depth 1 origin "${{ github.sha }}"
+          git checkout -q --force FETCH_HEAD
+
+      - name: Sanity-check configuration
+        run: |
+          missing=0
+          for v in PROJECT_ID REGION CLUSTER AR_REPO WIF_PROVIDER WIF_SERVICE_ACCOUNT PLATFORM_HOST; do
+            if [ -z "${!v:-}" ]; then echo "::error::repo variable $v is not set"; missing=1; fi
+          done
+          [ "$missing" = "0" ] || { echo "Run deploy/gcp/setup.sh and set the printed variables."; exit 1; }
+
+      - name: Authenticate to GCP (keyless, Workload Identity Federation)
+        run: |
+          set -euo pipefail
+          # 1. GitHub OIDC token, audience = the WIF provider (canonical STS audience).
+          AUD="//iam.googleapis.com/${WIF_PROVIDER}"
+          OIDC="$(curl -sS -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${AUD}" | jq -r '.value')"
+          [ -n "$OIDC" ] && [ "$OIDC" != "null" ] || { echo "::error::failed to obtain GitHub OIDC token"; exit 1; }
+
+          # 2. Exchange the OIDC token for a federated access token via STS.
+          FEDERATED="$(curl -sS -X POST 'https://sts.googleapis.com/v1/token' \
+            -H 'Content-Type: application/json' \
+            -d "{
+              \"grantType\":\"urn:ietf:params:oauth:grant-type:token-exchange\",
+              \"audience\":\"${AUD}\",
+              \"scope\":\"https://www.googleapis.com/auth/cloud-platform\",
+              \"requestedTokenType\":\"urn:ietf:params:oauth:token-type:access_token\",
+              \"subjectTokenType\":\"urn:ietf:params:oauth:token-type:jwt\",
+              \"subjectToken\":\"${OIDC}\"
+            }" | jq -r '.access_token')"
+          [ -n "$FEDERATED" ] && [ "$FEDERATED" != "null" ] || { echo "::error::STS token exchange failed"; exit 1; }
+
+          # 3. Impersonate the deploy service account for a real access token.
+          ACCESS="$(curl -sS -X POST \
+            "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${WIF_SERVICE_ACCOUNT}:generateAccessToken" \
+            -H "Authorization: Bearer ${FEDERATED}" \
+            -H 'Content-Type: application/json' \
+            -d '{"scope":["https://www.googleapis.com/auth/cloud-platform"]}' | jq -r '.accessToken')"
+          [ -n "$ACCESS" ] && [ "$ACCESS" != "null" ] || { echo "::error::service account impersonation failed"; exit 1; }
+
+          # Hand the token to gcloud/kubectl (honored via env) and mask it.
+          echo "::add-mask::${ACCESS}"
+          echo "CLOUDSDK_AUTH_ACCESS_TOKEN=${ACCESS}" >> "$GITHUB_ENV"
+          echo "CLOUDSDK_CORE_PROJECT=${PROJECT_ID}" >> "$GITHUB_ENV"
+
+      - name: Install gke-auth-plugin, kubectl, helm
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq google-cloud-cli-gke-gcloud-auth-plugin kubectl >/dev/null 2>&1 || \
+            sudo apt-get install -y -qq google-cloud-sdk-gke-gcloud-auth-plugin kubectl >/dev/null 2>&1 || true
+          if ! command -v helm >/dev/null 2>&1; then
+            curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          fi
+          echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> "$GITHUB_ENV"
+
+      - name: Build and push dashboard image
+        run: |
+          set -euo pipefail
+          IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/${AR_REPO}/agent-dashboard"
+          TAG="${GITHUB_SHA::12}"
+          echo "${CLOUDSDK_AUTH_ACCESS_TOKEN}" | docker login -u oauth2accesstoken --password-stdin "https://${REGION}-docker.pkg.dev"
+          docker build -t "${IMAGE}:${TAG}" -t "${IMAGE}:latest" docker/agent-dashboard
+          docker push "${IMAGE}:${TAG}"
+          docker push "${IMAGE}:latest"
+          echo "IMAGE=${IMAGE}" >> "$GITHUB_ENV"
+          echo "TAG=${TAG}" >> "$GITHUB_ENV"
+
+      - name: Deploy Helm chart to GKE
+        env:
+          SURREALDB_PASSWORD: ${{ secrets.SURREALDB_PASSWORD }}
+          MINIO_ROOT_PASSWORD: ${{ secrets.MINIO_ROOT_PASSWORD }}
+        run: |
+          set -euo pipefail
+          gcloud container clusters get-credentials "${CLUSTER}" --region "${REGION}"
+          kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
+          helm upgrade --install agent-platform k8s/helm/agent-platform \
+            --namespace "${NAMESPACE}" \
+            --set agentDashboard.image.repository="${IMAGE}" \
+            --set agentDashboard.image.tag="${TAG}" \
+            --set-string ingress.hosts[0].host="${PLATFORM_HOST}" \
+            --set-string ingress.tls[0].hosts[0]="${PLATFORM_HOST}" \
+            --set secrets.surrealdbPassword="${SURREALDB_PASSWORD}" \
+            --set secrets.minioRootPassword="${MINIO_ROOT_PASSWORD}" \
+            --wait --timeout 15m
+          echo "Rollout complete. Ingress IP:"
+          kubectl get ingress agent-platform -n "${NAMESPACE}" \
+            -o jsonpath='{.status.loadBalancer.ingress[0].ip}' || true
