@@ -31,6 +31,25 @@ PROVIDER="github-provider"
 DEPLOY_SA="agent-platform-deploy"
 
 echo "==> Using project=$PROJECT_ID region=$REGION cluster=$CLUSTER repo=$GITHUB_REPO"
+
+# ---- 0. Authenticate --------------------------------------------------------
+# Interactive use: run `gcloud auth login` first and this is a no-op.
+# Headless/CI/agent use: export GCP_SA_KEY (service-account key JSON, or a path
+# to it) or GOOGLE_APPLICATION_CREDENTIALS, and we activate it non-interactively.
+if [ -n "${GCP_SA_KEY:-}" ]; then
+  keyfile="$GCP_SA_KEY"
+  if [ ! -f "$keyfile" ]; then
+    keyfile="$(mktemp)"; printf '%s' "$GCP_SA_KEY" > "$keyfile"
+  fi
+  gcloud auth activate-service-account --key-file="$keyfile" >/dev/null
+elif [ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]; then
+  gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" >/dev/null
+fi
+if ! gcloud auth list --filter=status:ACTIVE --format='value(account)' | grep -q .; then
+  echo "ERROR: no active gcloud credential. Run 'gcloud auth login', or set GCP_SA_KEY / GOOGLE_APPLICATION_CREDENTIALS." >&2
+  exit 1
+fi
+
 gcloud config set project "$PROJECT_ID" >/dev/null
 
 PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')"

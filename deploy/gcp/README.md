@@ -28,7 +28,7 @@ org Actions allow-list.
 - `gcloud` installed and logged in locally (`gcloud auth login`).
 - The GitHub repository is `AGenNext/Agent-Platform`.
 
-## 1. One-time setup (run locally)
+## 1. One-time setup
 
 ```bash
 export PROJECT_ID=your-gcp-project
@@ -36,6 +36,12 @@ export GITHUB_REPO=AGenNext/Agent-Platform
 # optional overrides: REGION (default us-central1), CLUSTER, AR_REPO
 bash deploy/gcp/setup.sh
 ```
+
+**Auth.** Run `gcloud auth login` first for interactive use. To run it
+headlessly (CI, or an agent session), instead export a service-account key with
+rights to create the cluster/registry/IAM (Owner, or a tailored set) as either
+`GCP_SA_KEY` (the JSON itself or a path to it) or `GOOGLE_APPLICATION_CREDENTIALS`
+(a path); the script activates it non-interactively.
 
 This enables APIs, creates an Artifact Registry repo, a **GKE Autopilot**
 cluster, a Workload Identity pool/provider locked to this repo, and a deploy
