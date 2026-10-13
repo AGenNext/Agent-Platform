@@ -98,4 +98,22 @@ case "$routed" in
   *) printf '  FAIL %-26s expected daily_budget_exhausted, got: %.80s\n' "budget-fallback" "$routed"; fail=1;;
 esac
 
+# ── Scoped public-access auth (the identity the dashboard proxy actually uses) ─
+# The proxy holds no root creds: it signs in to the credential-less `public`
+# record access and forwards the scoped token. Verify that identity can read the
+# API but is blocked from DDL and from writing read-only tables.
+echo "Checking scoped public access…"
+TOKEN=$(curl -s -X POST "$BASE/signin" -H 'Content-Type: application/json' \
+  -d "{\"ns\":\"$NS\",\"db\":\"$DB\",\"ac\":\"public\"}" | grep -oE 'eyJ[A-Za-z0-9._-]+' | head -1)
+if [ -z "$TOKEN" ]; then echo "  FAIL could not sign in to public access"; fail=1; else
+  code=$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $TOKEN" "$API/spaces")
+  [ "$code" = "200" ] && printf '  ok   %-26s %s\n' "public-read" "/spaces" || { printf '  FAIL public-read /spaces -> %s\n' "$code"; fail=1; }
+  # DDL must be denied for the scoped identity.
+  ddl=$(curl -s -H "Authorization: Bearer $TOKEN" -H "surreal-ns: $NS" -H "surreal-db: $DB" --data 'DEFINE TABLE evil SCHEMALESS;' "$BASE/sql")
+  case "$ddl" in *'NotAllowed'*|*'"status":"ERR"'*) printf '  ok   %-26s %s\n' "public-ddl-denied" "DEFINE TABLE";; *) printf '  FAIL public identity could run DDL: %.80s\n' "$ddl"; fail=1;; esac
+  # Writing a read-only table must be denied (no row created).
+  wr=$(curl -s -H "Authorization: Bearer $TOKEN" -H "surreal-ns: $NS" -H "surreal-db: $DB" --data 'CREATE spaces CONTENT {hijack:true};' "$BASE/sql")
+  case "$wr" in *'hijack'*) printf '  FAIL public identity wrote a read-only table: %.80s\n' "$wr"; fail=1;; *) printf '  ok   %-26s %s\n' "public-write-denied" "spaces";; esac
+fi
+
 [ "$fail" = "0" ] && echo "All API checks passed." || { echo "API checks FAILED"; exit 1; }

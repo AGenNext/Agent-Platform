@@ -6,23 +6,37 @@
 -- served directly by SurrealDB at /api/<ns>/<db>/<path>. Requires SurrealDB 3.x.
 -- ─────────────────────────────────────────────────────────────────────────
 
--- ===== Operational tables =====
-DEFINE TABLE OVERWRITE objectives SCHEMALESS;
-DEFINE TABLE OVERWRITE artifacts SCHEMALESS;
-DEFINE TABLE OVERWRITE agents SCHEMALESS;
-DEFINE TABLE OVERWRITE workflow_runs SCHEMALESS;
-DEFINE TABLE OVERWRITE eval_results SCHEMALESS;
-DEFINE TABLE OVERWRITE trust_scores SCHEMALESS;
-DEFINE TABLE OVERWRITE usage_records SCHEMALESS;
-DEFINE TABLE OVERWRITE routing_rules SCHEMALESS;
+-- ===== Public caller identity (SurrealDB-owned auth) =====
+-- The dashboard proxy carries NO root credentials. It signs in to this
+-- credential-less record access and forwards the resulting scoped token, so an
+-- authenticated caller is the unprivileged `identity:public`, never root. Per
+-- SurrealDB semantics, record-access identities are bound by the table
+-- PERMISSIONS below and cannot run DDL (DEFINE/REMOVE), touch other
+-- namespaces/databases, or manage users/access. Authority lives in SurrealDB.
+DEFINE ACCESS OVERWRITE public ON DATABASE TYPE RECORD
+  SIGNIN { RETURN type::record("identity", "public"); }
+  DURATION FOR TOKEN 1h, FOR SESSION 12h;
 
--- ===== Dashboard read-model tables =====
-DEFINE TABLE OVERWRITE spaces SCHEMALESS;
-DEFINE TABLE OVERWRITE channels SCHEMALESS;
-DEFINE TABLE OVERWRITE milestones SCHEMALESS;
-DEFINE TABLE OVERWRITE learning_paths SCHEMALESS;
-DEFINE TABLE OVERWRITE agent_profiles SCHEMALESS;
-DEFINE TABLE OVERWRITE model_routes SCHEMALESS;
+-- ===== Operational tables =====
+-- PERMISSIONS below apply to the public record identity (root/loader bypasses
+-- them). Reads are open; writes are limited to exactly what the dashboard's
+-- documented actions need; deletes and schema changes are denied to callers.
+DEFINE TABLE OVERWRITE objectives    SCHEMALESS PERMISSIONS FOR select FULL, FOR create, update FULL, FOR delete NONE;
+DEFINE TABLE OVERWRITE artifacts     SCHEMALESS PERMISSIONS FOR select FULL, FOR update FULL, FOR create, delete NONE;
+DEFINE TABLE OVERWRITE agents        SCHEMALESS PERMISSIONS FOR select FULL, FOR create FULL, FOR update, delete NONE;
+DEFINE TABLE OVERWRITE workflow_runs SCHEMALESS PERMISSIONS FOR select FULL, FOR create, update, delete NONE;
+DEFINE TABLE OVERWRITE eval_results  SCHEMALESS PERMISSIONS FOR select FULL, FOR create FULL, FOR update, delete NONE;
+DEFINE TABLE OVERWRITE trust_scores  SCHEMALESS PERMISSIONS FOR select FULL, FOR create FULL, FOR update, delete NONE;
+DEFINE TABLE OVERWRITE usage_records SCHEMALESS PERMISSIONS FOR select FULL, FOR create, update, delete NONE;
+DEFINE TABLE OVERWRITE routing_rules SCHEMALESS PERMISSIONS FOR select FULL, FOR create, update, delete NONE;
+
+-- ===== Dashboard read-model tables (read-only to callers) =====
+DEFINE TABLE OVERWRITE spaces         SCHEMALESS PERMISSIONS FOR select FULL, FOR create, update, delete NONE;
+DEFINE TABLE OVERWRITE channels       SCHEMALESS PERMISSIONS FOR select FULL, FOR create, update, delete NONE;
+DEFINE TABLE OVERWRITE milestones     SCHEMALESS PERMISSIONS FOR select FULL, FOR create, update, delete NONE;
+DEFINE TABLE OVERWRITE learning_paths SCHEMALESS PERMISSIONS FOR select FULL, FOR create, update, delete NONE;
+DEFINE TABLE OVERWRITE agent_profiles SCHEMALESS PERMISSIONS FOR select FULL, FOR create, update, delete NONE;
+DEFINE TABLE OVERWRITE model_routes   SCHEMALESS PERMISSIONS FOR select FULL, FOR create, update, delete NONE;
 
 -- ===== Business functions (SurrealQL-owned) =====
 DEFINE FUNCTION OVERWRITE fn::objective::start($objective_id: string) -> object {

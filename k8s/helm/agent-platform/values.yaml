@@ -56,6 +56,10 @@ surrealdb:
   # Namespace/database the schema + seed are loaded into and the dashboard proxies to.
   namespace: agent_platform
   database: agent_platform
+  # Credential-less SurrealDB record access the dashboard signs in as (defined in
+  # schema.surql). The dashboard holds no root credentials; this scoped identity
+  # is bound by table PERMISSIONS and cannot run DDL or reach other databases.
+  publicAccess: public
   storage:
     size: 20Gi
     storageClass: ""
