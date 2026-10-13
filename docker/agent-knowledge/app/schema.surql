@@ -1,173 +1,208 @@
 -- ─────────────────────────────────────────────────────────────────────────
--- AGenNext Agent Platform — SurrealDB Schema
--- Applied once on startup via startup.py
+-- AGenNext Agent Platform — SurrealDB API schema
+--
+-- SurrealDB-first: tables, business logic (fn::…), and the HTTP API (DEFINE API)
+-- all live here. No external backend service. The dashboard's /api/* calls are
+-- served directly by SurrealDB at /api/<ns>/<db>/<path>. Requires SurrealDB 3.x.
 -- ─────────────────────────────────────────────────────────────────────────
 
--- ── Objectives ──────────────────────────────────────────────────────────────
-DEFINE TABLE objectives SCHEMALESS PERMISSIONS FULL;
-DEFINE FIELD title            ON objectives TYPE string;
-DEFINE FIELD objective_type   ON objectives TYPE string  DEFAULT 'generic';
-DEFINE FIELD workspace_id     ON objectives TYPE option<string>;
-DEFINE FIELD payload          ON objectives TYPE object DEFAULT {};
-DEFINE FIELD status           ON objectives TYPE string  DEFAULT 'pending';
-DEFINE FIELD created_at       ON objectives TYPE datetime DEFAULT time::now();
-DEFINE FIELD updated_at       ON objectives TYPE datetime DEFAULT time::now();
-DEFINE INDEX idx_objectives_status    ON objectives FIELDS status;
-DEFINE INDEX idx_objectives_workspace ON objectives FIELDS workspace_id;
+-- ===== Public caller identity (SurrealDB-owned auth) =====
+-- The dashboard proxy carries NO root credentials. It signs in to this
+-- credential-less record access and forwards the resulting scoped token, so an
+-- authenticated caller is the unprivileged `identity:public`, never root. Per
+-- SurrealDB semantics, record-access identities are bound by the table
+-- PERMISSIONS below and cannot run DDL (DEFINE/REMOVE), touch other
+-- namespaces/databases, or manage users/access. Authority lives in SurrealDB.
+DEFINE ACCESS OVERWRITE public ON DATABASE TYPE RECORD
+  SIGNIN { RETURN type::record("identity", "public"); }
+  DURATION FOR TOKEN 1h, FOR SESSION 12h;
 
--- Reactive: mark updated_at whenever status changes
-DEFINE EVENT objective_status_changed ON objectives
-  WHEN $before.status != $after.status
-  THEN (UPDATE $after.id SET updated_at = time::now());
+-- ===== Operational tables =====
+-- PERMISSIONS below apply to the public record identity (root/loader bypasses
+-- them). Reads are open; writes are limited to exactly what the dashboard's
+-- documented actions need; deletes and schema changes are denied to callers.
+DEFINE TABLE OVERWRITE objectives    SCHEMALESS PERMISSIONS FOR select FULL, FOR create, update FULL, FOR delete NONE;
+DEFINE TABLE OVERWRITE artifacts     SCHEMALESS PERMISSIONS FOR select FULL, FOR update FULL, FOR create, delete NONE;
+DEFINE TABLE OVERWRITE agents        SCHEMALESS PERMISSIONS FOR select FULL, FOR create FULL, FOR update, delete NONE;
+DEFINE TABLE OVERWRITE workflow_runs SCHEMALESS PERMISSIONS FOR select FULL, FOR create, update, delete NONE;
+DEFINE TABLE OVERWRITE eval_results  SCHEMALESS PERMISSIONS FOR select FULL, FOR create FULL, FOR update, delete NONE;
+DEFINE TABLE OVERWRITE trust_scores  SCHEMALESS PERMISSIONS FOR select FULL, FOR create FULL, FOR update, delete NONE;
+DEFINE TABLE OVERWRITE usage_records SCHEMALESS PERMISSIONS FOR select FULL, FOR create, update, delete NONE;
+DEFINE TABLE OVERWRITE routing_rules SCHEMALESS PERMISSIONS FOR select FULL, FOR create, update, delete NONE;
 
--- ── Artifacts ───────────────────────────────────────────────────────────────
-DEFINE TABLE artifacts SCHEMALESS PERMISSIONS FULL;
-DEFINE FIELD objective_id  ON artifacts TYPE string;
-DEFINE FIELD artifact_type ON artifacts TYPE string;
-DEFINE FIELD title         ON artifacts TYPE string;
-DEFINE FIELD content_ref   ON artifacts TYPE string;
-DEFINE FIELD payload       ON artifacts TYPE object DEFAULT {};
-DEFINE FIELD status        ON artifacts TYPE string DEFAULT 'draft';
-DEFINE FIELD eval_status   ON artifacts TYPE option<string>;
-DEFINE FIELD trust_status  ON artifacts TYPE option<string>;
-DEFINE FIELD created_at    ON artifacts TYPE datetime DEFAULT time::now();
-DEFINE INDEX idx_artifacts_objective ON artifacts FIELDS objective_id;
-DEFINE INDEX idx_artifacts_status    ON artifacts FIELDS status;
+-- ===== Dashboard read-model tables (read-only to callers) =====
+DEFINE TABLE OVERWRITE spaces         SCHEMALESS PERMISSIONS FOR select FULL, FOR create, update, delete NONE;
+DEFINE TABLE OVERWRITE channels       SCHEMALESS PERMISSIONS FOR select FULL, FOR create, update, delete NONE;
+DEFINE TABLE OVERWRITE milestones     SCHEMALESS PERMISSIONS FOR select FULL, FOR create, update, delete NONE;
+DEFINE TABLE OVERWRITE learning_paths SCHEMALESS PERMISSIONS FOR select FULL, FOR create, update, delete NONE;
+DEFINE TABLE OVERWRITE agent_profiles SCHEMALESS PERMISSIONS FOR select FULL, FOR create, update, delete NONE;
+DEFINE TABLE OVERWRITE model_routes   SCHEMALESS PERMISSIONS FOR select FULL, FOR create, update, delete NONE;
 
--- ── Agents ───────────────────────────────────────────────────────────────────
-DEFINE TABLE agents SCHEMALESS PERMISSIONS FULL;
-DEFINE FIELD agent_role  ON agents TYPE string;
-DEFINE FIELD run_id      ON agents TYPE string;
-DEFINE FIELD status      ON agents TYPE string DEFAULT 'idle';
-DEFINE FIELD created_at  ON agents TYPE datetime DEFAULT time::now();
-DEFINE INDEX idx_agents_run    ON agents FIELDS run_id;
-DEFINE INDEX idx_agents_status ON agents FIELDS status;
+-- ===== Business functions (SurrealQL-owned) =====
+DEFINE FUNCTION OVERWRITE fn::objective::start($objective_id: string) -> object {
+  LET $rec = UPDATE type::record("objectives", $objective_id) SET status = "running", updated_at = time::now() RETURN AFTER;
+  RETURN $rec[0];
+};
 
--- ── Agent tasks ──────────────────────────────────────────────────────────────
-DEFINE TABLE agent_tasks SCHEMALESS PERMISSIONS FULL;
-DEFINE FIELD agent_id      ON agent_tasks TYPE string;
-DEFINE FIELD description   ON agent_tasks TYPE string;
-DEFINE FIELD skill_id      ON agent_tasks TYPE option<string>;
-DEFINE FIELD status        ON agent_tasks TYPE string DEFAULT 'pending';
-DEFINE FIELD output_ref    ON agent_tasks TYPE option<string>;
-DEFINE FIELD started_at    ON agent_tasks TYPE option<datetime>;
-DEFINE FIELD completed_at  ON agent_tasks TYPE option<datetime>;
-DEFINE INDEX idx_tasks_agent ON agent_tasks FIELDS agent_id;
+DEFINE FUNCTION OVERWRITE fn::eval::score($scores: object, $threshold: option<float>) -> object {
+  LET $t = $threshold ?? 0.7;
+  LET $c = (($scores.completeness ?? 0.0) * 0.2) + (($scores.logical ?? 0.0) * 0.2) + (($scores.evidence ?? 0.0) * 0.2) + (($scores.accuracy ?? 0.0) * 0.2) + (($scores.relevance ?? 0.0) * 0.2);
+  LET $r = math::round($c * 10000) / 10000;
+  RETURN { composite_score: $r, passed: $r >= $t, threshold: $t };
+};
+DEFINE FUNCTION OVERWRITE fn::eval::evaluate($input: object) -> object {
+  LET $dims = $input.dimension_scores ?? {};
+  LET $scored = fn::eval::score($dims, $input.threshold);
+  LET $created = CREATE ONLY eval_results CONTENT { artifact_id: $input.artifact_id, composite_score: $scored.composite_score, passed: $scored.passed, threshold: $scored.threshold, dimension_scores: $dims, rationale: $input.rationale ?? "", evaluated_at: time::now() };
+  UPDATE artifacts SET eval_status = IF $scored.passed THEN "passed" ELSE "failed" END WHERE id = type::record("artifacts", $input.artifact_id) OR id = $input.artifact_id;
+  RETURN { result: $created, threshold: $scored.threshold };
+};
 
--- ── A2A handoffs (graph edge) ────────────────────────────────────────────────
--- RELATE agent:a -> handoff -> agent:b CONTENT { context: "..." }
-DEFINE TABLE handoff SCHEMALESS PERMISSIONS FULL;
-DEFINE FIELD context        ON handoff TYPE string DEFAULT '';
-DEFINE FIELD handoff_status ON handoff TYPE string DEFAULT 'initiated';
-DEFINE FIELD payload        ON handoff TYPE object DEFAULT {};
-DEFINE FIELD created_at     ON handoff TYPE datetime DEFAULT time::now();
+DEFINE FUNCTION OVERWRITE fn::trust::score($evidence: array) -> object {
+  LET $total = array::len($evidence);
+  LET $density = math::min([$total / 5.0, 1.0]);
+  LET $score = math::round($density * 10000) / 10000;
+  RETURN { score: $score, verified: $score >= 0.65, threshold: 0.65 };
+};
+DEFINE FUNCTION OVERWRITE fn::trust::record($input: object) -> object {
+  LET $evidence = $input.evidence_links ?? [];
+  LET $scored = fn::trust::score($evidence);
+  LET $created = CREATE ONLY trust_scores CONTENT { artifact_id: $input.artifact_id, score: $scored.score, verified: $scored.verified, provenance: $evidence, verification_method: "chain", computed_at: time::now() };
+  UPDATE artifacts SET trust_status = IF $scored.verified THEN "verified" ELSE "unverified" END WHERE id = type::record("artifacts", $input.artifact_id) OR id = $input.artifact_id;
+  RETURN $created;
+};
+DEFINE FUNCTION OVERWRITE fn::trust::gate($artifact_id: string, $threshold: option<float>) -> object {
+  LET $t = $threshold ?? 0.65;
+  LET $latest = (SELECT * FROM trust_scores WHERE artifact_id = $artifact_id ORDER BY computed_at DESC LIMIT 1)[0];
+  RETURN IF $latest = NONE THEN { passed: false, score: NONE, verified: false, threshold: $t, reason: "no_trust_score" }
+    ELSE { passed: $latest.score >= $t, score: $latest.score, verified: $latest.verified, threshold: $t } END;
+};
 
--- ── Workflow runs ────────────────────────────────────────────────────────────
-DEFINE TABLE workflow_runs SCHEMALESS PERMISSIONS FULL;
-DEFINE FIELD definition_id ON workflow_runs TYPE option<string>;
-DEFINE FIELD objective_id  ON workflow_runs TYPE string;
-DEFINE FIELD status        ON workflow_runs TYPE string DEFAULT 'running';
-DEFINE FIELD state         ON workflow_runs TYPE object DEFAULT {};
-DEFINE FIELD started_at    ON workflow_runs TYPE datetime DEFAULT time::now();
-DEFINE FIELD completed_at  ON workflow_runs TYPE option<datetime>;
-DEFINE INDEX idx_runs_objective ON workflow_runs FIELDS objective_id;
-DEFINE INDEX idx_runs_status    ON workflow_runs FIELDS status;
+DEFINE FUNCTION OVERWRITE fn::finops::daily_spend() -> float {
+  LET $rows = SELECT math::sum(cost_usd) AS spent FROM usage_records WHERE recorded_at > time::now() - 1d GROUP ALL;
+  RETURN <float>($rows[0].spent ?? 0.0);
+};
+DEFINE FUNCTION OVERWRITE fn::model_router::select($input: object) -> object {
+  LET $rule = (SELECT * FROM routing_rules WHERE task_type = $input.task_type AND enabled = true LIMIT 1)[0];
+  IF $rule = NONE {
+    RETURN { model_id: "llama3", provider: "ollama", estimated_cost: 0.0, rationale: "fallback (no_rule)", rule_id: NONE };
+  };
+  -- Enforce the rule's daily budget: once the day's spend meets it, fall back
+  -- to the free local model instead of routing more paid traffic.
+  LET $daily_spend = fn::finops::daily_spend();
+  LET $daily_budget = $rule.daily_budget ?? 10.0;
+  IF $daily_spend >= $daily_budget {
+    RETURN { model_id: "llama3", provider: "ollama", estimated_cost: 0.0, rationale: "fallback (daily_budget_exhausted)", rule_id: $rule.id };
+  };
+  -- Filter candidates to those within the caller's / rule's cost ceiling and
+  -- pick the highest priority (lowest priority number).
+  LET $max_cost = $input.max_cost_override ?? $rule.max_cost_per_call ?? 0.10;
+  LET $candidates = array::sort(($rule.models ?? [])[WHERE (max_cost_per_call ?? 0.0) <= $max_cost], |$a, $b| $a.priority < $b.priority);
+  LET $candidate = $candidates[0];
+  RETURN IF $candidate = NONE THEN { model_id: "llama3", provider: "ollama", estimated_cost: 0.0, rationale: "fallback (no_candidate_within_cost)", rule_id: $rule.id }
+    ELSE { model_id: $candidate.model_id, provider: $candidate.provider ?? $rule.preferred_provider ?? "ollama", estimated_cost: $candidate.max_cost_per_call ?? 0.0, rationale: string::concat("priority=", <string>($candidate.priority ?? 0)), rule_id: $rule.id } END;
+};
 
--- ── Checkpoints (LangGraph-compatible) ──────────────────────────────────────
-DEFINE TABLE checkpoints SCHEMALESS PERMISSIONS FULL;
-DEFINE FIELD run_id        ON checkpoints TYPE string;
-DEFINE FIELD thread_id     ON checkpoints TYPE string;
-DEFINE FIELD checkpoint_id ON checkpoints TYPE string;
-DEFINE FIELD node_id       ON checkpoints TYPE string;
-DEFINE FIELD state_json    ON checkpoints TYPE string;
-DEFINE FIELD metadata      ON checkpoints TYPE object DEFAULT {};
-DEFINE FIELD created_at    ON checkpoints TYPE datetime DEFAULT time::now();
-DEFINE INDEX idx_ckpt_run    ON checkpoints FIELDS run_id;
-DEFINE INDEX idx_ckpt_thread ON checkpoints FIELDS thread_id, checkpoint_id UNIQUE;
+-- ===== JSON response helper =====
+DEFINE FUNCTION OVERWRITE fn::api::json($value: any) -> object {
+  RETURN { status: 200, headers: { "content-type": "application/json", "access-control-allow-origin": "*" }, body: encoding::json::encode($value) };
+};
 
--- ── Eval results ─────────────────────────────────────────────────────────────
-DEFINE TABLE eval_results SCHEMALESS PERMISSIONS FULL;
-DEFINE FIELD artifact_id      ON eval_results TYPE string;
-DEFINE FIELD rubric_id        ON eval_results TYPE option<string>;
-DEFINE FIELD composite_score  ON eval_results TYPE float;
-DEFINE FIELD dimension_scores ON eval_results TYPE array DEFAULT [];
-DEFINE FIELD passed           ON eval_results TYPE bool;
-DEFINE FIELD rationale        ON eval_results TYPE option<string>;
-DEFINE FIELD evaluated_at     ON eval_results TYPE datetime DEFAULT time::now();
-DEFINE INDEX idx_eval_artifact ON eval_results FIELDS artifact_id;
+-- ===== HTTP API (served at /api/<ns>/<db>/<path>) =====
+DEFINE API OVERWRITE "/health" FOR get THEN {
+  RETURN fn::api::json({ status: "ok", service: "agent-platform", version: "0.1.0", surrealdb: "up", env: "production" });
+};
 
--- ── Trust scores ─────────────────────────────────────────────────────────────
-DEFINE TABLE trust_scores SCHEMALESS PERMISSIONS FULL;
-DEFINE FIELD artifact_id         ON trust_scores TYPE string;
-DEFINE FIELD score               ON trust_scores TYPE float;
-DEFINE FIELD verified            ON trust_scores TYPE bool DEFAULT false;
-DEFINE FIELD provenance          ON trust_scores TYPE array DEFAULT [];
-DEFINE FIELD verification_method ON trust_scores TYPE string DEFAULT 'chain';
-DEFINE FIELD computed_at         ON trust_scores TYPE datetime DEFAULT time::now();
-DEFINE INDEX idx_trust_artifact ON trust_scores FIELDS artifact_id;
+DEFINE API OVERWRITE "/objectives"
+  FOR get THEN {
+    LET $s = $request.query.status;
+    LET $rows = IF $s THEN (SELECT * FROM objectives WHERE status = $s ORDER BY created_at DESC)
+                ELSE (SELECT * FROM objectives ORDER BY created_at DESC) END;
+    RETURN fn::api::json($rows);
+  }
+  FOR post THEN {
+    LET $b = encoding::json::decode(<string>$request.body);
+    LET $rec = CREATE ONLY objectives CONTENT { title: $b.title, objective_type: $b.objective_type ?? "generic", payload: $b.payload ?? {}, status: "pending", created_at: time::now(), updated_at: time::now() };
+    RETURN fn::api::json($rec);
+  };
 
--- ── Usage records (FinOps) ───────────────────────────────────────────────────
-DEFINE TABLE usage_records SCHEMALESS PERMISSIONS FULL;
-DEFINE FIELD objective_id  ON usage_records TYPE string;
-DEFINE FIELD model_id      ON usage_records TYPE string;
-DEFINE FIELD provider      ON usage_records TYPE string;
-DEFINE FIELD workspace_id  ON usage_records TYPE option<string>;
-DEFINE FIELD input_tokens  ON usage_records TYPE int   DEFAULT 0;
-DEFINE FIELD output_tokens ON usage_records TYPE int   DEFAULT 0;
-DEFINE FIELD cost_usd      ON usage_records TYPE float DEFAULT 0.0;
-DEFINE FIELD recorded_at   ON usage_records TYPE datetime DEFAULT time::now();
-DEFINE INDEX idx_usage_objective ON usage_records FIELDS objective_id;
-DEFINE INDEX idx_usage_model     ON usage_records FIELDS model_id;
+DEFINE API OVERWRITE "/objectives/:id/run" FOR post THEN {
+  LET $r = fn::objective::start($request.params.id);
+  RETURN fn::api::json({ objective_id: $request.params.id, status: $r.status ?? "running" });
+};
 
--- ── Routing rules ────────────────────────────────────────────────────────────
-DEFINE TABLE routing_rules SCHEMALESS PERMISSIONS FULL;
-DEFINE FIELD task_type         ON routing_rules TYPE string;
-DEFINE FIELD preferred_provider ON routing_rules TYPE string;
-DEFINE FIELD models            ON routing_rules TYPE array DEFAULT [];
-DEFINE FIELD max_cost_per_call ON routing_rules TYPE float DEFAULT 0.10;
-DEFINE FIELD daily_budget      ON routing_rules TYPE float DEFAULT 10.0;
-DEFINE FIELD enabled           ON routing_rules TYPE bool  DEFAULT true;
-DEFINE INDEX idx_routing_task ON routing_rules FIELDS task_type UNIQUE;
+DEFINE API OVERWRITE "/artifacts" FOR get THEN {
+  LET $o = $request.query.objective_id;
+  LET $rows = IF $o THEN (SELECT * FROM artifacts WHERE objective_id = $o ORDER BY created_at DESC)
+              ELSE (SELECT * FROM artifacts ORDER BY created_at DESC) END;
+  RETURN fn::api::json($rows);
+};
+DEFINE API OVERWRITE "/artifacts/hub" FOR get THEN {
+  RETURN fn::api::json(SELECT * FROM artifacts ORDER BY created_at DESC);
+};
 
--- ── Platform host discovery ────────────────────────────────────────────────
-DEFINE TABLE platform_hosts SCHEMALESS PERMISSIONS FULL;
-DEFINE FIELD name       ON platform_hosts TYPE string;
-DEFINE FIELD role       ON platform_hosts TYPE string;
-DEFINE FIELD url        ON platform_hosts TYPE string;
-DEFINE FIELD health     ON platform_hosts TYPE string;
-DEFINE FIELD enabled    ON platform_hosts TYPE bool DEFAULT true;
-DEFINE FIELD priority   ON platform_hosts TYPE int DEFAULT 100;
-DEFINE FIELD metadata   ON platform_hosts TYPE object DEFAULT {};
-DEFINE FIELD updated_at ON platform_hosts TYPE datetime DEFAULT time::now();
-DEFINE INDEX idx_platform_hosts_name ON platform_hosts FIELDS name UNIQUE;
-DEFINE INDEX idx_platform_hosts_enabled_priority ON platform_hosts FIELDS enabled, priority;
+DEFINE API OVERWRITE "/agents"
+  FOR post THEN {
+    LET $b = encoding::json::decode(<string>$request.body);
+    LET $rec = CREATE ONLY agents CONTENT { run_id: $b.run_id, agent_role: $b.agent_role, status: "idle", created_at: time::now() };
+    RETURN fn::api::json($rec);
+  };
+DEFINE API OVERWRITE "/agents/roster" FOR get THEN {
+  RETURN fn::api::json(SELECT * FROM agent_profiles ORDER BY role);
+};
+DEFINE API OVERWRITE "/agents/run/:run_id" FOR get THEN {
+  RETURN fn::api::json(SELECT * FROM agents WHERE run_id = $request.params.run_id ORDER BY created_at);
+};
 
-UPSERT platform_hosts:agent_platform SET name = "agent-platform", role = "platform", url = "http://localhost:3000", health = "http://localhost:3000/.well-known/agent-platform.json", enabled = true, priority = 10, metadata = {};
-UPSERT platform_hosts:agent_knowledge SET name = "agent-knowledge", role = "api", url = "http://localhost:8000/api/agent_platform/agent_platform", health = "http://localhost:8000/health", enabled = true, priority = 20, metadata = {};
-UPSERT platform_hosts:agent_dashboard SET name = "agent-dashboard", role = "dashboard", url = "http://localhost:3000", health = "http://localhost:3000/health", enabled = true, priority = 30, metadata = {};
-UPSERT platform_hosts:agent_site SET name = "agent-site", role = "site", url = "http://localhost:3001", health = "http://localhost:3001/health", enabled = true, priority = 40, metadata = {};
+DEFINE API OVERWRITE "/spaces" FOR get THEN { RETURN fn::api::json(SELECT * FROM spaces ORDER BY name); };
+DEFINE API OVERWRITE "/channels" FOR get THEN { RETURN fn::api::json(SELECT * FROM channels ORDER BY name); };
+DEFINE API OVERWRITE "/milestones" FOR get THEN { RETURN fn::api::json(SELECT * FROM milestones ORDER BY due_at); };
+DEFINE API OVERWRITE "/learning/paths" FOR get THEN { RETURN fn::api::json(SELECT * FROM learning_paths ORDER BY title); };
 
--- ── SurrealDB-owned platform APIs and business functions ───────────────────
-DEFINE FUNCTION fn::platform::hosts() -> array { RETURN SELECT name, role, url, health, enabled, priority, metadata FROM platform_hosts WHERE enabled = true ORDER BY priority; };
-DEFINE FUNCTION fn::platform::manifest() -> object { LET $hosts = fn::platform::hosts(); LET $platform_url = $hosts[0].url; LET $knowledge_url = $hosts[WHERE name = "agent-knowledge"][0].url; RETURN { schema: "https://agennext.dev/schemas/well-known/agent-platform.v1.json", service: "agent-platform", display_name: "AGenNext Agent Platform", version: "0.1.0", environment: "dev", issuer: $platform_url, hosts: $hosts, capabilities: ["agent-orchestration", "source-to-artifact", "evaluation", "trust", "model-routing", "surrealdb-context-graph"], endpoints: { manifest: string::concat($platform_url, "/.well-known/agent-platform.json"), agent: string::concat($platform_url, "/.well-known/agent.json"), openapi: string::concat($knowledge_url, "/openapi.json"), health: string::concat($knowledge_url, "/health"), eval: string::concat($knowledge_url, "/eval/evaluate"), trust: string::concat($knowledge_url, "/trust/provenance"), model_router: string::concat($knowledge_url, "/model-router/select") }, evidence: { source: "SurrealDB platform_hosts registry", configured_by: ["platform_hosts"] } }; };
-DEFINE FUNCTION fn::platform::agent_manifest() -> object { LET $manifest = fn::platform::manifest(); RETURN { name: $manifest.service, display_name: $manifest.display_name, description: "Customer-facing AGenNext platform host discovery for agent runtimes and clients.", version: $manifest.version, url: $manifest.issuer, preferred_manifest: $manifest.endpoints.manifest, hosts: $manifest.hosts, capabilities: $manifest.capabilities, endpoints: $manifest.endpoints }; };
+DEFINE API OVERWRITE "/model-router/routes" FOR get THEN { RETURN fn::api::json(SELECT * FROM model_routes ORDER BY share DESC); };
+DEFINE API OVERWRITE "/model-router/usage/summary" FOR get THEN {
+  LET $agg = (SELECT math::sum(cost_usd) AS cost_usd, math::sum(input_tokens) AS input_tokens, math::sum(output_tokens) AS output_tokens, count() AS calls FROM usage_records GROUP ALL)[0];
+  LET $calls = <int>($agg.calls ?? 0);
+  LET $cost = <float>($agg.cost_usd ?? 0.0);
+  RETURN fn::api::json({
+    total_calls: $calls,
+    total_input_tokens: <int>($agg.input_tokens ?? 0),
+    total_output_tokens: <int>($agg.output_tokens ?? 0),
+    total_cost_usd: $cost,
+    avg_cost_usd: math::round((IF $calls > 0 THEN $cost / $calls ELSE 0.0 END) * 10000) / 10000
+  });
+};
+DEFINE API OVERWRITE "/model-router/select" FOR post THEN {
+  LET $b = encoding::json::decode(<string>$request.body);
+  RETURN fn::api::json(fn::model_router::select($b));
+};
 
-DEFINE FUNCTION fn::objective::start($objective_id: string) -> object { LET $record = UPDATE type::thing("objectives", $objective_id) SET status = "running", updated_at = time::now() RETURN AFTER; RETURN $record[0]; };
-DEFINE FUNCTION fn::artifact::create($input: object) -> object { RETURN CREATE ONLY artifacts CONTENT { objective_id: $input.objective_id, artifact_type: $input.artifact_type, title: $input.title, content_ref: $input.content_ref, payload: $input.payload ?? {}, status: "draft", created_at: time::now() }; };
+DEFINE API OVERWRITE "/eval/evaluate" FOR post THEN {
+  LET $b = encoding::json::decode(<string>$request.body);
+  RETURN fn::api::json(fn::eval::evaluate($b));
+};
+DEFINE API OVERWRITE "/eval/artifacts/:artifact_id" FOR get THEN {
+  -- The dashboard reads a single EvalResult (with dimension_scores), so return
+  -- the latest evaluation as one normalized object, never an array.
+  LET $latest = (SELECT * FROM eval_results WHERE artifact_id = $request.params.artifact_id ORDER BY evaluated_at DESC LIMIT 1)[0];
+  RETURN fn::api::json(IF $latest = NONE
+    THEN { artifact_id: $request.params.artifact_id, composite_score: 0.0, passed: false, threshold: 0.7, dimension_scores: {}, rationale: "no_evaluation" }
+    ELSE { artifact_id: $latest.artifact_id, composite_score: $latest.composite_score, passed: $latest.passed, threshold: $latest.threshold ?? 0.7, dimension_scores: $latest.dimension_scores ?? {}, rationale: $latest.rationale ?? "" } END);
+};
 
-DEFINE FUNCTION fn::eval::score($scores: object, $threshold: option<float>) -> object { LET $t = $threshold ?? 0.7; LET $composite = (($scores.completeness ?? 0.0) * 0.2) + (($scores.logical ?? 0.0) * 0.2) + (($scores.evidence ?? 0.0) * 0.2) + (($scores.accuracy ?? 0.0) * 0.2) + (($scores.relevance ?? 0.0) * 0.2); LET $rounded = math::round($composite * 10000) / 10000; RETURN { composite_score: $rounded, passed: $rounded >= $t, threshold: $t, dimension_scores: [{ dimension: "completeness", score: $scores.completeness ?? 0.0, weight: 0.2 }, { dimension: "logical", score: $scores.logical ?? 0.0, weight: 0.2 }, { dimension: "evidence", score: $scores.evidence ?? 0.0, weight: 0.2 }, { dimension: "accuracy", score: $scores.accuracy ?? 0.0, weight: 0.2 }, { dimension: "relevance", score: $scores.relevance ?? 0.0, weight: 0.2 }] }; };
-DEFINE FUNCTION fn::eval::evaluate($input: object) -> object { LET $scored = fn::eval::score($input.dimension_scores ?? {}, $input.threshold); LET $created = CREATE ONLY eval_results CONTENT { artifact_id: $input.artifact_id, rubric_id: $input.rubric_id, composite_score: $scored.composite_score, dimension_scores: $scored.dimension_scores, passed: $scored.passed, rationale: $input.rationale, evaluated_at: time::now() }; UPDATE artifacts SET eval_status = IF $scored.passed THEN "passed" ELSE "failed" END WHERE id = type::thing("artifacts", $input.artifact_id) OR id = $input.artifact_id; RETURN { result: $created, threshold: $scored.threshold }; };
-
-DEFINE FUNCTION fn::trust::score($evidence: array) -> object { LET $total = array::len($evidence); LET $complete = IF $total > 0 THEN array::len($evidence[WHERE source_ref != NONE AND source_ref != ""]) / $total ELSE 0 END; LET $diversity = IF $total > 0 THEN math::min([array::len(array::distinct($evidence.source_ref)) / $total, 1.0]) ELSE 0 END; LET $density = math::min([$total / 5.0, 1.0]); LET $score = math::round((($complete * 0.5) + ($diversity * 0.3) + ($density * 0.2)) * 10000) / 10000; RETURN { score: $score, verified: $score >= 0.65, threshold: 0.65 }; };
-DEFINE FUNCTION fn::trust::record($input: object) -> object { LET $evidence = $input.evidence_links ?? []; LET $scored = fn::trust::score($evidence); LET $created = CREATE ONLY trust_scores CONTENT { artifact_id: $input.artifact_id, score: $scored.score, verified: $scored.verified, provenance: $evidence, verification_method: "chain", chain_hash: crypto::sha256(<string>$evidence), computed_at: time::now() }; UPDATE artifacts SET trust_status = IF $scored.verified THEN "verified" ELSE "unverified" END WHERE id = type::thing("artifacts", $input.artifact_id) OR id = $input.artifact_id; RETURN $created; };
-DEFINE FUNCTION fn::trust::gate($artifact_id: string, $threshold: option<float>) -> object { LET $t = $threshold ?? 0.65; LET $latest = (SELECT * FROM trust_scores WHERE artifact_id = $artifact_id ORDER BY computed_at DESC LIMIT 1)[0]; RETURN IF $latest = NONE THEN { passed: false, score: NONE, verified: false, threshold: $t, reason: "no_trust_score" } ELSE { passed: $latest.score >= $t, score: $latest.score, verified: $latest.verified, threshold: $t, reason: IF $latest.score >= $t THEN "ok" ELSE "score_below_threshold" END } END; };
-
-DEFINE FUNCTION fn::finops::daily_spend() -> float { LET $rows = SELECT math::sum(cost_usd) AS spent FROM usage_records WHERE recorded_at > time::now() - 1d GROUP ALL; RETURN <float>($rows[0].spent ?? 0.0); };
-DEFINE FUNCTION fn::model_router::select($input: object) -> object { LET $rule = (SELECT * FROM routing_rules WHERE task_type = $input.task_type AND enabled = true LIMIT 1)[0]; RETURN IF $rule = NONE THEN { model_id: "llama3", provider: "ollama", estimated_cost: 0.0, rationale: "fallback (no_rule)", rule_id: NONE } ELSE { LET $daily_spend = fn::finops::daily_spend(); LET $daily_budget = $rule.daily_budget ?? 10.0; RETURN IF $daily_spend >= $daily_budget THEN { model_id: "llama3", provider: "ollama", estimated_cost: 0.0, rationale: "fallback (daily_budget_exhausted)", rule_id: $rule.id } ELSE { LET $max_cost = $input.max_cost_override ?? $rule.max_cost_per_call ?? 0.10; LET $candidates = $rule.models[WHERE max_cost_per_call <= $max_cost].sort((|$a, $b| $a.priority < $b.priority)); LET $candidate = $candidates[0]; RETURN IF $candidate = NONE THEN { model_id: "llama3", provider: "ollama", estimated_cost: 0.0, rationale: "fallback (no_candidate_within_cost)", rule_id: $rule.id } ELSE { model_id: $candidate.model_id, provider: $candidate.provider, estimated_cost: $candidate.max_cost_per_call ?? 0.0, rationale: string::concat("priority=", <string>($candidate.priority ?? 0)), rule_id: $rule.id } END } END } END; };
-
-DEFINE API OVERWRITE "/.well-known/agent-platform.json" FOR get THEN { RETURN { status: 200, body: fn::platform::manifest(), headers: { "cache-control": "public, max-age=60, stale-while-revalidate=300" } }; } PERMISSIONS FULL;
-DEFINE API OVERWRITE "/.well-known/agent.json" FOR get THEN { RETURN { status: 200, body: fn::platform::agent_manifest(), headers: { "cache-control": "public, max-age=60, stale-while-revalidate=300" } }; } PERMISSIONS FULL;
-DEFINE API OVERWRITE "/eval/evaluate" FOR post THEN { RETURN { status: 200, body: fn::eval::evaluate($request.body) }; } PERMISSIONS FULL;
-DEFINE API OVERWRITE "/trust/provenance" FOR post THEN { RETURN { status: 200, body: fn::trust::record($request.body) }; } PERMISSIONS FULL;
-DEFINE API OVERWRITE "/trust/gate" FOR post THEN { RETURN { status: 200, body: fn::trust::gate($request.body.artifact_id, $request.body.threshold) }; } PERMISSIONS FULL;
-DEFINE API OVERWRITE "/model-router/select" FOR post THEN { RETURN { status: 200, body: fn::model_router::select($request.body) }; } PERMISSIONS FULL;
+DEFINE API OVERWRITE "/trust/provenance" FOR post THEN {
+  LET $b = encoding::json::decode(<string>$request.body);
+  RETURN fn::api::json(fn::trust::record($b));
+};
+DEFINE API OVERWRITE "/trust/gate" FOR post THEN {
+  LET $b = encoding::json::decode(<string>$request.body);
+  RETURN fn::api::json(fn::trust::gate($b.artifact_id, $b.threshold));
+};
+DEFINE API OVERWRITE "/trust/artifacts/:artifact_id" FOR get THEN {
+  -- The dashboard reads a single TrustScore (with evidence_count), so return the
+  -- latest trust score as one normalized object, never an array.
+  LET $latest = (SELECT * FROM trust_scores WHERE artifact_id = $request.params.artifact_id ORDER BY computed_at DESC LIMIT 1)[0];
+  RETURN fn::api::json(IF $latest = NONE
+    THEN { artifact_id: $request.params.artifact_id, score: 0.0, evidence_count: 0, passed: false }
+    ELSE { artifact_id: $latest.artifact_id, score: $latest.score, evidence_count: array::len($latest.provenance ?? []), passed: $latest.verified ?? false } END);
+};

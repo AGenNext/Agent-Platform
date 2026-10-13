@@ -1,0 +1,15 @@
+{{- if .Values.surrealdb.enabled }}
+# SurrealDB schema + seed, applied to SurrealDB by the schema-loader hook Job.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agent-platform-schema
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "agent-platform.labels" . | nindent 4 }}
+data:
+  schema.surql: |-
+{{ .Files.Get "files/schema.surql" | indent 4 }}
+  seed.surql: |-
+{{ .Files.Get "files/seed.surql" | indent 4 }}
+{{- end }}
