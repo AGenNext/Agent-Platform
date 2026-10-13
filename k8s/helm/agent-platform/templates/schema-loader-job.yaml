@@ -43,12 +43,23 @@ spec:
               echo "waiting for SurrealDB…"
               until curl -fsS "$SURREAL/health" >/dev/null 2>&1; do sleep 2; done
               AUTH="-u $SURREALDB_USERNAME:$SURREALDB_PASSWORD"
+              # SurrealDB's /sql returns HTTP 200 even when individual statements
+              # fail (status "ERR"), so -f alone is not enough: capture the body
+              # and fail the hook if any statement errored — otherwise a broken
+              # schema/seed would be reported as a successful Helm release.
+              run_sql() {
+                resp=$(curl -fsS $AUTH -H "surreal-ns: $NS" -H "surreal-db: $DB" -H "Content-Type: text/plain" --data-binary @"$1" "$SURREAL/sql") || {
+                  echo "ERROR: HTTP failure applying $1" >&2; exit 1; }
+                if printf '%s' "$resp" | grep -Eq '"status"[[:space:]]*:[[:space:]]*"ERR"'; then
+                  echo "ERROR: SurrealQL statement(s) failed in $1:" >&2
+                  printf '%s' "$resp" | grep -Eo '"status"[[:space:]]*:[[:space:]]*"ERR"[^}]*' >&2 || true
+                  exit 1
+                fi
+              }
               echo "ensuring namespace/database…"
               curl -fsS $AUTH --data "DEFINE NAMESPACE IF NOT EXISTS $NS; USE NS $NS; DEFINE DATABASE IF NOT EXISTS $DB;" "$SURREAL/sql" >/dev/null
-              echo "applying schema…"
-              curl -fsS $AUTH -H "surreal-ns: $NS" -H "surreal-db: $DB" -H "Content-Type: text/plain" --data-binary @/schema/schema.surql "$SURREAL/sql" >/dev/null
-              echo "applying seed…"
-              curl -fsS $AUTH -H "surreal-ns: $NS" -H "surreal-db: $DB" -H "Content-Type: text/plain" --data-binary @/schema/seed.surql "$SURREAL/sql" >/dev/null
+              echo "applying schema…"; run_sql /schema/schema.surql
+              echo "applying seed…"; run_sql /schema/seed.surql
               echo "schema + seed applied."
           volumeMounts:
             - name: schema

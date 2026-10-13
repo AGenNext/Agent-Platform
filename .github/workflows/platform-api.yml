@@ -4,11 +4,13 @@ on:
   pull_request:
     paths:
       - "docker/agent-knowledge/**"
+      - "k8s/helm/agent-platform/files/**"
       - ".github/workflows/platform-api.yml"
   push:
     branches: [main]
     paths:
       - "docker/agent-knowledge/**"
+      - "k8s/helm/agent-platform/files/**"
 
 permissions:
   contents: read
@@ -26,5 +28,12 @@ jobs:
           git remote add origin "https://github.com/${{ github.repository }}.git"
           git fetch -q --depth 1 origin "${{ github.ref }}"
           git checkout -q --force FETCH_HEAD
+      # The Helm chart loads its own copy (k8s/helm/agent-platform/files/) via
+      # .Files.Get, so the deployed schema/seed must stay byte-identical to the
+      # validated canonical source — fail the build if they drift.
+      - name: Assert deployed schema copy matches canonical source
+        run: |
+          diff -u docker/agent-knowledge/app/schema.surql k8s/helm/agent-platform/files/schema.surql
+          diff -u docker/agent-knowledge/app/seed.surql   k8s/helm/agent-platform/files/seed.surql
       - name: Apply schema + seed and assert every endpoint
         run: bash docker/agent-knowledge/test-api.sh

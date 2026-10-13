@@ -67,4 +67,35 @@ check POST /model-router/select '{"task_type":"generic"}'
 check POST /eval/evaluate '{"artifact_id":"art_1","dimension_scores":{"completeness":0.9,"logical":0.8,"evidence":0.8,"accuracy":0.9,"relevance":0.9},"threshold":0.7}'
 check POST /trust/provenance '{"artifact_id":"art_1","evidence_links":[{"source_ref":"s1"},{"source_ref":"s2"}]}'
 
+# ── Response-shape assertions ────────────────────────────────────────────────
+# Status 200 is not enough: the dashboard crashes if these endpoints return the
+# wrong JSON shape (missing fields, or an array where it expects one object).
+echo "Checking response shapes…"
+shape() {  # label path 'must-contain…' (one -e per needle); also asserts a JSON object
+  local label="$1" path="$2"; shift 2
+  local body; body=$(curl -s $AUTH "$API$path")
+  case "$body" in
+    "{"*) ;;  # must be a JSON object, not an array
+    *) printf '  FAIL %-26s not a JSON object: %.60s\n' "$label" "$body"; fail=1; return;;
+  esac
+  local miss=0 n
+  for n in "$@"; do case "$body" in *"\"$n\""*) ;; *) echo "  FAIL $label missing field: $n"; miss=1;; esac; done
+  [ "$miss" = "0" ] && printf '  ok   %-26s %s\n' "$label" "$path" || fail=1
+}
+# usage summary: the exact fields HealthView reads (total_input_tokens.toLocaleString(), etc.)
+shape usage-summary   "/model-router/usage/summary" total_calls total_input_tokens total_output_tokens total_cost_usd avg_cost_usd
+# eval + trust: single normalized object with the nested field the UI iterates
+shape eval-artifact   "/eval/artifacts/art_1"  artifact_id composite_score passed threshold dimension_scores
+shape trust-artifact  "/trust/artifacts/art_1" artifact_id score evidence_count
+# model-router budget enforcement: a rule with its daily budget exhausted must
+# fall back to the free model rather than routing paid traffic.
+curl -sS $AUTH -H "surreal-ns: $NS" -H "surreal-db: $DB" -H "Content-Type: text/plain" \
+  --data-binary 'UPSERT routing_rules:capped SET task_type="capped", preferred_provider="anthropic", models=[{model_id:"claude-sonnet",provider:"anthropic",max_cost_per_call:0.05,priority:1}], max_cost_per_call=0.05, daily_budget=0.0, enabled=true;' \
+  "$BASE/sql" >/dev/null
+routed=$(curl -s $AUTH -X POST -H 'content-type: application/json' -d '{"task_type":"capped"}' "$API/model-router/select")
+case "$routed" in
+  *'daily_budget_exhausted'*) printf '  ok   %-26s %s\n' "budget-fallback" "/model-router/select";;
+  *) printf '  FAIL %-26s expected daily_budget_exhausted, got: %.80s\n' "budget-fallback" "$routed"; fail=1;;
+esac
+
 [ "$fail" = "0" ] && echo "All API checks passed." || { echo "API checks FAILED"; exit 1; }
