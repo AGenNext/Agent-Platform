@@ -22,6 +22,7 @@ on:
 permissions:
   contents: read
   id-token: write   # required to mint the GitHub OIDC token for WIF
+  checks: read      # required to verify governance check evidence for the SHA
 
 concurrency:
   group: deploy-gke
@@ -57,6 +58,37 @@ jobs:
             if [ -z "${!v:-}" ]; then echo "::error::repo variable $v is not set"; missing=1; fi
           done
           [ "$missing" = "0" ] || { echo "Run deploy/gcp/setup.sh and set the printed variables."; exit 1; }
+
+      # Canonical truth = a commit SHA plus required check evidence (AGENTS.md
+      # §Canonical Truth / §CI-CD). Do not deploy a SHA whose governance check
+      # has not passed — verify it here before any build or helm step. The
+      # check name(s) to require are configurable (repo var REQUIRED_CHECKS,
+      # space-separated, case-insensitive substring match; default "governance").
+      - name: Verify governance check evidence for this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUIRED_CHECKS: ${{ vars.REQUIRED_CHECKS }}
+        run: |
+          set -euo pipefail
+          required="${REQUIRED_CHECKS:-governance}"
+          api="https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs?per_page=100"
+          runs=$(curl -fsS -H "Authorization: Bearer $GH_TOKEN" \
+                       -H "Accept: application/vnd.github+json" \
+                       -H "X-GitHub-Api-Version: 2022-11-28" "$api")
+          fail=0
+          for want in $required; do
+            # Latest conclusion for any check-run whose name contains $want (case-insensitive).
+            concl=$(printf '%s' "$runs" | jq -r --arg w "$want" '
+              [ .check_runs[] | select(.name | ascii_downcase | contains($w | ascii_downcase)) ]
+              | sort_by(.started_at) | last | .conclusion // "missing"')
+            if [ "$concl" = "success" ]; then
+              echo "✓ required check '$want' = success"
+            else
+              echo "::error::required check '$want' for ${{ github.sha }} is '$concl' (need success) — refusing to deploy ungoverned commit"
+              fail=1
+            fi
+          done
+          [ "$fail" = "0" ] || exit 1
 
       - name: Authenticate to GCP (keyless, Workload Identity Federation)
         run: |

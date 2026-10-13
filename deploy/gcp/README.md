@@ -63,6 +63,7 @@ In **Settings → Secrets and variables → Actions**:
 | `WIF_PROVIDER` | `projects/123.../locations/global/workloadIdentityPools/github-pool/providers/github-provider` |
 | `WIF_SERVICE_ACCOUNT` | `agent-platform-deploy@your-gcp-project.iam.gserviceaccount.com` |
 | `PLATFORM_HOST` | `platform.your-domain.com` |
+| `REQUIRED_CHECKS` _(optional)_ | `governance` — space-separated check-name substrings that must have concluded `success` on the deployed commit before `helm upgrade` runs; defaults to `governance` |
 
 **Repository secrets** (choose strong values):
 
@@ -77,6 +78,13 @@ The `Deploy to GKE` workflow runs automatically on pushes to `main` that touch
 the dashboard or chart, and can be run on demand from the **Actions** tab
 (**Run workflow**). It builds and pushes the dashboard image, then
 `helm upgrade --install`s the chart and waits for rollout.
+
+**Governance gate.** Before any build or `helm` step, the workflow verifies that
+the required check(s) (`REQUIRED_CHECKS`, default `governance`) concluded
+`success` on the exact commit SHA being deployed, per the Canonical-Truth rule
+in `AGENTS.md`. A commit whose governance check has not passed is refused — so
+the governance workflow must be green on the deployed SHA (which also requires
+resolving the org Actions allow-list so that workflow can run).
 
 ## 4. Point DNS at the ingress
 
